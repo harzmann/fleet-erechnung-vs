@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WpfCustomControlLibrary1
+namespace EHWpfViews
 {
     using System;
     using System.Data.Entity;
@@ -16,10 +16,10 @@ namespace WpfCustomControlLibrary1
     public partial class EHFleetEntities : DbContext
     {
         public EHFleetEntities()
-        : this("name=EHFleetEntities")
+            : this("name=EHFleetEntities")
         {
         }
-
+    
         public EHFleetEntities(string connectionString)
             : base(connectionString)
         {

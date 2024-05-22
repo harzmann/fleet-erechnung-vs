@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace WpfCustomControlLibrary1
+namespace EHWpfViews
 {
     public class MainViewModel : BindableBase
     {

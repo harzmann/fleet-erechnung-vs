@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WpfCustomControlLibrary1
+namespace EHWpfViews
 {
     using System;
     using System.Collections.Generic;

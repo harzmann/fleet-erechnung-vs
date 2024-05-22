@@ -1,7 +1,7 @@
-﻿<Application x:Class="WpfApp1.App"
+﻿<Application x:Class="EHWpfViews.App.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             StartupUri="pack://application:,,,/WpfCustomControlLibrary1;component/ReportView.xaml">
+             StartupUri="pack://application:,,,/EHWpfViews;component/ReportView.xaml">
     <Application.Resources>
          
     </Application.Resources>

@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Windows;
 
-namespace WpfCustomControlLibrary1
+namespace EHWpfViews
 {
     [ComVisible(true), Guid(ClassId)]
     public class WindowWrapper

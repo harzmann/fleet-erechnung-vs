@@ -13,7 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace WpfCustomControlLibrary1
+namespace EHWpfViews
 {
     /// <summary>
     /// Interaction logic for Window1.xaml
