@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="3e034097f0d8449b9c90ea039fa42e0f" Name="Diagram1">
+        <EntityTypeShape EntityType="EHFleetModel.AbfahrtskontrolleAufgaben" Width="1.5" PointX="7.75" PointY="4.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.AbfahrtskontrolleDokumente" Width="1.5" PointX="0.75" PointY="15" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.AbfahrtskontrolleKopf" Width="1.5" PointX="7.75" PointY="9.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.AbfahrtskontrollePositionen" Width="1.5" PointX="10" PointY="4.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.AbfahrtskontrolleVorlageAufgaben" Width="1.5" PointX="13" PointY="4.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.AbfahrtskontrolleVorlagen" Width="1.5" PointX="10.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.AbfahrtskontrolleVorlagenZuordnung" Width="1.5" PointX="12.75" PointY="8" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Achsarten" Width="1.5" PointX="12.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.AchsartenZuordnung" Width="1.5" PointX="14.75" PointY="8" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Anmeldungen" Width="1.5" PointX="14.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.AppModulVersion" Width="1.5" PointX="14.75" PointY="12" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Artikel" Width="1.5" PointX="14.75" PointY="16" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.ArtikelDokumente" Width="1.5" PointX="11.75" PointY="17" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Artikelgruppen" Width="1.5" PointX="15.75" PointY="5" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.ArtikelgruppenZuordnung" Width="1.5" PointX="16.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Artikellagerstellen" Width="1.5" PointX="16.75" PointY="8" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Artikelpreisliste" Width="1.5" PointX="7.75" PointY="18" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Auftragsart" Width="1.5" PointX="16.75" PointY="12" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Auftragsstatu" Width="1.5" PointX="16.75" PointY="15" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.AWTexte" Width="1.5" PointX="16.75" PointY="18" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Banken" Width="1.5" PointX="0.75" PointY="19" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Belegart" Width="1.5" PointX="17.75" PointY="5" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Berechtigungen" Width="1.5" PointX="2.75" PointY="20" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Berichte" Width="1.5" PointX="4.75" PointY="20" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.BestellungBuchungsjournal" Width="1.5" PointX="18.75" PointY="8" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.BestellungBuchungsstapel" Width="1.5" PointX="18.75" PointY="14" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Bestellungdetail" Width="1.5" PointX="18.75" PointY="20" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.BestellungDokumente" Width="1.5" PointX="19.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.BestellungFreifelder" Width="1.5" PointX="9.75" PointY="21" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.BestellungKopf" Width="1.5" PointX="11.75" PointY="21" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.BKFQKenntnisbereiche" Width="1.5" PointX="20.75" PointY="6" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.BKFQModule" Width="1.5" PointX="20.75" PointY="9" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.BKFQModulgruppen" Width="1.5" PointX="20.75" PointY="13" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.BKFQQualifizierungDokumente" Width="1.5" PointX="20.75" PointY="16" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.BKFQQualifizierungen" Width="1.5" PointX="20.75" PointY="20" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.BKFQSchulungen" Width="1.5" PointX="13.75" PointY="23" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.D11E" Width="1.5" PointX="15.75" PointY="23" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.D11S" Width="1.5" PointX="22.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.DatenbankVersion" Width="1.5" PointX="0.75" PointY="24" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Fahrerlaubnisklassen" Width="1.5" PointX="2.75" PointY="24" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.FahrzeugDokumente" Width="1.5" PointX="4.75" PointY="24" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Fahrzeuge" Width="1.5" PointX="22.75" PointY="7" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Fahrzeugfälligkeiten" Width="1.5" PointX="6.75" PointY="24" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Fahrzeugfälligkeitsarten" Width="1.5" PointX="22.75" PointY="24" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.FahrzeugFinanzierung" Width="1.5" PointX="17.75" PointY="25" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.FahrzeugFreifelder" Width="1.5" PointX="19.75" PointY="25" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.FahrzeugFreifelderDaten" Width="1.5" PointX="24.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.FahrzeugFreifelderFelddefinition" Width="1.5" PointX="24.75" PointY="6" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Fahrzeuggruppen" Width="1.5" PointX="24.75" PointY="9" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.FahrzeuggruppenZuordnung" Width="1.5" PointX="24.75" PointY="12" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Fahrzeugkosten" Width="1.5" PointX="24.75" PointY="15" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.FahrzeugLeasing" Width="1.5" PointX="24.75" PointY="21" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Fahrzeugtypen" Width="1.5" PointX="0.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.FahrzeugtypenZuordnung" Width="1.5" PointX="21.75" PointY="27" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.FremdrechnungBuchungsjournal" Width="1.5" PointX="23.75" PointY="27" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.FremdrechnungBuchungsstapel" Width="1.5" PointX="25.75" PointY="27" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.FremdrechnungDokumente" Width="1.5" PointX="26.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.FremdrechnungFreifelder" Width="1.5" PointX="0.75" PointY="28" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.FremdrechnungKopf" Width="1.5" PointX="2.75" PointY="28" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.FührerscheinDokumente" Width="1.5" PointX="26.75" PointY="6" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.ILVRechnungBuchungsjournal" Width="1.5" PointX="26.75" PointY="10" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.ILVRechnungBuchungsstapel" Width="1.5" PointX="26.75" PointY="16" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.ILVRechnungdetail" Width="1.5" PointX="4.75" PointY="29" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.ILVRechnungDokumente" Width="1.5" PointX="26.75" PointY="22" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.ILVRechnungFreifelder" Width="1.5" PointX="6.75" PointY="29" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.ILVRechnungKopf" Width="1.5" PointX="13.75" PointY="29" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Inventurliste" Width="1.5" PointX="27.75" PointY="26" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Kategorie" Width="1.5" PointX="27.75" PointY="29" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.KategorieErlöskonten" Width="1.5" PointX="28.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Kostenstelle" Width="1.5" PointX="28.75" PointY="6" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Kostenträger" Width="1.5" PointX="28.75" PointY="9" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Kostenvoranschlagdetail" Width="1.5" PointX="8.75" PointY="30" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.KostenvoranschlagDokumente" Width="1.5" PointX="28.75" PointY="12" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.KostenvoranschlagFreifelder" Width="1.5" PointX="10.75" PointY="30" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.KostenvoranschlagKopf" Width="1.5" PointX="28.75" PointY="16" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Kreditkartenfirman" Width="1.5" PointX="29.75" PointY="25" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.KreditkartenfirmenZuordnung" Width="1.5" PointX="29.75" PointY="28" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Kunden" Width="1.5" PointX="30.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Kundengruppen" Width="1.5" PointX="30.75" PointY="13" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.KundengruppenZuordnung" Width="1.5" PointX="30.75" PointY="16" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Lager" Width="1.5" PointX="15.75" PointY="32" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Lagerbewegungen" Width="1.5" PointX="30.75" PointY="19" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Länder" Width="1.5" PointX="29.75" PointY="32" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Lieferanten" Width="1.5" PointX="31.75" PointY="24" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Mangelart" Width="1.5" PointX="31.75" PointY="31" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.MangelDokumente" Width="1.5" PointX="32.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.MangelFreifelder" Width="1.5" PointX="32.75" PointY="6" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.MangelKopf" Width="1.5" PointX="32.75" PointY="15" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.ManuelleRechnungdetail" Width="1.5" PointX="17.75" PointY="34" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.ManuelleRechnungDokumente" Width="1.5" PointX="19.75" PointY="34" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.ManuelleRechnungFreifelder" Width="1.5" PointX="21.75" PointY="34" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.ManuelleRechnungKopf" Width="1.5" PointX="23.75" PointY="34" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Mautbuchungen" Width="1.5" PointX="25.75" PointY="34" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.MautErlöskonten" Width="1.5" PointX="32.75" PointY="21" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Mengeneinheit" Width="1.5" PointX="31.75" PointY="34" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Menüpunkte" Width="1.5" PointX="2.75" PointY="35" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Mietabrechnungdetail" Width="1.5" PointX="12" PointY="11.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.MietabrechnungErlöskonten" Width="1.5" PointX="33.75" PointY="24" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.MietabrechnungKopf" Width="1.5" PointX="9.75" PointY="9.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.MobileGeräte" Width="1.5" PointX="33.75" PointY="27" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Musteraufträge" Width="1.5" PointX="27.75" PointY="35" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.MusteraufträgeArtikel" Width="1.5" PointX="33.75" PointY="31" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Parameter" Width="1.5" PointX="33.75" PointY="35" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Parameterdetail" Width="1.5" PointX="34.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Personal" Width="1.5" PointX="35.75" PointY="17" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.PersonalBenachrichtigungen" Width="1.5" PointX="35.75" PointY="31" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.PersonalDokumente" Width="1.5" PointX="29.75" PointY="37" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.PersonalErlöskonten" Width="1.5" PointX="35.75" PointY="36" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.PersonalFahrerlaubnisklassen" Width="1.5" PointX="36.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.PersonalFahrzeugZuordnung" Width="1.5" PointX="0.75" PointY="38" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Personalfälligkeiten" Width="1.5" PointX="2.75" PointY="38" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Personalfälligkeitsarten" Width="1.5" PointX="36.75" PointY="6" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.PersonalFreifelder" Width="1.5" PointX="4.75" PointY="38" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.PersonalFreifelderDaten" Width="1.5" PointX="6.75" PointY="38" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.PersonalFreifelderFelddefinition" Width="1.5" PointX="36.75" PointY="9" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.PersonalFührerscheine" Width="1.5" PointX="12.75" PointY="38" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.PersonalFührerscheinkontrollen" Width="1.5" PointX="36.75" PointY="12" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.PersonalRFIDFührerschein" Width="1.5" PointX="14.75" PointY="38" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Produktart" Width="1.5" PointX="8.75" PointY="39" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.ProduktartErlöskonten" Width="1.5" PointX="37.75" PointY="16" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Produktgruppen" Width="1.5" PointX="37.75" PointY="20" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.ProduktgruppenZuordnung" Width="1.5" PointX="37.75" PointY="23" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Rechnungdetail" Width="1.5" PointX="37.75" PointY="26" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.RechnungdetailVorschau" Width="1.5" PointX="37.75" PointY="32" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.RechnungDokumente" Width="1.5" PointX="37.75" PointY="38" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.RechnungFreifelder" Width="1.5" PointX="38.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.RechnungKopf" Width="1.5" PointX="16.75" PointY="40" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.RechnungKopfVorschau" Width="1.5" PointX="18.75" PointY="40" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Rechnungstexte" Width="1.5" PointX="38.75" PointY="11" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Reifen" Width="1.5" PointX="39.75" PointY="14" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Reifenbewegungen" Width="1.5" PointX="39.75" PointY="19" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Reifenfelgen" Width="1.5" PointX="39.75" PointY="24" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Reifengrössen" Width="1.5" PointX="39.75" PointY="27" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Reifenhersteller" Width="1.5" PointX="25.75" PointY="41" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Reifentypen" Width="1.5" PointX="27.75" PointY="41" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.RFIDFührerscheinkontrollen" Width="1.5" PointX="39.75" PointY="30" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.SammelrechnungKopf" Width="1.5" PointX="29.75" PointY="41" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Spritbuchungen" Width="1.5" PointX="39.75" PointY="34" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Standorte" Width="1.5" PointX="39.75" PointY="41" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.StandorteFahrzeugZuordnung" Width="1.5" PointX="40.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.StandorteFahrzeugZuordnungErweitert" Width="1.5" PointX="40.75" PointY="5" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.StandorteLagerZuordnung" Width="1.5" PointX="40.75" PointY="9" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.StandortePersonalZuordnung" Width="1.5" PointX="35.75" PointY="42" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Steuersätze" Width="1.5" PointX="0.75" PointY="43" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Tankabrechnungdetail" Width="1.5" PointX="6.75" PointY="43" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.TankabrechnungDokumente" Width="1.5" PointX="8.75" PointY="43" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.TankabrechnungFreifelder" Width="1.5" PointX="41.75" PointY="12" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.TankabrechnungKopf" Width="1.5" PointX="41.75" PointY="21" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.TerminAbrechnung" Width="1.5" PointX="5.25" PointY="2.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.TerminAbrechnungVorlage" Width="1.5" PointX="20.75" PointY="43" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.TerminDokumente" Width="1.5" PointX="5.25" PointY="7.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.TerminFreifelder" Width="1.5" PointX="5.25" PointY="10.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.TerminKategorien" Width="1.5" PointX="0.75" PointY="9.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.TerminKopf" Width="1.5" PointX="3" PointY="7.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Unfallart" Width="1.5" PointX="22.75" PointY="43" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.UnfallDokumente" Width="1.5" PointX="41.75" PointY="30" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.UnfallFreifelder" Width="1.5" PointX="41.75" PointY="34" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.UnfallFremdrechnung" Width="1.5" PointX="41.75" PointY="43" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.UnfallKopf" Width="1.5" PointX="42.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.UnfallWerkstattauftrag" Width="1.5" PointX="10.75" PointY="44" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Versandart" Width="1.5" PointX="12.75" PointY="44" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Werbefläche" Width="1.5" PointX="24.75" PointY="44" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.WerbeflächeZuordnung" Width="1.5" PointX="26.75" PointY="44" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.WerbungDokumente" Width="1.5" PointX="28.75" PointY="44" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.WerbungFreifelder" Width="1.5" PointX="30.75" PointY="44" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.WerbungKopf" Width="1.5" PointX="32.75" PointY="44" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.WerkstattauftragAWTexte" Width="1.5" PointX="43.75" PointY="11" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.WerkstattauftragDokumente" Width="1.5" PointX="43.75" PointY="15" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.WerkstattauftragFreifelder" Width="1.5" PointX="43.75" PointY="19" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.WerkstattauftragKopf" Width="1.5" PointX="43.75" PointY="28" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.WerkstattauftragLohn" Width="1.5" PointX="43.75" PointY="36" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.WerkstattauftragPositionen" Width="1.5" PointX="34.75" PointY="45" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Zahlungsziele" Width="1.5" PointX="36.75" PointY="45" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Zeiterfassung" Width="1.5" PointX="43.75" PointY="40" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.ArtikelFreifelder" Width="1.5" PointX="43.75" PointY="45" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.KundenExterneMandanten" Width="1.5" PointX="44.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.KundenExterneMandantenSubunternehmer" Width="1.5" PointX="44.75" PointY="6" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.KundenFreifelder" Width="1.5" PointX="2.75" PointY="47" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.LieferantenFreifelder" Width="1.5" PointX="45.75" PointY="9" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Lizenzen" Width="1.5" PointX="12.75" PointY="47" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.ManuelleRechnungBuchungsjournal" Width="1.5" PointX="45.75" PointY="18" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.ManuelleRechnungBuchungsstapel" Width="1.5" PointX="45.75" PointY="24" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.Mautknoten" Width="1.5" PointX="22.75" PointY="47" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.RechnungBuchungsjournal" Width="1.5" PointX="24.75" PointY="47" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.RechnungBuchungsstapel" Width="1.5" PointX="45.75" PointY="30" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.TankabrechnungBuchungsjournal" Width="1.5" PointX="45.75" PointY="36" IsExpanded="true" />
+        <EntityTypeShape EntityType="EHFleetModel.TankabrechnungBuchungsstapel" Width="1.5" PointX="38.75" PointY="47" IsExpanded="true" />
+        <AssociationConnector Association="EHFleetModel.FK_AbfahrtskontrollePositionen_AbfahrtskontrolleAufgaben" ManuallyRouted="false" />
+        <AssociationConnector Association="EHFleetModel.FK_AbfahrtskontrolleVorlageAufgaben_AbfahrtskontrolleAufgaben" ManuallyRouted="false" />
+        <AssociationConnector Association="EHFleetModel.FK_AbfahrtskontrollePositionen_AbfahrtskontrolleKopf" ManuallyRouted="false" />
+        <AssociationConnector Association="EHFleetModel.FK_AbfahrtskontrolleVorlageAufgaben_AbfahrtskontrolleVorlagen" ManuallyRouted="false" />
+        <AssociationConnector Association="EHFleetModel.FK_Fahrzeugtypen_Fahrzeugtypen" ManuallyRouted="false" />
+        <AssociationConnector Association="EHFleetModel.FK_Mietabrechnungdetail_MietabrechnungKopf" ManuallyRouted="false" />
+        <AssociationConnector Association="EHFleetModel.FK_TerminAbrechnung_TerminKopf" ManuallyRouted="false" />
+        <AssociationConnector Association="EHFleetModel.FK_TerminDokumente_TerminKopf" ManuallyRouted="false" />
+        <AssociationConnector Association="EHFleetModel.FK_TerminFreifelder_TerminKopf" ManuallyRouted="false" />
+        <AssociationConnector Association="EHFleetModel.FK_TerminKopf_TerminKategorien" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>
