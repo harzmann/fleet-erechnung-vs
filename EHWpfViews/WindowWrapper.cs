@@ -14,7 +14,7 @@ namespace EHWpfViews
             try
             {
                 var window = new ReportView();
-                window.DataContext = new MainViewModel(new EHFleetEntities(dbConnectionString));
+                window.DataContext = new MainViewModel(new ehfleet_classlibrary.General.Database(dbConnectionString));
                 window.ShowDialog();
             }
             catch (Exception ex)

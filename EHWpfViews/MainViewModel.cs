@@ -1,24 +1,18 @@
-﻿using Prism.Commands;
+﻿using ehfleet_classlibrary;
 using Prism.Mvvm;
 using Stimulsoft.Report;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
 
 namespace EHWpfViews
 {
     public class MainViewModel : BindableBase
     {
-        private EHFleetEntities _dbContext;
-
         private StiReport _report;
 
-        public MainViewModel(EHFleetEntities dbContext)
+        private General.Database _db;
+
+        public MainViewModel(General.Database db)
         {
-            _dbContext = dbContext;
+            _db = db;
         }
 
         public StiReport Report

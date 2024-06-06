@@ -6,3 +6,5 @@
 **/bin
 **/obj
 
+/EHWinFormViews/EHWinFormViews.vbproj.user
+/EHWinFormViews.App/EHWinFormViews.App.vbproj.user
