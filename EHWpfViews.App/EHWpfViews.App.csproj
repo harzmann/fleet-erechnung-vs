@@ -87,12 +87,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EHWpfViews\EHWpfViews.csproj">
-      <Project>{51DBAE8C-4ABA-4112-9034-8C992D9BA7C3}</Project>
-      <Name>EHWpfViews</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="EntityFramework">
       <Version>6.4.4</Version>
     </PackageReference>
