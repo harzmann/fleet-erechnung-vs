@@ -1,5 +1,6 @@
 ﻿Imports System.Windows.Forms
 Imports ehfleet_classlibrary
+Imports Telerik.WinControls.UI
 
 Public Class RechnungsUebersicht
 
@@ -30,6 +31,11 @@ Public Class RechnungsUebersicht
         RefreshGrid()
     End Sub
 
+    'Private Sub WindowSizeChanged(sender As Object, e As EventArgs) Handles Me.SizeChanged
+    '    DataGridView1.Width = Me.Width - DataGridView1.Margin.Right - DataGridView1.Margin.Left
+    '    DataGridView1.Height = Me.Height - DataGridView1.Bounds.Top - DataGridView1.Margin.Top - DataGridView1.Margin.Bottom
+    'End Sub
+
     Private Function RefreshGrid()
         DataGridView1.Columns.Clear()
         Dim sql = GetSqlStatement(_rechnungsArt)
@@ -39,17 +45,17 @@ Public Class RechnungsUebersicht
         dataTableBindingSource.DataSource = dataTable
         DataGridView1.DataSource = dataTableBindingSource
 
-        Dim buttonColumn As New DataGridViewButtonColumn()
+        Dim buttonColumn As New GridViewCommandColumn()
         buttonColumn.Name = "Aktion"
         buttonColumn.HeaderText = "Aktion"
-        buttonColumn.Text = "X Rechnung"
-        buttonColumn.UseColumnTextForButtonValue = True ' Use the same text for all buttons
+        buttonColumn.DefaultText = "X Rechnung"
+        buttonColumn.UseDefaultText = True
 
         ' Add the button column to the DataGridView
         DataGridView1.Columns.Add(buttonColumn)
     End Function
 
-    Private Sub DataGridView1_CellClick(sender As Object, e As DataGridViewCellEventArgs) Handles DataGridView1.CellClick
+    Private Sub DataGridView1_CellClick(sender As Object, e As GridViewCellEventArgs) Handles DataGridView1.CommandCellClick
         ' Check if the click is on a button column
         If e.ColumnIndex = DataGridView1.Columns("Aktion").Index AndAlso e.RowIndex >= 0 Then
             ' Perform the action you want here
@@ -61,6 +67,7 @@ Public Class RechnungsUebersicht
             reportForm.ShowDialog()
         End If
     End Sub
+
 
     Private Function GetSqlStatement(rechnungsArt As RechnungsArt) As String
         Select Case rechnungsArt

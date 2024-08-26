@@ -1,9 +1,11 @@
-﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
+﻿Imports Telerik.WinControls.UI
+
+<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
 Partial Class RechnungsUebersicht
     Inherits System.Windows.Forms.Form
 
     'Form overrides dispose to clean up the component list.
-    <System.Diagnostics.DebuggerNonUserCode()> _
+    <System.Diagnostics.DebuggerNonUserCode()>
     Protected Overrides Sub Dispose(ByVal disposing As Boolean)
         Try
             If disposing AndAlso components IsNot Nothing Then
@@ -20,13 +22,15 @@ Partial Class RechnungsUebersicht
     'NOTE: The following procedure is required by the Windows Form Designer
     'It can be modified using the Windows Form Designer.  
     'Do not modify it using the code editor.
-    <System.Diagnostics.DebuggerStepThrough()> _
+    <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
+        Dim TableViewDefinition1 As Telerik.WinControls.UI.TableViewDefinition = New Telerik.WinControls.UI.TableViewDefinition()
         Me.ManuelleRechnungButton = New System.Windows.Forms.RadioButton()
         Me.TankabrechnungButton = New System.Windows.Forms.RadioButton()
         Me.WerkstattRechnungButton = New System.Windows.Forms.RadioButton()
-        Me.DataGridView1 = New System.Windows.Forms.DataGridView()
+        Me.DataGridView1 = New Telerik.WinControls.UI.RadGridView()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.DataGridView1.MasterTemplate, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'ManuelleRechnungButton
@@ -65,29 +69,36 @@ Partial Class RechnungsUebersicht
         '
         'DataGridView1
         '
-        Me.DataGridView1.AllowUserToOrderColumns = True
         Me.DataGridView1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.DataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        Me.DataGridView1.Location = New System.Drawing.Point(13, 101)
+        Me.DataGridView1.Location = New System.Drawing.Point(15, 126)
+        Me.DataGridView1.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
+        '
+        '
+        '
+        Me.DataGridView1.MasterTemplate.AllowAddNewRow = False
+        Me.DataGridView1.MasterTemplate.AllowCellContextMenu = False
+        Me.DataGridView1.MasterTemplate.AllowDeleteRow = False
+        Me.DataGridView1.MasterTemplate.AllowEditRow = False
+        Me.DataGridView1.MasterTemplate.AllowSearchRow = True
+        Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition1
         Me.DataGridView1.Name = "DataGridView1"
-        Me.DataGridView1.RowHeadersWidth = 51
-        Me.DataGridView1.RowTemplate.Height = 24
-        Me.DataGridView1.Size = New System.Drawing.Size(785, 345)
+        Me.DataGridView1.Size = New System.Drawing.Size(1354, 616)
         Me.DataGridView1.TabIndex = 7
         '
         'RechnungsUebersicht
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 16.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(800, 450)
+        Me.ClientSize = New System.Drawing.Size(1108, 607)
         Me.Controls.Add(Me.DataGridView1)
         Me.Controls.Add(Me.ManuelleRechnungButton)
         Me.Controls.Add(Me.TankabrechnungButton)
         Me.Controls.Add(Me.WerkstattRechnungButton)
         Me.Name = "RechnungsUebersicht"
         Me.Text = "RechnungsUebersicht"
+        CType(Me.DataGridView1.MasterTemplate, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
@@ -97,5 +108,5 @@ Partial Class RechnungsUebersicht
     Friend WithEvents ManuelleRechnungButton As Windows.Forms.RadioButton
     Friend WithEvents TankabrechnungButton As Windows.Forms.RadioButton
     Friend WithEvents WerkstattRechnungButton As Windows.Forms.RadioButton
-    Friend WithEvents DataGridView1 As Windows.Forms.DataGridView
+    Public WithEvents DataGridView1 As RadGridView
 End Class
