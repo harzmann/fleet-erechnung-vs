@@ -1,4 +1,5 @@
-﻿Imports System.Windows.Forms
+﻿Imports System.Runtime.InteropServices
+Imports System.Windows.Forms
 Imports ehfleet_classlibrary
 Imports Telerik.WinControls.UI
 
@@ -9,6 +10,7 @@ Public Class RechnungsUebersicht
     Private _rechnungsArt As RechnungsArt
 
     Public Sub New(dbConnection As General.Database)
+        'ScreenScaling.SetProcessDpiAwareness(_Process_DPI_Awareness.Process_DPI_Unaware)
         _dbConnection = dbConnection
         ' This call is required by the designer.
         InitializeComponent()
@@ -30,11 +32,6 @@ Public Class RechnungsUebersicht
         _rechnungsArt = RechnungsArt.Manuell
         RefreshGrid()
     End Sub
-
-    'Private Sub WindowSizeChanged(sender As Object, e As EventArgs) Handles Me.SizeChanged
-    '    DataGridView1.Width = Me.Width - DataGridView1.Margin.Right - DataGridView1.Margin.Left
-    '    DataGridView1.Height = Me.Height - DataGridView1.Bounds.Top - DataGridView1.Margin.Top - DataGridView1.Margin.Bottom
-    'End Sub
 
     Private Function RefreshGrid()
         DataGridView1.Columns.Clear()
@@ -91,11 +88,42 @@ Public Class RechnungsUebersicht
 
                 Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_wavkliste]"
             Case RechnungsArt.Tanken
-                Return "select * from [abfr_tavkliste]"
+                Dim columnMapping As New Dictionary(Of String, String) From
+                    {
+                        {"RechnungsNr", "'RG-Nr.'"},
+                        {"Rechnungsdatum", "'RG-Datum'"},
+                        {"Rechnungstext", "Anmerkungen"},
+                        {"Belegart", "Belegart"},
+                        {"KundenNr", "'KD-Nr.'"},
+                        {"DebitorNr", "'Debitor-Nr.'"},
+                        {"Firma", "Firma"},
+                        {"Summe", "'Summe netto'"},
+                        {"Exportiert", "X"},
+                        {"Gebucht", "B"},
+                        {"Storno", "S"}
+                    }
+
+                Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_tavkliste]"
             Case RechnungsArt.Manuell
-                Return "select * from [abfr_mrvkliste]"
+                Dim columnMapping As New Dictionary(Of String, String) From
+                    {
+                        {"RechnungsNr", "'RG-Nr.'"},
+                        {"Rechnungsdatum", "'RG-Datum'"},
+                        {"Rechnungstext", "Anmerkungen"},
+                        {"Belegart", "Belegart"},
+                        {"KundenNr", "'KD-Nr.'"},
+                        {"DebitorNr", "'Debitor-Nr.'"},
+                        {"Firma", "Firma"},
+                        {"Summe", "'Summe netto'"},
+                        {"Exportiert", "X"},
+                        {"Gebucht", "B"},
+                        {"Storno", "S"}
+                    }
+
+                Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_mrvkliste]"
         End Select
 
         Return String.Empty
     End Function
+
 End Class

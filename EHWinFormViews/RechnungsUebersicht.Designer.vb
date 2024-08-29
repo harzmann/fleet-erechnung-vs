@@ -72,8 +72,9 @@ Partial Class RechnungsUebersicht
         Me.DataGridView1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.DataGridView1.Location = New System.Drawing.Point(15, 126)
-        Me.DataGridView1.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
+        Me.DataGridView1.EnableGestures = False
+        Me.DataGridView1.Location = New System.Drawing.Point(17, 105)
+        Me.DataGridView1.Margin = New System.Windows.Forms.Padding(8)
         '
         '
         '
@@ -82,9 +83,12 @@ Partial Class RechnungsUebersicht
         Me.DataGridView1.MasterTemplate.AllowDeleteRow = False
         Me.DataGridView1.MasterTemplate.AllowEditRow = False
         Me.DataGridView1.MasterTemplate.AllowSearchRow = True
+        Me.DataGridView1.MasterTemplate.ClipboardPasteMode = Telerik.WinControls.UI.GridViewClipboardPasteMode.Disable
+        Me.DataGridView1.MasterTemplate.EnableFiltering = True
+        Me.DataGridView1.MasterTemplate.ShowGroupedColumns = True
         Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition1
         Me.DataGridView1.Name = "DataGridView1"
-        Me.DataGridView1.Size = New System.Drawing.Size(1354, 616)
+        Me.DataGridView1.Size = New System.Drawing.Size(802, 370)
         Me.DataGridView1.TabIndex = 7
         '
         'RechnungsUebersicht

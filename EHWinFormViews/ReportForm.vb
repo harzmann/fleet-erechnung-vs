@@ -29,16 +29,18 @@ Public Class ReportForm
             reportPath = dataTable.Rows(0).Item(0).ToString()
         End If
 
-        Dim sql = GetSqlStatement(rechnungsArt, rechnungsNummer)
+        'Dim sql = GetSqlStatement(rechnungsArt, rechnungsNummer)
 
-        dataTable = DataConnection.FillDataTable(sql)
+        'dataTable = DataConnection.FillDataTable(sql)
 
         StiViewerControl1.Report = StiReport.CreateNewReport
         If File.Exists(reportPath) Then
             StiViewerControl1.Report.Load(reportPath)
         End If
 
-        StiViewerControl1.Report.RegData(dataTable)
+        Dim db = StiViewerControl1.Report.Dictionary.Databases(0)
+        DirectCast(db, Stimulsoft.Report.Dictionary.StiSqlDatabase).ConnectionString = DataConnection.ConnectionString
+        StiViewerControl1.Report.Render()
 
     End Sub
 

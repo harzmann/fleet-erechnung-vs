@@ -26,9 +26,10 @@ Namespace My
     ' End Sub
 
     Partial Friend Class MyApplication
+
         Protected Overrides Function OnStartup(eventArgs As StartupEventArgs) As Boolean
-            Dim form = New RechnungsUebersicht(New General.Database("Provider=MSOLEDBSQL;Data Source=.\SQLEXPRESS;Initial Catalog=EHFleet;Integrated Security=SSPI;"))
-            MainForm = form
+            Dim Form = New RechnungsUebersicht(New General.Database("Provider=MSOLEDBSQL;Data Source=.\SQLEXPRESS;Initial Catalog=EHFleet;Integrated Security=SSPI;"))
+            MainForm = Form
             Return MyBase.OnStartup(eventArgs)
         End Function
     End Class
