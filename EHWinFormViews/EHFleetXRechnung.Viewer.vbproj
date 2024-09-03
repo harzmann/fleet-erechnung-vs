@@ -15,4 +15,9 @@
 		<Reference Include="netstandard" />
 		<Reference Include="mscorlib" />
 	</ItemGroup>
+	<ItemGroup>
+	  <None Update="license.key">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
 </Project>

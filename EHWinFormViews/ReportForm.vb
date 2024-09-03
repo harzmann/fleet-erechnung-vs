@@ -17,6 +17,10 @@ Public Class ReportForm
         End Set
     End Property
 
+    Shared Sub New()
+        Stimulsoft.Base.StiLicense.LoadFromFile(Path.Combine(Path.GetDirectoryName(GetType(ReportForm).Assembly.Location), "license.key"))
+    End Sub
+
     Public Sub New(dbConnection As General.Database, rechnungsArt As RechnungsArt, rechnungsNummer As Integer)
         _dataConnection = dbConnection
 
@@ -44,7 +48,7 @@ Public Class ReportForm
         End If
 
         StiViewerControl1.Report.Dictionary.Databases.Clear()
-        StiViewerControl1.Report.Dictionary.Databases.Add(New Dictionary.StiOleDbDatabase("OLE DB", DataConnection.ConnectionString))
+        StiViewerControl1.Report.Dictionary.Databases.Add(New StiOleDbDatabase("OLE DB", DataConnection.ConnectionString))
 
         StiViewerControl1.Report.Dictionary.DataSources.Clear()
         Dim queries = GetSqlStatements(rechnungsArt, rechnungsNummer)
@@ -78,7 +82,7 @@ Public Class ReportForm
                     {
                         {"abfr_wavkreport", $"select * from abfr_wavkreport where RechnungsNr = {rechnungsNummer}"},
                         {"abfr_subReport_Artikel", $"select * from abfr_wavkabrdetail WHERE RechnungsNr = {rechnungsNummer} AND ArtikelNr is not Null AND PersonalID is Null ORDER BY RechnungsDetailNr"},
-                        {"abfr_subReport_Teile", $"select * from abfr_wavkabrdetail WHERE RechnungsNr = {rechnungsNummer} AND ArtikelNr is not Null AND PersonalID is Null ORDER BY RechnungsDetailNr"}
+                        {"abfr_subReport_Teile", $"select * from abfr_wavkabrdetail WHERE RechnungsNr = {rechnungsNummer} AND PersonalID is not Null AND ArtikelNr is Null ORDER BY RechnungsDetailNr"}
                     }
             Case RechnungsArt.Tanken
                 Return New Dictionary(Of String, String) From
