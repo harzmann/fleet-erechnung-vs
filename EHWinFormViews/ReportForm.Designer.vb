@@ -28,9 +28,13 @@ Partial Class ReportForm
         'StiViewerControl1
         '
         Me.StiViewerControl1.AllowDrop = True
+        Me.StiViewerControl1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.StiViewerControl1.Location = New System.Drawing.Point(13, 13)
         Me.StiViewerControl1.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.StiViewerControl1.Name = "StiViewerControl1"
+        Me.StiViewerControl1.PageViewMode = Stimulsoft.Report.Viewer.StiPageViewMode.SinglePage
         Me.StiViewerControl1.Report = Nothing
         Me.StiViewerControl1.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.StiViewerControl1.ShowZoom = True

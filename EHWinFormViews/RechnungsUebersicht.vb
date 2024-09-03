@@ -1,7 +1,9 @@
 ﻿Imports System.Runtime.InteropServices
 Imports System.Windows.Forms
 Imports ehfleet_classlibrary
+Imports EHWinFormViews.GermanRadGridViewLocalization
 Imports Telerik.WinControls.UI
+Imports Telerik.WinControls.UI.Localization
 
 Public Class RechnungsUebersicht
 
@@ -12,6 +14,7 @@ Public Class RechnungsUebersicht
     Public Sub New(dbConnection As General.Database)
         'ScreenScaling.SetProcessDpiAwareness(_Process_DPI_Awareness.Process_DPI_Unaware)
         _dbConnection = dbConnection
+        RadGridLocalizationProvider.CurrentProvider = New GermanRadGridLocalizationProvider
         ' This call is required by the designer.
         InitializeComponent()
 
