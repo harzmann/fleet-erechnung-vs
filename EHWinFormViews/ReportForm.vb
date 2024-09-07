@@ -1,5 +1,6 @@
 ﻿Imports System.IO
 Imports System.Windows.Forms
+Imports AngleSharp.Css
 Imports ehfleet_classlibrary
 Imports Stimulsoft.Blockly.Blocks.Controls
 Imports Stimulsoft.Report
@@ -21,7 +22,7 @@ Public Class ReportForm
         Stimulsoft.Base.StiLicense.LoadFromFile(Path.Combine(Path.GetDirectoryName(GetType(ReportForm).Assembly.Location), "license.key"))
     End Sub
 
-    Public Sub New(dbConnection As General.Database, rechnungsArt As RechnungsArt, rechnungsNummer As Integer)
+    Public Sub New(dbConnection As General.Database, rechnungsArt As RechnungsArt, rechnungsNummern As List(Of Integer))
         _dataConnection = dbConnection
 
         ' This call is required by the designer.
@@ -51,7 +52,7 @@ Public Class ReportForm
         StiViewerControl1.Report.Dictionary.Databases.Add(New StiOleDbDatabase("OLE DB", DataConnection.ConnectionString))
 
         StiViewerControl1.Report.Dictionary.DataSources.Clear()
-        Dim queries = GetSqlStatements(rechnungsArt, rechnungsNummer)
+        Dim queries = GetSqlStatements(rechnungsArt, rechnungsNummern)
         StiViewerControl1.Report.Dictionary.DataSources.AddRange(queries.Select(Function(statement)
                                                                                     Dim ds = (New StiOleDbSource("OLE DB", statement.Key, statement.Key, statement.Value))
                                                                                     ds.Dictionary = StiViewerControl1.Report.Dictionary
@@ -75,26 +76,27 @@ Public Class ReportForm
     End Function
 
 
-    Private Function GetSqlStatements(rechnungsArt As RechnungsArt, rechnungsNummer As Integer) As Dictionary(Of String, String)
+    Private Function GetSqlStatements(rechnungsArt As RechnungsArt, rechnungsNummern As List(Of Integer)) As Dictionary(Of String, String)
+        Dim inClausePlaceholders As String = String.Join(",", rechnungsNummern.Select(Function(v) $"{v}").ToArray())
         Select Case rechnungsArt
             Case RechnungsArt.Werkstatt
                 Return New Dictionary(Of String, String) From
                     {
-                        {"abfr_wavkreport", $"select * from abfr_wavkreport where RechnungsNr = {rechnungsNummer}"},
-                        {"abfr_subReport_Artikel", $"select * from abfr_wavkabrdetail WHERE RechnungsNr = {rechnungsNummer} AND ArtikelNr is not Null AND PersonalID is Null ORDER BY RechnungsDetailNr"},
-                        {"abfr_subReport_Teile", $"select * from abfr_wavkabrdetail WHERE RechnungsNr = {rechnungsNummer} AND PersonalID is not Null AND ArtikelNr is Null ORDER BY RechnungsDetailNr"}
+                        {"abfr_wavkreport", $"select * from abfr_wavkreport where RechnungsNr IN ({inClausePlaceholders})"},
+                        {"abfr_subReport_Artikel", $"select * from abfr_wavkabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) AND ArtikelNr is not Null AND PersonalID is Null ORDER BY RechnungsDetailNr"},
+                        {"abfr_subReport_Teile", $"select * from abfr_wavkabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) AND PersonalID is not Null AND ArtikelNr is Null ORDER BY RechnungsDetailNr"}
                     }
             Case RechnungsArt.Tanken
                 Return New Dictionary(Of String, String) From
                     {
-                        {"abfr_tankreport", $"select * from abfr_tankreport where RechnungsNr = {rechnungsNummer}"},
-                        {"abfr_subReport_Artikel", $"select * from abfr_tankabrdetail WHERE RechnungsNr = {rechnungsNummer} ORDER BY Tankdatum"}
+                        {"abfr_tankreport", $"select * from abfr_tankreport where RechnungsNr IN ({inClausePlaceholders})"},
+                        {"abfr_subReport_Artikel", $"select * from abfr_tankabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) ORDER BY Tankdatum"}
                     }
             Case RechnungsArt.Manuell
                 Return New Dictionary(Of String, String) From
                     {
-                        {"abfr_mrvkreport", $"select * from abfr_mrvkreport where RechnungsNr = {rechnungsNummer}"},
-                        {"abfr_subReport_Artikel", $"select * from abfr_mrvkabrdetail where RechnungsNr = {rechnungsNummer} AND ArtikelNr is not Null AND PersonalID is Null ORDER BY ArtikelNr"}
+                        {"abfr_mrvkreport", $"select * from abfr_mrvkreport where RechnungsNr IN ({inClausePlaceholders})"},
+                        {"abfr_subReport_Artikel", $"select * from abfr_mrvkabrdetail where RechnungsNr IN ({inClausePlaceholders}) AND ArtikelNr is not Null AND PersonalID is Null ORDER BY ArtikelNr"}
                     }
         End Select
 

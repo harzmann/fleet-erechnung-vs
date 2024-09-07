@@ -2,6 +2,7 @@
 Imports System.Windows.Forms
 Imports ehfleet_classlibrary
 Imports EHWinFormViews.GermanRadGridViewLocalization
+Imports ExcelLibrary.BinaryFileFormat
 Imports Telerik.WinControls.UI
 Imports Telerik.WinControls.UI.Localization
 
@@ -17,6 +18,8 @@ Public Class RechnungsUebersicht
         RadGridLocalizationProvider.CurrentProvider = New GermanRadGridLocalizationProvider
         ' This call is required by the designer.
         InitializeComponent()
+        DataGridView1.SelectionMode = GridViewSelectionMode.FullRowSelect
+        DataGridView1.MultiSelect = True
 
         ' Add any initialization after the InitializeComponent() call.
     End Sub
@@ -63,7 +66,7 @@ Public Class RechnungsUebersicht
             Dim dataTable = CType(dataSource.DataSource, DataTable)
             Dim row = dataTable.Rows(e.RowIndex)
             Dim rechnungsNummer = Convert.ToInt32(row.Item(0))
-            Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, rechnungsNummer)
+            Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New List(Of Integer) From {rechnungsNummer})
             reportForm.ShowDialog()
         End If
     End Sub
@@ -129,4 +132,26 @@ Public Class RechnungsUebersicht
         Return String.Empty
     End Function
 
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
+        Dim dataTable = CType(dataSource.DataSource, DataTable)
+
+        'For Each row In DataGridView1.CurrentView.VisualRows.Where(Function(r) r.GetType() = GetType(GridDataRowElement))
+
+        '    Dim dataRow = dataTable.Rows(row.RowInfo.Index)
+        '    Dim rechnungsNummer = Convert.ToInt32(dataRow.Item(0))
+        '    Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, rechnungsNummer)
+        '    reportForm.Show()
+        'Next
+    End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
+        Dim dataTable = CType(dataSource.DataSource, DataTable)
+        Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, DataGridView1.SelectedRows.Select(Function(row)
+                                                                                                            Dim dataRow = dataTable.Rows(row.Index)
+                                                                                                            Return Convert.ToInt32(dataRow.Item(0))
+                                                                                                        End Function).ToList())
+        reportForm.ShowDialog()
+    End Sub
 End Class

@@ -24,11 +24,13 @@ Partial Class RechnungsUebersicht
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Dim TableViewDefinition1 As Telerik.WinControls.UI.TableViewDefinition = New Telerik.WinControls.UI.TableViewDefinition()
+        Dim TableViewDefinition2 As Telerik.WinControls.UI.TableViewDefinition = New Telerik.WinControls.UI.TableViewDefinition()
         Me.ManuelleRechnungButton = New System.Windows.Forms.RadioButton()
         Me.TankabrechnungButton = New System.Windows.Forms.RadioButton()
         Me.WerkstattRechnungButton = New System.Windows.Forms.RadioButton()
         Me.DataGridView1 = New Telerik.WinControls.UI.RadGridView()
+        Me.Button1 = New System.Windows.Forms.Button()
+        Me.Button2 = New System.Windows.Forms.Button()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.DataGridView1.MasterTemplate, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
@@ -36,7 +38,6 @@ Partial Class RechnungsUebersicht
         'ManuelleRechnungButton
         '
         Me.ManuelleRechnungButton.Appearance = System.Windows.Forms.Appearance.Button
-        Me.ManuelleRechnungButton.AutoSize = True
         Me.ManuelleRechnungButton.Location = New System.Drawing.Point(12, 68)
         Me.ManuelleRechnungButton.Name = "ManuelleRechnungButton"
         Me.ManuelleRechnungButton.Size = New System.Drawing.Size(136, 26)
@@ -86,16 +87,38 @@ Partial Class RechnungsUebersicht
         Me.DataGridView1.MasterTemplate.ClipboardPasteMode = Telerik.WinControls.UI.GridViewClipboardPasteMode.Disable
         Me.DataGridView1.MasterTemplate.EnableFiltering = True
         Me.DataGridView1.MasterTemplate.ShowGroupedColumns = True
-        Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition1
+        Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition2
         Me.DataGridView1.Name = "DataGridView1"
         Me.DataGridView1.Size = New System.Drawing.Size(802, 370)
         Me.DataGridView1.TabIndex = 7
+        '
+        'Button1
+        '
+        Me.Button1.Location = New System.Drawing.Point(865, 68)
+        Me.Button1.Name = "Button1"
+        Me.Button1.Size = New System.Drawing.Size(235, 26)
+        Me.Button1.TabIndex = 8
+        Me.Button1.Text = "Ausgewählte Rechnungen anzeigen"
+        Me.Button1.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        Me.Button1.UseVisualStyleBackColor = True
+        '
+        'Button2
+        '
+        Me.Button2.Location = New System.Drawing.Point(865, 36)
+        Me.Button2.Name = "Button2"
+        Me.Button2.Size = New System.Drawing.Size(235, 26)
+        Me.Button2.TabIndex = 9
+        Me.Button2.Text = "Alle Rechnungen anzeigen"
+        Me.Button2.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        Me.Button2.UseVisualStyleBackColor = True
         '
         'RechnungsUebersicht
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 16.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(1108, 607)
+        Me.Controls.Add(Me.Button2)
+        Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.DataGridView1)
         Me.Controls.Add(Me.ManuelleRechnungButton)
         Me.Controls.Add(Me.TankabrechnungButton)
@@ -105,7 +128,6 @@ Partial Class RechnungsUebersicht
         CType(Me.DataGridView1.MasterTemplate, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
-        Me.PerformLayout()
 
     End Sub
 
@@ -113,4 +135,6 @@ Partial Class RechnungsUebersicht
     Friend WithEvents TankabrechnungButton As Windows.Forms.RadioButton
     Friend WithEvents WerkstattRechnungButton As Windows.Forms.RadioButton
     Public WithEvents DataGridView1 As RadGridView
+    Friend WithEvents Button1 As Windows.Forms.Button
+    Friend WithEvents Button2 As Windows.Forms.Button
 End Class
