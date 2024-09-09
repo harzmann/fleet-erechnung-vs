@@ -48,6 +48,7 @@ Public Class ReportForm
             Return
         End If
 
+        Dim relations = StiViewerControl1.Report.Dictionary.Relations.SaveToJsonObject(Stimulsoft.Base.StiJsonSaveMode.Report)
         StiViewerControl1.Report.Dictionary.Databases.Clear()
         StiViewerControl1.Report.Dictionary.Databases.Add(New StiOleDbDatabase("OLE DB", DataConnection.ConnectionString))
 
@@ -58,6 +59,10 @@ Public Class ReportForm
                                                                                     ds.Dictionary = StiViewerControl1.Report.Dictionary
                                                                                     Return ds
                                                                                 End Function).ToArray)
+
+        StiViewerControl1.Report.Dictionary.Relations.LoadFromJsonObject(relations)
+        StiViewerControl1.Report.Dictionary.RegRelations()
+        StiViewerControl1.Report.Dictionary.SynchronizeRelations()
         StiViewerControl1.Report.Dictionary.Synchronize()
         StiViewerControl1.Report.Render()
 
@@ -84,23 +89,26 @@ Public Class ReportForm
                     {
                         {"abfr_wavkreport", $"select * from abfr_wavkreport where RechnungsNr IN ({inClausePlaceholders})"},
                         {"abfr_subReport_Artikel", $"select * from abfr_wavkabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) AND ArtikelNr is not Null AND PersonalID is Null ORDER BY RechnungsDetailNr"},
-                        {"abfr_subReport_Teile", $"select * from abfr_wavkabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) AND PersonalID is not Null AND ArtikelNr is Null ORDER BY RechnungsDetailNr"}
+                        {"abfr_subReport_Lohn", $"select * from abfr_wavkabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) AND PersonalID Is Not Null And ArtikelNr Is Null ORDER By RechnungsDetailNr"},
+                        {"abfr_subReport_Sonstige", $"select * from abfr_wavkabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) AND PersonalID is Null AND ArtikelNr is Null ORDER BY RechnungsDetailNr"},
+                        {"abfr_subReport_Kategorien", $"SELECT * FROM abfr_wavksummekat WHERE RechnungsNr IN ({inClausePlaceholders})"},
+                        {"abfr_subReport_Mwst", $"SELECT * FROM abfr_wavkabrmwst WHERE RechnungsNr IN ({inClausePlaceholders})"}
                     }
             Case RechnungsArt.Tanken
-                Return New Dictionary(Of String, String) From
+                        Return New Dictionary(Of String, String) From
                     {
                         {"abfr_tankreport", $"select * from abfr_tankreport where RechnungsNr IN ({inClausePlaceholders})"},
                         {"abfr_subReport_Artikel", $"select * from abfr_tankabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) ORDER BY Tankdatum"}
                     }
-            Case RechnungsArt.Manuell
-                Return New Dictionary(Of String, String) From
+                    Case RechnungsArt.Manuell
+                        Return New Dictionary(Of String, String) From
                     {
                         {"abfr_mrvkreport", $"select * from abfr_mrvkreport where RechnungsNr IN ({inClausePlaceholders})"},
                         {"abfr_subReport_Artikel", $"select * from abfr_mrvkabrdetail where RechnungsNr IN ({inClausePlaceholders}) AND ArtikelNr is not Null AND PersonalID is Null ORDER BY ArtikelNr"}
                     }
-        End Select
+                End Select
 
-        Return New Dictionary(Of String, String)
+                Return New Dictionary(Of String, String)
     End Function
 
 End Class
