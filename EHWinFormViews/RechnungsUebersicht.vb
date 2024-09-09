@@ -136,13 +136,14 @@ Public Class RechnungsUebersicht
         Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
         Dim dataTable = CType(dataSource.DataSource, DataTable)
 
-        'For Each row In DataGridView1.CurrentView.VisualRows.Where(Function(r) r.GetType() = GetType(GridDataRowElement))
+        Dim rechnungsNummern = DataGridView1.CurrentView.VisualRows.Where(Function(r) r.GetType() = GetType(GridDataRowElement)).Select(
+        Function(rowInfo)
+            Dim dataRow = dataTable.Rows(rowInfo.RowInfo.Index)
+            Return Convert.ToInt32(dataRow.Item(0))
+        End Function).ToList()
 
-        '    Dim dataRow = dataTable.Rows(row.RowInfo.Index)
-        '    Dim rechnungsNummer = Convert.ToInt32(dataRow.Item(0))
-        '    Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, rechnungsNummer)
-        '    reportForm.Show()
-        'Next
+        Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, rechnungsNummern)
+        reportForm.ShowDialog()
     End Sub
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
