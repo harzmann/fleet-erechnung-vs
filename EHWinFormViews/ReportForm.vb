@@ -60,7 +60,10 @@ Public Class ReportForm
                                                                                     Return ds
                                                                                 End Function).ToArray)
 
-        StiViewerControl1.Report.Dictionary.Relations.LoadFromJsonObject(relations)
+        If relations IsNot Nothing Then
+            StiViewerControl1.Report.Dictionary.Relations.LoadFromJsonObject(relations)
+        End If
+
         StiViewerControl1.Report.Dictionary.RegRelations()
         StiViewerControl1.Report.Dictionary.SynchronizeRelations()
         StiViewerControl1.Report.Dictionary.Synchronize()
