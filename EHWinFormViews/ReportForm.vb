@@ -38,13 +38,13 @@ Public Class ReportForm
             isActive = dataTable.Rows(0).Item(1)
         End If
 
-        StiViewerControl1.Report = StiReport.CreateNewReport
+        'StiViewerControl1.Report = StiReport.CreateNewReport
         If isActive AndAlso File.Exists(reportPath) Then
             StiViewerControl1.Report.Load(reportPath)
         End If
 
         If StiViewerControl1.Report Is Nothing OrElse StiViewerControl1.Report.Dictionary.Databases Is Nothing Then
-            MessageBox.Show("Bericht konnte nicht gefunden oder gelade werden")
+            MessageBox.Show("Bericht konnte nicht gefunden oder geladen werden")
             Return
         End If
 
