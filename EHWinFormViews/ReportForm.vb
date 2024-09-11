@@ -38,8 +38,8 @@ Public Class ReportForm
             isActive = dataTable.Rows(0).Item(1)
         End If
 
-        'StiViewerControl1.Report = StiReport.CreateNewReport
         If isActive AndAlso File.Exists(reportPath) Then
+            StiViewerControl1.Report = StiReport.CreateNewReport
             StiViewerControl1.Report.Load(reportPath)
         End If
 
@@ -49,6 +49,7 @@ Public Class ReportForm
         End If
 
         Dim relations = StiViewerControl1.Report.Dictionary.Relations.SaveToJsonObject(Stimulsoft.Base.StiJsonSaveMode.Report)
+
         StiViewerControl1.Report.Dictionary.Databases.Clear()
         StiViewerControl1.Report.Dictionary.Databases.Add(New StiOleDbDatabase("OLE DB", DataConnection.ConnectionString))
 
@@ -100,11 +101,11 @@ Public Class ReportForm
             Case RechnungsArt.Tanken
                 Return New Dictionary(Of String, String) From
                     {
-                        {"abfr_tankreport", $"select * from abfr_tankreport where RechnungsNr IN ({inClausePlaceholders})"},
-                        {"abfr_tankabrdetail", $"SELECT * FROM abfr_tankabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) ORDER BY RechnungsDetailNr"},
-                        {"TankabrechnungDetail", $"SELECT * FROM TankabrechnungDetail WHERE RechnungsNr IN ({inClausePlaceholders}) AND SpritID is Null AND ArtikelNr is Null ORDER BY RechnungsDetailNr"},
-                        {"abfr_tasummeprod", $"SELECT * FROM abfr_tasummeprod WHERE RechnungsNr IN ({inClausePlaceholders})"},
-                        {"abfr_tankabrmwst", $"SELECT * FROM abfr_tankabrmwst WHERE RechnungsNr IN ({inClausePlaceholders})"}
+                        {"abfr_tankreport", $"select * from abfr_tankreport WHERE RechnungsNr IN ({inClausePlaceholders})"},
+                        {"abfr_subReport_Tankungen", $"SELECT * FROM abfr_tankabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) ORDER BY RechnungsDetailNr"},
+                        {"abfr_subReport_Sonstige", $"SELECT * FROM TankabrechnungDetail WHERE RechnungsNr IN ({inClausePlaceholders}) AND SpritID is Null AND ArtikelNr is Null ORDER BY RechnungsDetailNr"},
+                        {"abfr_subReport_Produktarten", $"SELECT * FROM abfr_tasummeprod WHERE RechnungsNr IN ({inClausePlaceholders})"},
+                        {"abfr_subReport_Mwst", $"SELECT * FROM abfr_tankabrmwst WHERE RechnungsNr IN ({inClausePlaceholders})"}
                     }
             Case RechnungsArt.Manuell
                         Return New Dictionary(Of String, String) From

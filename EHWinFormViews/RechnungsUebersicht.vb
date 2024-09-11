@@ -98,7 +98,7 @@ Public Class RechnungsUebersicht
                     {
                         {"RechnungsNr", "'RG-Nr.'"},
                         {"Rechnungsdatum", "'RG-Datum'"},
-                        {"Rechnungstext", "Anmerkungen"},
+                        {"Anmerkungen", "Anmerkungen"},
                         {"Belegart", "Belegart"},
                         {"KundenNr", "'KD-Nr.'"},
                         {"DebitorNr", "'Debitor-Nr.'"},
@@ -115,7 +115,7 @@ Public Class RechnungsUebersicht
                     {
                         {"RechnungsNr", "'RG-Nr.'"},
                         {"Rechnungsdatum", "'RG-Datum'"},
-                        {"Rechnungstext", "Anmerkungen"},
+                        {"Anmerkungen", "Anmerkungen"},
                         {"Belegart", "Belegart"},
                         {"KundenNr", "'KD-Nr.'"},
                         {"DebitorNr", "'Debitor-Nr.'"},
