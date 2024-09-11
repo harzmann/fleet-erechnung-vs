@@ -98,12 +98,15 @@ Public Class ReportForm
                         {"abfr_subReport_Mwst", $"SELECT * FROM abfr_wavkabrmwst WHERE RechnungsNr IN ({inClausePlaceholders})"}
                     }
             Case RechnungsArt.Tanken
-                        Return New Dictionary(Of String, String) From
+                Return New Dictionary(Of String, String) From
                     {
                         {"abfr_tankreport", $"select * from abfr_tankreport where RechnungsNr IN ({inClausePlaceholders})"},
-                        {"abfr_subReport_Artikel", $"select * from abfr_tankabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) ORDER BY Tankdatum"}
+                        {"abfr_tankabrdetail", $"SELECT * FROM abfr_tankabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) ORDER BY RechnungsDetailNr"},
+                        {"TankabrechnungDetail", $"SELECT * FROM TankabrechnungDetail WHERE RechnungsNr IN ({inClausePlaceholders}) AND SpritID is Null AND ArtikelNr is Null ORDER BY RechnungsDetailNr"},
+                        {"abfr_tasummeprod", $"SELECT * FROM abfr_tasummeprod WHERE RechnungsNr IN ({inClausePlaceholders})"},
+                        {"abfr_tankabrmwst", $"SELECT * FROM abfr_tankabrmwst WHERE RechnungsNr IN ({inClausePlaceholders})"}
                     }
-                    Case RechnungsArt.Manuell
+            Case RechnungsArt.Manuell
                         Return New Dictionary(Of String, String) From
                     {
                         {"abfr_mrvkreport", $"select * from abfr_mrvkreport where RechnungsNr IN ({inClausePlaceholders})"},
