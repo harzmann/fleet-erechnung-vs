@@ -108,12 +108,16 @@ Public Class ReportForm
                         {"abfr_subReport_Mwst", $"SELECT * FROM abfr_tankabrmwst WHERE RechnungsNr IN ({inClausePlaceholders})"}
                     }
             Case RechnungsArt.Manuell
-                        Return New Dictionary(Of String, String) From
+                Return New Dictionary(Of String, String) From
                     {
-                        {"abfr_mrvkreport", $"select * from abfr_mrvkreport where RechnungsNr IN ({inClausePlaceholders})"},
-                        {"abfr_subReport_Artikel", $"select * from abfr_mrvkabrdetail where RechnungsNr IN ({inClausePlaceholders}) AND ArtikelNr is not Null AND PersonalID is Null ORDER BY ArtikelNr"}
+                        {"abfr_mrvkreport", $"select * from abfr_mrvkreport WHERE RechnungsNr IN ({inClausePlaceholders})"},
+                        {"abfr_subReport_Artikel", $"select * from abfr_mrvkabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) AND ArtikelNr is not Null AND PersonalID is Null ORDER BY RechnungsDetailNr"},
+                        {"abfr_subReport_Lohn", $"select * from abfr_mrvkabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) AND PersonalID is not Null AND ArtikelNr is Null ORDER BY RechnungsDetailNr"},
+                        {"abfr_subReport_Sonstige", $"SELECT * FROM abfr_mrvkabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) AND PersonalID is Null AND ArtikelNr is Null ORDER BY RechnungsDetailNr"},
+                        {"abfr_subReport_Kategorien", $"SELECT * FROM abfr_mrvksummekat WHERE RechnungsNr IN ({inClausePlaceholders})"},
+                        {"abfr_subReport_Mwst", $"SELECT * FROM abfr_mrvkabrmwst WHERE RechnungsNr IN ({inClausePlaceholders})"}
                     }
-                End Select
+        End Select
 
                 Return New Dictionary(Of String, String)
     End Function
