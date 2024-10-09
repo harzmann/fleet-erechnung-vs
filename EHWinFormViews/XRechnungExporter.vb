@@ -24,7 +24,7 @@ Public Class XRechnungExporter
         Dim xRechnung = New InvoiceDescriptor()
         xRechnung.InvoiceNo = rechnungsNummer.ToString()
         xRechnung.Currency = CType([Enum].Parse(GetType(CurrencyCodes), sellerData("Währung")), CurrencyCodes)
-        Dim countryCode = CType([Enum].Parse(GetType(CountryCodes), sellerData("LandISO")), CountryCodes)
+        Dim countryCode = CType([Enum].Parse(GetType(CountryCodes), buyerData("LandISO")), CountryCodes)
         xRechnung.SetBuyer(items("Firma"), items("Postleitzahl"), items("Ort"), items("Rechnungsadresse"), countryCode, items("KundenNr"))
         xRechnung.AddBuyerTaxRegistration(items("UStIdNr"), TaxRegistrationSchemeID.VA)
         xRechnung.Buyer.CountrySubdivisionName = items("FirmaOderAbteilung")
@@ -80,27 +80,40 @@ Public Class XRechnungExporter
                 lineItem.SellerAssignedID = items("ArtikelNr")
                 lineItem.BilledQuantity = Decimal.Parse(items("Menge"))
                 lineItem.UnitQuantity = Decimal.Parse(items("Menge"))
-                lineItem.UnitCode = CType([Enum].Parse(GetType(QuantityCodes), GetMeasurementCode(items("ArtikelMEH"))), QuantityCodes)
+                If Not String.IsNullOrWhiteSpace(GetMeasurementCode(items("ArtikelMEH"))) Then
+                    lineItem.UnitCode = CType([Enum].Parse(GetType(QuantityCodes), GetMeasurementCode(items("ArtikelMEH"))), QuantityCodes)
+                End If
+
                 lineItem.LineTotalAmount = Decimal.Parse(items("Gesamtpreis"))
-                lineItem.BillingPeriodStart = DateTime.Parse(items("Datum"))
-                lineItem.BillingPeriodEnd = DateTime.Parse(items("Datum"))
-                Dim baseAmount = Decimal.Parse(items("EPreis"))
-                Dim actualAmount = baseAmount - Decimal.Parse(items("Rabatt"))
-                lineItem.GrossUnitPrice = baseAmount
-                lineItem.NetUnitPrice = actualAmount
-                lineItem.AddTradeAllowanceCharge(True, xRechnung.Currency, baseAmount, actualAmount, "")
-                lineItem.TaxPercent = Decimal.Parse(items("MwStProzent"))
-                lineItem.TaxType = TaxTypes.VAT
-                lineItem.Description = items("ArtikelbezLang")
-            Else
-                Dim lineItem = xRechnung.AddTradeLineItem(items("Bezeichnung"))
+
+                If Not String.IsNullOrWhiteSpace(items("Datum")) Then
+                        lineItem.BillingPeriodStart = DateTime.Parse(items("Datum"))
+                        lineItem.BillingPeriodEnd = DateTime.Parse(items("Datum"))
+                    End If
+
+                    Dim baseAmount = Decimal.Parse(items("EPreis"))
+                    If Not String.IsNullOrWhiteSpace(items("Rabatt")) Then
+                        Dim actualAmount = baseAmount - Decimal.Parse(items("Rabatt"))
+                        lineItem.GrossUnitPrice = baseAmount
+                        lineItem.NetUnitPrice = actualAmount
+                        lineItem.AddTradeAllowanceCharge(True, xRechnung.Currency, baseAmount, actualAmount, "")
+                    Else
+                        lineItem.GrossUnitPrice = baseAmount
+                        lineItem.NetUnitPrice = baseAmount
+                    End If
+
+                    lineItem.TaxPercent = Decimal.Parse(items("MwStProzent"))
+                    lineItem.TaxType = TaxTypes.VAT
+                    lineItem.Description = items("ArtikelbezLang")
+                Else
+                    Dim lineItem = xRechnung.AddTradeLineItem(items("Bezeichnung"))
                 lineItem.SellerAssignedID = items("SpritID")
                 lineItem.BilledQuantity = Decimal.Parse(items("Menge"))
                 lineItem.UnitQuantity = Decimal.Parse(items("Menge"))
                 lineItem.UnitCode = CType([Enum].Parse(GetType(QuantityCodes), GetMeasurementCode(items("Mengeneinheit"))), QuantityCodes)
                 lineItem.LineTotalAmount = Decimal.Parse(items("Gesamtpreis"))
-                lineItem.BillingPeriodStart = DateTime.Parse(items("TankDatum"))
-                lineItem.BillingPeriodEnd = DateTime.Parse(items("TankDatum"))
+                lineItem.BillingPeriodStart = DateTime.Parse(items("Tankdatum"))
+                lineItem.BillingPeriodEnd = DateTime.Parse(items("Tankdatum"))
                 Dim baseAmount = Decimal.Parse(items("EPreis"))
                 Dim actualAmount = baseAmount - Decimal.Parse(items("Rabatt"))
                 lineItem.GrossUnitPrice = baseAmount

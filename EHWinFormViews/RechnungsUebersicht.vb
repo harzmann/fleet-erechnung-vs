@@ -93,6 +93,7 @@ Public Class RechnungsUebersicht
                     _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
                 Catch ex As Exception
                     MessageBox.Show("Speichern fehlgeschlagen!")
+                    Return
                 End Try
 
             End Using
