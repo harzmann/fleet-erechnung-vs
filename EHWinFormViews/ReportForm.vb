@@ -60,7 +60,7 @@ Public Class ReportForm
         End If
 
         If StiViewerControl1.Report Is Nothing OrElse StiViewerControl1.Report.Dictionary.Databases Is Nothing Then
-            MessageBox.Show("Bericht konnte nicht gefunden oder geladen werden")
+            Throw New Exception("Bericht konnte nicht gefunden oder geladen werden")
             Return
         End If
 

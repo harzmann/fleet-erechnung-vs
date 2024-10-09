@@ -98,7 +98,7 @@ Public Class RechnungsUebersicht
 
     Private Function GetSqlStatement(rechnungsArt As RechnungsArt) As String
         Select Case rechnungsArt
-            Case RechnungsArt.Werkstatt
+            Case rechnungsArt.Werkstatt
                 Dim columnMapping As New Dictionary(Of String, String) From
                     {
                         {"RechnungsNr", "'RG-Nr.'"},
@@ -117,7 +117,7 @@ Public Class RechnungsUebersicht
                     }
 
                 Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_wavkliste]"
-            Case RechnungsArt.Tanken
+            Case rechnungsArt.Tanken
                 Dim columnMapping As New Dictionary(Of String, String) From
                     {
                         {"RechnungsNr", "'RG-Nr.'"},
@@ -134,7 +134,7 @@ Public Class RechnungsUebersicht
                     }
 
                 Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_tavkliste]"
-            Case RechnungsArt.Manuell
+            Case rechnungsArt.Manuell
                 Dim columnMapping As New Dictionary(Of String, String) From
                     {
                         {"RechnungsNr", "'RG-Nr.'"},
@@ -166,17 +166,28 @@ Public Class RechnungsUebersicht
             Return Convert.ToInt32(dataRow.Item(0))
         End Function).ToList()
 
-        Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, rechnungsNummern)
-        reportForm.ShowDialog()
+        Try
+            Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, rechnungsNummern)
+            reportForm.ShowDialog()
+        Catch ex As Exception
+            MessageBox.Show(ex.Message)
+        End Try
+
     End Sub
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
         Dim dataTable = CType(dataSource.DataSource, DataTable)
-        Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, DataGridView1.SelectedRows.Select(Function(row)
-                                                                                                            Dim dataRow = dataTable.Rows(row.Index)
-                                                                                                            Return Convert.ToInt32(dataRow.Item(0))
-                                                                                                        End Function).ToList())
-        reportForm.ShowDialog()
+
+        Try
+            Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, DataGridView1.SelectedRows.Select(Function(row)
+                                                                                                                Dim dataRow = dataTable.Rows(row.Index)
+                                                                                                                Return Convert.ToInt32(dataRow.Item(0))
+                                                                                                            End Function).ToList())
+            reportForm.ShowDialog()
+        Catch ex As Exception
+            MessageBox.Show(ex.Message)
+        End Try
+
     End Sub
 End Class
