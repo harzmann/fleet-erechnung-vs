@@ -89,16 +89,22 @@ Public Class RechnungsUebersicht
             Dim result = fileDialog.ShowDialog()
             If result <> DialogResult.OK Then Return
             Using fileStream = System.IO.File.OpenWrite(fileDialog.FileName)
-                _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
+                Try
+                    _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
+                Catch ex As Exception
+                    MessageBox.Show("Speichern fehlgeschlagen!")
+                End Try
+
             End Using
 
+            MessageBox.Show("Speichern erfolgreich!")
         End If
     End Sub
 
 
     Private Function GetSqlStatement(rechnungsArt As RechnungsArt) As String
         Select Case rechnungsArt
-            Case rechnungsArt.Werkstatt
+            Case RechnungsArt.Werkstatt
                 Dim columnMapping As New Dictionary(Of String, String) From
                     {
                         {"RechnungsNr", "'RG-Nr.'"},
@@ -117,7 +123,7 @@ Public Class RechnungsUebersicht
                     }
 
                 Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_wavkliste]"
-            Case rechnungsArt.Tanken
+            Case RechnungsArt.Tanken
                 Dim columnMapping As New Dictionary(Of String, String) From
                     {
                         {"RechnungsNr", "'RG-Nr.'"},
@@ -134,7 +140,7 @@ Public Class RechnungsUebersicht
                     }
 
                 Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_tavkliste]"
-            Case rechnungsArt.Manuell
+            Case RechnungsArt.Manuell
                 Dim columnMapping As New Dictionary(Of String, String) From
                     {
                         {"RechnungsNr", "'RG-Nr.'"},
