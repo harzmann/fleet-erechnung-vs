@@ -20,17 +20,17 @@ namespace EHFleetXRechnung.Schemas
     public class Buyer
     {
         [XmlElement("Buyername")]
-        public Text Buyername { get; set; }
+        public Text BuyerName { get; set; }
         [XmlElement("Buyertradingname")]
-        public Text Buyertradingname { get; set; }
+        public Text BuyerTradingName { get; set; }
         [XmlElement("Buyeridentifier")]
-        public Identifier Buyeridentifier { get; set; }
+        public Identifier BuyerIdentifier { get; set; }
         [XmlElement("Buyerlegalregistrationidentifier")]
-        public Identifier Buyerlegalregistrationidentifier { get; set; }
+        public Identifier BuyerLegalRegistrationIdentifier { get; set; }
         [XmlElement("BuyerVATidentifier")]
         public Identifier BuyerVATidentifier { get; set; }
         [XmlElement("Buyerelectronicaddress")]
-        public Identifier Buyerelectronicaddress { get; set; }
+        public Identifier BuyerElectronicAddress { get; set; }
         [XmlElement("BUYERPOSTALADDRESS")]
         public BuyerPostalAddress BuyerPostalAddress { get; set; }
         [XmlElement("BUYERCONTACT")]
@@ -44,12 +44,12 @@ namespace EHFleetXRechnung.Schemas
         {
             BuyerContact = new BuyerContact();
             BuyerPostalAddress = new BuyerPostalAddress();
-            Buyerelectronicaddress = new Identifier();
+            BuyerElectronicAddress = new Identifier();
             BuyerVATidentifier = new Identifier();
-            Buyerlegalregistrationidentifier = new Identifier();
-            Buyeridentifier = new Identifier();
-            Buyertradingname = new Text();
-            Buyername = new Text();
+            BuyerLegalRegistrationIdentifier = new Identifier();
+            BuyerIdentifier = new Identifier();
+            BuyerTradingName = new Text();
+            BuyerName = new Text();
         }
     }
 }

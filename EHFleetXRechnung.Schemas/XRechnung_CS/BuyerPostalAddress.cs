@@ -20,19 +20,19 @@ namespace EHFleetXRechnung.Schemas
     public class BuyerPostalAddress
     {
         [XmlElement("Buyeraddressline1")]
-        public Text Buyeraddressline1 { get; set; }
+        public Text BuyerAddressline1 { get; set; }
         [XmlElement("Buyeraddressline2")]
-        public Text Buyeraddressline2 { get; set; }
+        public Text BuyerAddressline2 { get; set; }
         [XmlElement("Buyeraddressline3")]
-        public Text Buyeraddressline3 { get; set; }
+        public Text BuyerAddressline3 { get; set; }
         [XmlElement("Buyercity")]
-        public Text Buyercity { get; set; }
+        public Text BuyerCity { get; set; }
         [XmlElement("Buyerpostcode")]
-        public Text Buyerpostcode { get; set; }
+        public Text BuyerPostCode { get; set; }
         [XmlElement("Buyercountrysubdivision")]
-        public Text Buyercountrysubdivision { get; set; }
+        public Text BuyerCountrySubdivision { get; set; }
         [XmlElement("Buyercountrycode")]
-        public Code Buyercountrycode { get; set; }
+        public Code BuyerCountryCode { get; set; }
         [XmlAttribute(Form = System.Xml.Schema.XmlSchemaForm.Qualified, DataType = "token", AttributeName = "id")]
         public string Id { get; set; }
         [XmlAttribute(Form = System.Xml.Schema.XmlSchemaForm.Qualified, DataType = "token", AttributeName = "src")]
@@ -40,13 +40,13 @@ namespace EHFleetXRechnung.Schemas
 
         public BuyerPostalAddress()
         {
-            Buyercountrycode = new Code();
-            Buyercountrysubdivision = new Text();
-            Buyerpostcode = new Text();
-            Buyercity = new Text();
-            Buyeraddressline3 = new Text();
-            Buyeraddressline2 = new Text();
-            Buyeraddressline1 = new Text();
+            BuyerCountryCode = new Code();
+            BuyerCountrySubdivision = new Text();
+            BuyerPostCode = new Text();
+            BuyerCity = new Text();
+            BuyerAddressline3 = new Text();
+            BuyerAddressline2 = new Text();
+            BuyerAddressline1 = new Text();
         }
     }
 }

@@ -11,6 +11,10 @@
     <PackageReference Include="Stimulsoft.Reports.Net" Version="2024.2.6" />
     <PackageReference Include="UI.for.WinForms.AllControls.Net48" Version="2024.3.806" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EHFleetXRechnung.Schemas\EHFleetXRechnung.Schemas.csproj" />
+  </ItemGroup>
 	<ItemGroup>
 		<Reference Include="netstandard" />
 		<Reference Include="mscorlib" />

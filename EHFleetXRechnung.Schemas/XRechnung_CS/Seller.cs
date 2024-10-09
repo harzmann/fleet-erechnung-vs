@@ -21,15 +21,15 @@ namespace EHFleetXRechnung.Schemas
     public class Seller
     {
         [XmlElement("Sellername")]
-        public Text Sellername { get; set; }
+        public Text SellerName { get; set; }
         [XmlElement("Sellertradingname")]
-        public Text Sellertradingname { get; set; }
+        public Text SellerTradingname { get; set; }
         [XmlElement("Selleridentifier")]
         public List<Identifier> Selleridentifier { get; set; }
         [XmlElement("Sellerlegalregistrationidentifier")]
-        public Identifier Sellerlegalregistrationidentifier { get; set; }
+        public Identifier SellerLegalRegistrationIdentifier { get; set; }
         [XmlElement("SellerVATidentifier")]
-        public Identifier SellerVATidentifier { get; set; }
+        public Identifier SellerVATIdentifier { get; set; }
         [XmlElement("Sellertaxregistrationidentifier")]
         public Identifier Sellertaxregistrationidentifier { get; set; }
         [XmlElement("Selleradditionallegalinformation")]
@@ -37,9 +37,9 @@ namespace EHFleetXRechnung.Schemas
         [XmlElement("Sellerelectronicaddress")]
         public Identifier Sellerelectronicaddress { get; set; }
         [XmlElement("SELLERPOSTALADDRESS")]
-        public SellerPostalAddress SELLERPOSTALADDRESS { get; set; }
+        public SellerPostalAddress SellerPostaladdress { get; set; }
         [XmlElement("SELLERCONTACT")]
-        public SellerContact SELLERCONTACT { get; set; }
+        public SellerContact SellerContact { get; set; }
         [XmlAttribute(Form = System.Xml.Schema.XmlSchemaForm.Qualified, DataType = "token", AttributeName = "id")]
         public string Id { get; set; }
         [XmlAttribute(Form = System.Xml.Schema.XmlSchemaForm.Qualified, DataType = "token", AttributeName = "src")]
@@ -47,16 +47,16 @@ namespace EHFleetXRechnung.Schemas
 
         public Seller()
         {
-            SELLERCONTACT = new SellerContact();
-            SELLERPOSTALADDRESS = new SellerPostalAddress();
+            SellerContact = new SellerContact();
+            SellerPostaladdress = new SellerPostalAddress();
             Sellerelectronicaddress = new Identifier();
             Selleradditionallegalinformation = new Text();
             Sellertaxregistrationidentifier = new Identifier();
-            SellerVATidentifier = new Identifier();
-            Sellerlegalregistrationidentifier = new Identifier();
+            SellerVATIdentifier = new Identifier();
+            SellerLegalRegistrationIdentifier = new Identifier();
             Selleridentifier = new List<Identifier>();
-            Sellertradingname = new Text();
-            Sellername = new Text();
+            SellerTradingname = new Text();
+            SellerName = new Text();
         }
     }
 }

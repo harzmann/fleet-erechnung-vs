@@ -23,7 +23,7 @@ namespace EHFleetXRechnung.Schemas
         [XmlElement("Invoicenumber")]
         public Identifier Invoicenumber { get; set; }
         [XmlElement("Invoiceissuedate")]
-        public Date Invoiceissuedate { get; set; }
+        public Date InvoiceIssueDate { get; set; }
         [XmlElement("Invoicetypecode")]
         public Code Invoicetypecode { get; set; }
         [XmlElement("Invoicecurrencycode")]
@@ -31,19 +31,19 @@ namespace EHFleetXRechnung.Schemas
         [XmlElement("VATaccountingcurrencycode")]
         public Code VATaccountingcurrencycode { get; set; }
         [XmlElement("Valueaddedtaxpointdate")]
-        public Date Valueaddedtaxpointdate { get; set; }
+        public Date ValueAddedTaxPointDate { get; set; }
         [XmlElement("Valueaddedtaxpointdatecode")]
         public Code Valueaddedtaxpointdatecode { get; set; }
         [XmlElement("Paymentduedate")]
-        public Date Paymentduedate { get; set; }
+        public Date PaymentDueDate { get; set; }
         [XmlElement("Buyerreference")]
-        public Text Buyerreference { get; set; }
+        public Text BuyerReference { get; set; }
         [XmlElement("Projectreference")]
         public DocumentReference Projectreference { get; set; }
         [XmlElement("Contractreference")]
         public DocumentReference Contractreference { get; set; }
         [XmlElement("Purchaseorderreference")]
-        public DocumentReference Purchaseorderreference { get; set; }
+        public DocumentReference PurchaseOrderReference { get; set; }
         [XmlElement("Salesorderreference")]
         public DocumentReference Salesorderreference { get; set; }
         [XmlElement("Receivingadvicereference")]
@@ -55,7 +55,7 @@ namespace EHFleetXRechnung.Schemas
         [XmlElement("Invoicedobjectidentifier")]
         public Identifier Invoicedobjectidentifier { get; set; }
         [XmlElement("Buyeraccountingreference")]
-        public Text Buyeraccountingreference { get; set; }
+        public Text BuyerAccountingReference { get; set; }
         [XmlElement("Paymentterms")]
         public Text Paymentterms { get; set; }
         [XmlElement("INVOICENOTE")]
@@ -65,19 +65,19 @@ namespace EHFleetXRechnung.Schemas
         [XmlElement("PRECEDINGINVOICEREFERENCE")]
         public List<PrecedingInvoiceReference> PRECEDINGINVOICEREFERENCE { get; set; }
         [XmlElement("SELLER")]
-        public Seller SELLER { get; set; }
+        public Seller Seller { get; set; }
         [XmlElement("BUYER")]
-        public Buyer BUYER { get; set; }
+        public Buyer Buyer { get; set; }
         [XmlElement("PAYEE")]
-        public Payee PAYEE { get; set; }
+        public Payee Payee { get; set; }
         [XmlElement("SELLERTAXREPRESENTATIVEPARTY")]
         public SellerTaxRepresentativeParty SELLERTAXREPRESENTATIVEPARTY { get; set; }
         [XmlElement("DELIVERYINFORMATION")]
-        public DeliveryInformation DELIVERYINFORMATION { get; set; }
+        public DeliveryInformation DeliveryInformation { get; set; }
         [XmlElement("INVOICINGPERIOD")]
         public InvoicingPeriod INVOICINGPERIOD { get; set; }
         [XmlElement("PAYMENTINSTRUCTIONS")]
-        public PaymentInstructions PAYMENTINSTRUCTIONS { get; set; }
+        public PaymentInstructions PaymentInstruction { get; set; }
         [XmlElement("DOCUMENTLEVELALLOWANCES")]
         public List<DocumentLevelAllowances> DOCUMENTLEVELALLOWANCES { get; set; }
         [XmlElement("DOCUMENTLEVELCHARGES")]
@@ -102,34 +102,34 @@ namespace EHFleetXRechnung.Schemas
             DOCUMENTTOTALS = new DocumentTotals();
             DOCUMENTLEVELCHARGES = new List<DocumentLevelCharges>();
             DOCUMENTLEVELALLOWANCES = new List<DocumentLevelAllowances>();
-            PAYMENTINSTRUCTIONS = new PaymentInstructions();
+            PaymentInstruction = new PaymentInstructions();
             INVOICINGPERIOD = new InvoicingPeriod();
-            DELIVERYINFORMATION = new DeliveryInformation();
+            DeliveryInformation = new DeliveryInformation();
             SELLERTAXREPRESENTATIVEPARTY = new SellerTaxRepresentativeParty();
-            PAYEE = new Payee();
-            BUYER = new Buyer();
-            SELLER = new Seller();
+            Payee = new Payee();
+            Buyer = new Buyer();
+            Seller = new Seller();
             PRECEDINGINVOICEREFERENCE = new List<PrecedingInvoiceReference>();
             PROCESSCONTROL = new ProcessControl();
             INVOICENOTE = new List<InvoiceNote>();
             Paymentterms = new Text();
-            Buyeraccountingreference = new Text();
+            BuyerAccountingReference = new Text();
             Invoicedobjectidentifier = new Identifier();
             Tenderorlotreference = new DocumentReference();
             Despatchadvicereference = new DocumentReference();
             Receivingadvicereference = new DocumentReference();
             Salesorderreference = new DocumentReference();
-            Purchaseorderreference = new DocumentReference();
+            PurchaseOrderReference = new DocumentReference();
             Contractreference = new DocumentReference();
             Projectreference = new DocumentReference();
-            Buyerreference = new Text();
-            Paymentduedate = new Date();
+            BuyerReference = new Text();
+            PaymentDueDate = new Date();
             Valueaddedtaxpointdatecode = new Code();
-            Valueaddedtaxpointdate = new Date();
+            ValueAddedTaxPointDate = new Date();
             VATaccountingcurrencycode = new Code();
             Invoicecurrencycode = new Code();
             Invoicetypecode = new Code();
-            Invoiceissuedate = new Date();
+            InvoiceIssueDate = new Date();
             Invoicenumber = new Identifier();
         }
     }

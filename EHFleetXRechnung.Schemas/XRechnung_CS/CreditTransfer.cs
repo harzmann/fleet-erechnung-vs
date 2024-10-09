@@ -21,7 +21,7 @@ namespace EHFleetXRechnung.Schemas
     public class CreditTransfer
     {
         [XmlElement("Paymentaccountidentifier")]
-        public Identifier Paymentaccountidentifier { get; set; }
+        public Identifier PaymentAccountIdentifier { get; set; }
         [XmlElement("Paymentaccountname")]
         public Text Paymentaccountname { get; set; }
         [XmlElement("Paymentserviceprovideridentifier")]
@@ -35,7 +35,7 @@ namespace EHFleetXRechnung.Schemas
         {
             Paymentserviceprovideridentifier = new Identifier();
             Paymentaccountname = new Text();
-            Paymentaccountidentifier = new Identifier();
+            PaymentAccountIdentifier = new Identifier();
         }
     }
 }

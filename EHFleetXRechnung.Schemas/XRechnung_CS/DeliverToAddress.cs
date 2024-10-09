@@ -20,19 +20,19 @@ namespace EHFleetXRechnung.Schemas
     public class DeliverToAddress
     {
         [XmlElement("Delivertoaddressline1")]
-        public Text Delivertoaddressline1 { get; set; }
+        public Text DeliverToAddressline1 { get; set; }
         [XmlElement("Delivertoaddressline2")]
         public Text Delivertoaddressline2 { get; set; }
         [XmlElement("Delivertoaddressline3")]
         public Text Delivertoaddressline3 { get; set; }
         [XmlElement("Delivertocity")]
-        public Text Delivertocity { get; set; }
+        public Text DeliverToCity { get; set; }
         [XmlElement("Delivertopostcode")]
-        public Text Delivertopostcode { get; set; }
+        public Text DelivertoPostCode { get; set; }
         [XmlElement("Delivertocountrysubdivision")]
-        public Text Delivertocountrysubdivision { get; set; }
+        public Text DelivertoCountrySubdivision { get; set; }
         [XmlElement("Delivertocountrycode")]
-        public Code Delivertocountrycode { get; set; }
+        public Code DelivertoCountryCode { get; set; }
         [XmlAttribute(Form = System.Xml.Schema.XmlSchemaForm.Qualified, DataType = "token", AttributeName = "id")]
         public string Id { get; set; }
         [XmlAttribute(Form = System.Xml.Schema.XmlSchemaForm.Qualified, DataType = "token", AttributeName = "src")]
@@ -40,13 +40,13 @@ namespace EHFleetXRechnung.Schemas
 
         public DeliverToAddress()
         {
-            Delivertocountrycode = new Code();
-            Delivertocountrysubdivision = new Text();
-            Delivertopostcode = new Text();
-            Delivertocity = new Text();
+            DelivertoCountryCode = new Code();
+            DelivertoCountrySubdivision = new Text();
+            DelivertoPostCode = new Text();
+            DeliverToCity = new Text();
             Delivertoaddressline3 = new Text();
             Delivertoaddressline2 = new Text();
-            Delivertoaddressline1 = new Text();
+            DeliverToAddressline1 = new Text();
         }
     }
 }

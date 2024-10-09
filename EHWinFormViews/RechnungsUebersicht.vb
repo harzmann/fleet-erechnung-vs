@@ -10,11 +10,14 @@ Public Class RechnungsUebersicht
 
     Private ReadOnly _dbConnection As General.Database
 
+    Private ReadOnly _xmlExporter As XRechnungExporter
+
     Private _rechnungsArt As RechnungsArt
 
     Public Sub New(dbConnection As General.Database)
         'ScreenScaling.SetProcessDpiAwareness(_Process_DPI_Awareness.Process_DPI_Unaware)
         _dbConnection = dbConnection
+        _xmlExporter = New XRechnungExporter(dbConnection)
         RadGridLocalizationProvider.CurrentProvider = New GermanRadGridLocalizationProvider
         ' This call is required by the designer.
         InitializeComponent()
@@ -49,25 +52,46 @@ Public Class RechnungsUebersicht
         DataGridView1.DataSource = dataTableBindingSource
 
         Dim buttonColumn As New GridViewCommandColumn()
-        buttonColumn.Name = "Aktion"
-        buttonColumn.HeaderText = "Aktion"
-        buttonColumn.DefaultText = "X Rechnung"
+        buttonColumn.Name = "Aktion Pdf"
+        buttonColumn.HeaderText = "Aktion Pdf"
+        buttonColumn.DefaultText = "X Rechnung Pdf"
         buttonColumn.UseDefaultText = True
+        DataGridView1.Columns.Add(buttonColumn)
 
-        ' Add the button column to the DataGridView
+        buttonColumn = New GridViewCommandColumn()
+        buttonColumn.Name = "Aktion Xml"
+        buttonColumn.HeaderText = "Aktion Xml"
+        buttonColumn.DefaultText = "X Rechnung Xml"
+        buttonColumn.UseDefaultText = True
         DataGridView1.Columns.Add(buttonColumn)
     End Function
 
     Private Sub DataGridView1_CellClick(sender As Object, e As GridViewCellEventArgs) Handles DataGridView1.CommandCellClick
         ' Check if the click is on a button column
-        If e.ColumnIndex = DataGridView1.Columns("Aktion").Index AndAlso e.RowIndex >= 0 Then
+        If e.RowIndex < 0 Then Return
+
+        Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
+        Dim dataTable = CType(dataSource.DataSource, DataTable)
+        Dim row = dataTable.Rows(e.RowIndex)
+        Dim rechnungsNummer = Convert.ToInt32(row.Item(0))
+
+        If e.ColumnIndex = DataGridView1.Columns("Aktion Pdf").Index Then
             ' Perform the action you want here
-            Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
-            Dim dataTable = CType(dataSource.DataSource, DataTable)
-            Dim row = dataTable.Rows(e.RowIndex)
-            Dim rechnungsNummer = Convert.ToInt32(row.Item(0))
+
             Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New List(Of Integer) From {rechnungsNummer})
             reportForm.ShowDialog()
+        ElseIf e.ColumnIndex = DataGridView1.Columns("Aktion Xml").Index Then
+            Dim fileDialog = New SaveFileDialog
+            fileDialog.Title = "Bitte XRechnung Speicherort auswählen."
+            fileDialog.Filter = "XRechnung|*.xml"
+            fileDialog.AddExtension = True
+            fileDialog.DefaultExt = "xml"
+            Dim result = fileDialog.ShowDialog()
+            If result <> DialogResult.OK Then Return
+            Using fileStream = System.IO.File.OpenWrite(fileDialog.FileName)
+                _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
+            End Using
+
         End If
     End Sub
 

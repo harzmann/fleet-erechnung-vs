@@ -1,13 +1,28 @@
 ﻿Imports System.IO
+Imports System.Net.Security
+Imports System.Runtime.Serialization
 Imports System.Windows.Forms
+Imports System.Xml.Serialization
 Imports AngleSharp.Css
 Imports ehfleet_classlibrary
+Imports EHFleetXRechnung.Schemas
+Imports QiHe.CodeLib
+Imports Stimulsoft.Base
 Imports Stimulsoft.Blockly.Blocks.Controls
+Imports Stimulsoft.Controls.Wpf.ControlsV3
+Imports Stimulsoft.Editor
 Imports Stimulsoft.Report
 Imports Stimulsoft.Report.Dictionary
+Imports Stimulsoft.Report.Export
+Imports Stimulsoft.Report.Helpers
+Imports Stimulsoft.Report.Viewer
+Imports Telerik.WinControls.UI
+Imports Telerik.Windows.Documents.Flow.Model
 
 Public Class ReportForm
     Private _dataConnection As General.Database
+
+    Private _xmlExporter As XRechnungExporter
 
     Public Property DataConnection As General.Database
         Get
@@ -22,13 +37,14 @@ Public Class ReportForm
         Stimulsoft.Base.StiLicense.LoadFromFile(Path.Combine(Path.GetDirectoryName(GetType(ReportForm).Assembly.Location), "license.key"))
     End Sub
 
-    Public Sub New(dbConnection As General.Database, rechnungsArt As RechnungsArt, rechnungsNummern As List(Of Integer))
+    Public Sub New(dbConnection As General.Database, billType As RechnungsArt, rechnungsNummern As List(Of Integer))
         _dataConnection = dbConnection
+        _xmlExporter = New XRechnungExporter(dbConnection)
 
         ' This call is required by the designer.
         InitializeComponent()
 
-        Dim reportParameterId = GetReportParameterId(rechnungsArt)
+        Dim reportParameterId = GetReportParameterId(billType)
 
         Dim dataTable = DataConnection.FillDataTable($"SELECT [Text], [Aktiviert] FROM [EHFleet].[dbo].[Parameter] where ParameterNr = {reportParameterId}")
         Dim reportPath = String.Empty
@@ -54,7 +70,7 @@ Public Class ReportForm
         StiViewerControl1.Report.Dictionary.Databases.Add(New StiOleDbDatabase("OLE DB", DataConnection.ConnectionString))
 
         StiViewerControl1.Report.Dictionary.DataSources.Clear()
-        Dim queries = GetSqlStatements(rechnungsArt, rechnungsNummern)
+        Dim queries = GetSqlStatements(billType, rechnungsNummern)
         StiViewerControl1.Report.Dictionary.DataSources.AddRange(queries.Select(Function(statement)
                                                                                     Dim ds = (New StiOleDbSource("OLE DB", statement.Key, statement.Key, statement.Value))
                                                                                     ds.Dictionary = StiViewerControl1.Report.Dictionary
@@ -68,8 +84,92 @@ Public Class ReportForm
         StiViewerControl1.Report.Dictionary.RegRelations()
         StiViewerControl1.Report.Dictionary.SynchronizeRelations()
         StiViewerControl1.Report.Dictionary.Synchronize()
-        StiViewerControl1.Report.Render()
 
+        AddHandler StiViewerControl1.ProcessExport,
+            Sub(sender As Object, args As EventArgs)
+                ' Check if the user is trying to export as PDF
+                Dim service = TryCast(sender, StiPdfExportService)
+                If service Is Nothing Then Return
+                Using stiFormRunner = StiGuiOptions.GetExportFormRunner("StiPdfExportSetupForm", StiGuiMode.Gdi, Me)
+                    AddHandler stiFormRunner.Complete,
+                    Sub(form As IStiFormRunner, e As StiShowDialogCompleteEvetArgs)
+                        Dim saveDialog = New SaveFileDialog
+                        saveDialog.AddExtension = True
+                        saveDialog.Filter = "pdf-Datei|*.pdf"
+                        saveDialog.Title = "Bitte Speicherort auswählen."
+                        saveDialog.DefaultExt = "pdf"
+                        Dim result = saveDialog.ShowDialog()
+                        If result = DialogResult.OK Then
+                            Try
+                                Using stream = New FileStream(saveDialog.FileName, FileMode.Create)
+                                    Dim settings = New StiPdfExportSettings()
+                                    settings.PageRange = form("PagesRange")
+                                    settings.ImageQuality = form("ImageQuality")
+                                    settings.ImageCompressionMethod = form("ImageCompressionMethod")
+                                    settings.ImageResolution = form("Resolution")
+                                    settings.EmbeddedFonts = form("EmbeddedFonts") AndAlso form("EmbeddedFontsEnabled")
+                                    settings.ExportRtfTextAsImage = form("ExportRtfTextAsImage")
+                                    settings.PasswordInputUser = form("UserPassword")
+                                    settings.PasswordInputOwner = form("OwnerPassword")
+                                    settings.UserAccessPrivileges = form("UserAccessPrivileges")
+                                    settings.KeyLength = form("EncryptionKeyLength")
+                                    settings.GetCertificateFromCryptoUI = form("GetCertificateFromCryptoUI")
+                                    settings.UseDigitalSignature = form("UseDigitalSignature")
+                                    settings.SubjectNameString = form("SubjectNameString")
+                                    settings.PdfComplianceMode = Export.StiPdfComplianceMode.A3
+                                    settings.ImageFormat = form("ImageFormat")
+                                    settings.DitheringType = form("MonochromeDitheringType")
+                                    settings.AllowEditable = form("AllowEditable")
+                                    settings.ImageResolutionMode = form("ImageResolutionMode")
+                                    settings.CertificateThumbprint = form("CertificateThumbprint")
+
+                                    For Each rechnungsNummer In rechnungsNummern
+                                        Using xmlStream = New MemoryStream
+                                            _xmlExporter.CreateBillXml(xmlStream, billType, rechnungsNummer)
+                                            settings.EmbeddedFiles.Add(New StiPdfEmbeddedFileData($"XRechnung_{rechnungsNummer}.xml", $"XRechnung Nr. {rechnungsNummer}", xmlStream.GetBuffer(), "application/xml"))
+                                        End Using
+                                    Next
+
+                                    service.ExportTo(StiViewerControl1.Report, stream, settings)
+
+                                End Using
+
+                            Catch ex As Exception
+                                MessageBox.Show("Fehler beim Speichern!")
+                                Return
+                            End Try
+
+                            MessageBox.Show("Speichern erfolgreich!")
+                        End If
+                    End Sub
+
+                    stiFormRunner.ShowDialog()
+
+
+                End Using
+
+
+                'service.Export(StiViewerControl1.Report)
+                'If viewer.expo = StiExportFormat.Pdf Then
+                '    ' Cancel the default export operation
+                '    e.Cancel = True
+
+                '    ' Get the report
+                '    Dim report = viewer.Report
+
+                '    ' Define custom PDF export settings (like embedding XML for XRechnung)
+                '    Dim pdfSettings As New StiPdfExportSettings()
+                '    pdfSettings.PdfACompliance = StiPdfACompliance.PdfA3B
+
+                '    ' Assume xmlPath is the path to your XRechnung XML file
+                '    pdfSettings.EmbeddedFiles.Add(New StiPdfEmbeddedFile("XRechnung.xml", xmlPath, True))
+
+                '    ' Manually export the report with the custom settings
+                '    report.ExportDocument(StiExportFormat.Pdf, "output.pdf", pdfSettings)
+                'End If
+            End Sub
+
+        StiViewerControl1.Report.Render()
     End Sub
 
     Private Function GetReportParameterId(rechnungsArt As RechnungsArt) As String
@@ -83,7 +183,6 @@ Public Class ReportForm
         End Select
         Return String.Empty
     End Function
-
 
     Private Function GetSqlStatements(rechnungsArt As RechnungsArt, rechnungsNummern As List(Of Integer)) As Dictionary(Of String, String)
         Dim inClausePlaceholders As String = String.Join(",", rechnungsNummern.Select(Function(v) $"{v}").ToArray())
@@ -119,7 +218,7 @@ Public Class ReportForm
                     }
         End Select
 
-                Return New Dictionary(Of String, String)
+        Return New Dictionary(Of String, String)
     End Function
 
 End Class

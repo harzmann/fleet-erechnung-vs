@@ -25,19 +25,19 @@ using System.Collections.Generic;
 public class SellerPostalAddress
 {
         [XmlElement("Selleraddressline1")]
-        public Text Selleraddressline1 { get; set; }
+        public Text SellerAddressline1 { get; set; }
         [XmlElement("Selleraddressline2")]
-        public Text Selleraddressline2 { get; set; }
+        public Text SellerAddressline2 { get; set; }
         [XmlElement("Selleraddressline3")]
-        public Text Selleraddressline3 { get; set; }
+        public Text SellerAddressline3 { get; set; }
         [XmlElement("Sellercity")]
-        public Text Sellercity { get; set; }
+        public Text SellerCity { get; set; }
         [XmlElement("Sellerpostcode")]
-        public Text Sellerpostcode { get; set; }
+        public Text SellerPostcode { get; set; }
         [XmlElement("Sellercountrysubdivision")]
-        public Text Sellercountrysubdivision { get; set; }
+        public Text SellerCountrySubdivision { get; set; }
         [XmlElement("Sellercountrycode")]
-        public Code Sellercountrycode { get; set; }
+        public Code SellerCountryCode { get; set; }
         [XmlAttribute(Form=System.Xml.Schema.XmlSchemaForm.Qualified, DataType="token", AttributeName="id")]
         public string Id { get; set; }
         [XmlAttribute(Form=System.Xml.Schema.XmlSchemaForm.Qualified, DataType="token", AttributeName="src")]
@@ -45,13 +45,13 @@ public class SellerPostalAddress
     
     public SellerPostalAddress()
     {
-        Sellercountrycode = new Code();
-        Sellercountrysubdivision = new Text();
-        Sellerpostcode = new Text();
-        Sellercity = new Text();
-        Selleraddressline3 = new Text();
-        Selleraddressline2 = new Text();
-        Selleraddressline1 = new Text();
+        SellerCountryCode = new Code();
+        SellerCountrySubdivision = new Text();
+        SellerPostcode = new Text();
+        SellerCity = new Text();
+        SellerAddressline3 = new Text();
+        SellerAddressline2 = new Text();
+        SellerAddressline1 = new Text();
     }
 }
 }

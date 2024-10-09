@@ -20,11 +20,11 @@ namespace EHFleetXRechnung.Schemas
     public class BuyerContact
     {
         [XmlElement("Buyercontactpoint")]
-        public Text Buyercontactpoint { get; set; }
+        public Text BuyerContactpoint { get; set; }
         [XmlElement("Buyercontacttelephonenumber")]
-        public Text Buyercontacttelephonenumber { get; set; }
+        public Text BuyerContactTelephonenumber { get; set; }
         [XmlElement("Buyercontactemailaddress")]
-        public Text Buyercontactemailaddress { get; set; }
+        public Text BuyerContactEmailAddress { get; set; }
         [XmlAttribute(Form = System.Xml.Schema.XmlSchemaForm.Qualified, DataType = "token", AttributeName = "id")]
         public string Id { get; set; }
         [XmlAttribute(Form = System.Xml.Schema.XmlSchemaForm.Qualified, DataType = "token", AttributeName = "src")]
@@ -32,9 +32,9 @@ namespace EHFleetXRechnung.Schemas
 
         public BuyerContact()
         {
-            Buyercontactemailaddress = new Text();
-            Buyercontacttelephonenumber = new Text();
-            Buyercontactpoint = new Text();
+            BuyerContactEmailAddress = new Text();
+            BuyerContactTelephonenumber = new Text();
+            BuyerContactpoint = new Text();
         }
     }
 }

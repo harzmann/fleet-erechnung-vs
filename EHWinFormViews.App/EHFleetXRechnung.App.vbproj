@@ -18,7 +18,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\EHFleetXRechnung.Schemas\EHFleetXRechnung.Schemas.csproj" />
     <ProjectReference Include="..\EHWinFormViews\EHFleetXRechnung.Viewer.vbproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Xml.Serialization" />
   </ItemGroup>
 
 </Project>

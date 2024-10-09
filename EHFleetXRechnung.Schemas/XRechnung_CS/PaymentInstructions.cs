@@ -27,7 +27,7 @@ namespace EHFleetXRechnung.Schemas
         [XmlElement("Remittanceinformation")]
         public Text Remittanceinformation { get; set; }
         [XmlElement("CREDITTRANSFER")]
-        public List<CreditTransfer> CREDITTRANSFER { get; set; }
+        public List<CreditTransfer> CreditTransfer { get; set; }
         [XmlElement("PAYMENTCARDINFORMATION")]
         public PaymentCardInformation PAYMENTCARDINFORMATION { get; set; }
         [XmlElement("DIRECTDEBIT")]
@@ -41,7 +41,7 @@ namespace EHFleetXRechnung.Schemas
         {
             DIRECTDEBIT = new DirectDebit();
             PAYMENTCARDINFORMATION = new PaymentCardInformation();
-            CREDITTRANSFER = new List<CreditTransfer>();
+            CreditTransfer = new List<CreditTransfer>();
             Remittanceinformation = new Text();
             Paymentmeanstext = new Text();
             Paymentmeanstypecode = new Code();

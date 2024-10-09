@@ -24,9 +24,9 @@ namespace EHFleetXRechnung.Schemas
         [XmlElement("Delivertolocationidentifier")]
         public Identifier Delivertolocationidentifier { get; set; }
         [XmlElement("Actualdeliverydate")]
-        public Date Actualdeliverydate { get; set; }
+        public Date ActualDeliveryDate { get; set; }
         [XmlElement("DELIVERTOADDRESS")]
-        public DeliverToAddress DELIVERTOADDRESS { get; set; }
+        public DeliverToAddress DeliverToAddress { get; set; }
         [XmlAttribute(Form = System.Xml.Schema.XmlSchemaForm.Qualified, DataType = "token", AttributeName = "id")]
         public string Id { get; set; }
         [XmlAttribute(Form = System.Xml.Schema.XmlSchemaForm.Qualified, DataType = "token", AttributeName = "src")]
@@ -34,8 +34,8 @@ namespace EHFleetXRechnung.Schemas
 
         public DeliveryInformation()
         {
-            DELIVERTOADDRESS = new DeliverToAddress();
-            Actualdeliverydate = new Date();
+            DeliverToAddress = new DeliverToAddress();
+            ActualDeliveryDate = new Date();
             Delivertolocationidentifier = new Identifier();
             Delivertopartyname = new Text();
         }

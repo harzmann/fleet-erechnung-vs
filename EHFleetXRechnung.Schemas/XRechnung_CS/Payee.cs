@@ -20,11 +20,11 @@ namespace EHFleetXRechnung.Schemas
     public class Payee
     {
         [XmlElement("Payeename")]
-        public Text Payeename { get; set; }
+        public Text PayeeName { get; set; }
         [XmlElement("Payeeidentifier")]
-        public Identifier Payeeidentifier { get; set; }
+        public Identifier PayeeIdentifier { get; set; }
         [XmlElement("Payeelegalregistrationidentifier")]
-        public Identifier Payeelegalregistrationidentifier { get; set; }
+        public Identifier PayeeLegalRegistrationIdentifier { get; set; }
         [XmlAttribute(Form = System.Xml.Schema.XmlSchemaForm.Qualified, DataType = "token", AttributeName = "id")]
         public string Id { get; set; }
         [XmlAttribute(Form = System.Xml.Schema.XmlSchemaForm.Qualified, DataType = "token", AttributeName = "src")]
@@ -32,9 +32,9 @@ namespace EHFleetXRechnung.Schemas
 
         public Payee()
         {
-            Payeelegalregistrationidentifier = new Identifier();
-            Payeeidentifier = new Identifier();
-            Payeename = new Text();
+            PayeeLegalRegistrationIdentifier = new Identifier();
+            PayeeIdentifier = new Identifier();
+            PayeeName = new Text();
         }
     }
 }
