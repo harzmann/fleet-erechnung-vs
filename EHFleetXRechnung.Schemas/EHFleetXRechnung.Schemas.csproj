@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>C:\Repos\ehfleet_vb6guidll\EHFleet.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\EHFleet.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
 </Project>
