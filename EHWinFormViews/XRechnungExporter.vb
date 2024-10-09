@@ -1,6 +1,8 @@
 ﻿Imports ehfleet_classlibrary
 Imports EHFleetXRechnung.Schemas
+Imports s2industries.ZUGFeRD
 Imports Stimulsoft.Controls.Win.DotNetBar
+Imports Stimulsoft.Report
 Imports Stimulsoft.Report.Export
 Imports System.IO
 Imports System.Xml.Serialization
@@ -13,32 +15,20 @@ Public Class XRechnungExporter
     End Sub
 
     Public Sub CreateBillXml(xmlStream As Stream, billType As RechnungsArt, rechnungsNummer As Integer)
-        Dim serializer = New XmlSerializer(GetType(Invoice))
+        'Dim serializer = New XmlSerializer(GetType(Invoice))
         Dim sqls = GetSqlStatements(billType, New List(Of Integer) From {rechnungsNummer})
         Dim items = GetItemsFromQuery(GetSqlStatementForBill(billType, New List(Of Integer) From {rechnungsNummer}))
         Dim vatData = GetItemsFromQuery(GetSqlStatementForVat(billType, New List(Of Integer) From {rechnungsNummer}))
         Dim sellerData = GetSellerParameter(billType)
         Dim buyerData = GetBuyerData(items("KundenNr"))
-        Dim xRechnung = New Invoice()
-        xRechnung.Invoicenumber.Value = rechnungsNummer.ToString()
-        xRechnung.Invoicecurrencycode.Value = sellerData("Währung")
-        xRechnung.Buyer.BuyerName.Value = items("Firma")
-        xRechnung.Buyer.BuyerPostalAddress.BuyerAddressline1.Value = items("Rechnungsadresse")
-        'xRechnung.Buyer.BuyerPostalAddress.BuyerAddressline2.Value = items("")
-        'xRechnung.Buyer.BuyerPostalAddress.BuyerAddressline3.Value = items("")
-        xRechnung.Buyer.BuyerPostalAddress.BuyerCity.Value = items("Ort")
-        xRechnung.Buyer.BuyerPostalAddress.BuyerCountrySubdivision.Value = items("FirmaOderAbteilung")
-        xRechnung.Buyer.BuyerPostalAddress.BuyerPostCode.Value = items("Postleitzahl")
-        xRechnung.Buyer.BuyerPostalAddress.BuyerCountryCode.Value = buyerData("LandISO")
-
-        xRechnung.Buyer.BuyerIdentifier.Value = items("KundenNr")
-        xRechnung.Buyer.BuyerVATidentifier.Value = items("UStIdNr")
-        xRechnung.Buyer.BuyerContact.BuyerContactpoint.Value = items("Kontakt")
-        xRechnung.Buyer.BuyerContact.BuyerContactEmailAddress.Value = items("EmailAdresse")
-        xRechnung.Buyer.BuyerContact.BuyerContactTelephonenumber.Value = items("Telefonnummer")
-        xRechnung.Buyer.BuyerElectronicAddress.Value = buyerData("EmailRechnung")
-        'xRechnung.Buyer.BuyerLegalRegistrationIdentifier.Value = items("")
-        xRechnung.BuyerAccountingReference.Value = items("KostenstelleKunde")
+        Dim xRechnung = New InvoiceDescriptor()
+        xRechnung.InvoiceNo = rechnungsNummer.ToString()
+        xRechnung.Currency = CType([Enum].Parse(GetType(CurrencyCodes), sellerData("Währung")), CurrencyCodes)
+        Dim countryCode = CType([Enum].Parse(GetType(CountryCodes), sellerData("LandISO")), CountryCodes)
+        xRechnung.SetBuyer(items("Firma"), items("Postleitzahl"), items("Ort"), items("Rechnungsadresse"), countryCode, items("KundenNr"))
+        xRechnung.AddBuyerTaxRegistration(items("UStIdNr"), TaxRegistrationSchemeID.VA)
+        xRechnung.Buyer.CountrySubdivisionName = items("FirmaOderAbteilung")
+        xRechnung.SetBuyerContact(items("Kontakt"), "", items("EmailAdresse"), items("Telefonnummer"))
         Dim referenceColumn = ""
         Select Case billType
             Case RechnungsArt.Werkstatt
@@ -49,11 +39,8 @@ Public Class XRechnungExporter
                 referenceColumn = "Anmerkungen"
         End Select
 
-        xRechnung.BuyerReference.Value = items(referenceColumn)
-        xRechnung.InvoiceIssueDate.Value = items("Rechnungsdatum")
-        'xRechnung.Payee.PayeeIdentifier.Value = items("DebitorNr")
-        'xRechnung.Payee.PayeeLegalRegistrationIdentifier.Value = items("")
-        xRechnung.Payee.PayeeName.Value = sellerData("Firma") 'Auftraggnehmer, Zahlungsempfaenger
+        xRechnung.PaymentReference = items(referenceColumn)
+        xRechnung.InvoiceDate = items("Rechnungsdatum")
 
         Dim dueDate = ""
         Try
@@ -64,102 +51,69 @@ Public Class XRechnungExporter
             dueDate = items("Rechnungsdatum")
         End Try
 
-        xRechnung.PaymentDueDate.Value = dueDate
-        Dim payment = New CreditTransfer()
-        payment.PaymentAccountIdentifier.Value = sellerData("Modul2") 'IBAN
-        xRechnung.PaymentInstruction.Paymentmeanstext.Value = "IBAN"
-        xRechnung.PaymentInstruction.Paymentmeanstypecode.Value = "58"
+        xRechnung.SetTradePaymentTerms("Fälligkeit", dueDate)
+        xRechnung.SetPaymentMeans(PaymentMeansTypeCodes.CreditTransfer, "IBAN", sellerData("Modul2"))
 
-        xRechnung.PaymentInstruction.CreditTransfer.Add(payment)
-
-        xRechnung.Seller.SellerName.Value = sellerData("Firma") 'Auftraggnehmer
-        xRechnung.Seller.SellerVATIdentifier.Value = sellerData("Steuernummer")
-        'xRechnung.Seller.SellerLegalRegistrationIdentifier.Value = sellerData("")
-        'xRechnung.Seller.SellerContact.SellerContactPoint.Value = sellerData("")
-        'xRechnung.Seller.SellerContact.SellerContactEmailAddress.Value = sellerData("")
-        xRechnung.Seller.SellerContact.SellerContactTelephoneNumber.Value = sellerData("Telefon")
-        'xRechnung.Seller.SellerTradingname.Value = sellerData("Firma")
-        xRechnung.Seller.SellerPostaladdress.SellerAddressline1.Value = sellerData("Straße")
-        'xRechnung.Seller.SellerPostaladdress.SellerAddressline2.Value = sellerData("")
-        'xRechnung.Seller.SellerPostaladdress.SellerAddressline3.Value = sellerData("")
-        xRechnung.Seller.SellerPostaladdress.SellerCity.Value = sellerData("Ort")
-        xRechnung.Seller.SellerPostaladdress.SellerPostcode.Value = sellerData("PLZ")
-        'xRechnung.Seller.SellerPostaladdress.SellerCountrySubdivision.Value = sellerData("")
-        xRechnung.Seller.SellerPostaladdress.SellerCountryCode.Value = "DE"
+        xRechnung.SetSeller(sellerData("Firma"), sellerData("PLZ"), sellerData("Ort"), sellerData("Straße"), CountryCodes.DE)
+        xRechnung.AddSellerTaxRegistration(sellerData("Steuernummer"), TaxRegistrationSchemeID.FC)
 
         Dim poReference As String = String.Empty
         items.TryGetValue("WANr", poReference)
-        xRechnung.PurchaseOrderReference.Value = poReference
-        xRechnung.ValueAddedTaxPointDate.Value = items("Rechnungsdatum")
-        'xRechnung.Salesorderreference.Value = items("")
-        xRechnung.DeliveryInformation.ActualDeliveryDate.Value = items("Lieferdatum")
-        xRechnung.DeliveryInformation.DeliverToAddress.DeliverToAddressline1.Value = items("Rechnungsadresse")
-        'xRechnung.DeliveryInformation.DeliverToAddress.Delivertoaddressline2 = items("")
-        'xRechnung.DeliveryInformation.DeliverToAddress.Delivertoaddressline3 = items("")
-        xRechnung.DeliveryInformation.DeliverToAddress.DeliverToCity.Value = items("Ort")
-        'xRechnung.DeliveryInformation.DeliverToAddress.DelivertoCountrySubdivision = items("")
-        xRechnung.DeliveryInformation.DeliverToAddress.DelivertoPostCode.Value = items("Postleitzahl")
-        xRechnung.DeliveryInformation.DeliverToAddress.DelivertoCountryCode.Value = buyerData("LandISO")
+        xRechnung.ReferenceOrderNo = poReference
+        xRechnung.ActualDeliveryDate = items("Lieferdatum")
 
         Dim vatAmount As Decimal
         Dim netSum As Decimal
         items.TryGetValue("Mehrwertsteuer", vatAmount)
         items.TryGetValue("Summe", netSum)
 
-        xRechnung.DOCUMENTTOTALS.Amountdueforpayment.Value = (vatAmount + netSum).ToString("F2")
-        xRechnung.DOCUMENTTOTALS.InvoicetotalamountwithoutVAT.Value = items("Summe")
-        xRechnung.DOCUMENTTOTALS.InvoicetotalVATamount.Value = items("Mehrwertsteuer")
+        xRechnung.DuePayableAmount = (vatAmount + netSum).ToString("F2")
+        xRechnung.TaxBasisAmount = items("Summe")
+        xRechnung.TaxTotalAmount = items("Mehrwertsteuer")
         'add line items
         For Each query In sqls
             items = GetItemsFromQuery(query)
             If Not items.Any() Then Continue For
-            Dim lineItem = New InvoiceLine
-            If billType <> RechnungsArt.Tanken Then
-                lineItem.Invoicelineidentifier.Value = items("ArtikelNr")
-                lineItem.Invoicelinenote.Value = items("Artikelbez")
-                lineItem.Invoicedquantity.Value = items("Menge")
-                lineItem.Invoicedquantityunitofmeasurecode.Value = GetMeasurementCode(items("ArtikelMEH"))
-                lineItem.Invoicelinenetamount.Value = items("Gesamtpreis")
-                lineItem.INVOICELINEPERIOD.Invoicelineperiodstartdate.Value = items("Datum")
-                lineItem.INVOICELINEPERIOD.Invoicelineperiodenddate.Value = items("Datum")
-                Dim rabatt = New InvoiceLineAllowances
-                rabatt.Invoicelineallowanceamount.Value = items("Rabatt")
-                lineItem.INVOICELINEALLOWANCES.Add(rabatt)
-                lineItem.PRICEDETAILS.Itemgrossprice.Value = items("EPreis")
-                Dim lineVat = New LineVatInformation
-                lineVat.InvoiceditemVATrate.Value = items("MwStProzent")
-                lineVat.InvoiceditemVATcategorycode.Value = "S"
-                lineItem.LINEVATINFORMATION.Add(lineVat)
-                lineItem.ITEMINFORMATION.Itemname.Value = items("Artikelbez")
-                lineItem.ITEMINFORMATION.Itemdescription.Value = items("ArtikelbezLang")
-                lineItem.ITEMINFORMATION.ItemSellersidentifier.Value = items("ArtikelNr")
-                lineItem.ITEMINFORMATION.Itemcountryoforigin.Value = "DE"
-            Else
-                lineItem.Invoicelineidentifier.Value = items("SpritID")
-                lineItem.Invoicelinenote.Value = items("Bezeichnung")
-                lineItem.Invoicedquantity.Value = items("Menge")
-                lineItem.Invoicedquantityunitofmeasurecode.Value = GetMeasurementCode(items("Mengeneinheit"))
-                lineItem.Invoicelinenetamount.Value = items("Gesamtpreis")
-                lineItem.INVOICELINEPERIOD.Invoicelineperiodstartdate.Value = items("Tankdatum")
-                lineItem.INVOICELINEPERIOD.Invoicelineperiodenddate.Value = items("Tankdatum")
-                Dim rabatt = New InvoiceLineAllowances
-                rabatt.Invoicelineallowanceamount.Value = items("Rabatt")
-                lineItem.INVOICELINEALLOWANCES.Add(rabatt)
-                lineItem.PRICEDETAILS.Itemgrossprice.Value = items("EPreis")
-                Dim lineVat = New LineVatInformation
-                lineVat.InvoiceditemVATrate.Value = items("MwStProzent")
-                lineVat.InvoiceditemVATcategorycode.Value = "S"
-                lineItem.LINEVATINFORMATION.Add(lineVat)
-                lineItem.ITEMINFORMATION.Itemname.Value = items("Bezeichnung")
-                lineItem.ITEMINFORMATION.Itemdescription.Value = items("Bezeichnung")
-                lineItem.ITEMINFORMATION.ItemSellersidentifier.Value = items("SpritID")
-                lineItem.ITEMINFORMATION.Itemcountryoforigin.Value = "DE"
-            End If
 
-            xRechnung.INVOICELINE.Add(lineItem)
+            If billType <> RechnungsArt.Tanken Then
+                Dim lineItem = xRechnung.AddTradeLineItem(items("Artikelbez"))
+                lineItem.SellerAssignedID = items("ArtikelNr")
+                lineItem.BilledQuantity = Decimal.Parse(items("Menge"))
+                lineItem.UnitQuantity = Decimal.Parse(items("Menge"))
+                lineItem.UnitCode = CType([Enum].Parse(GetType(QuantityCodes), GetMeasurementCode(items("ArtikelMEH"))), QuantityCodes)
+                lineItem.LineTotalAmount = Decimal.Parse(items("Gesamtpreis"))
+                lineItem.BillingPeriodStart = DateTime.Parse(items("Datum"))
+                lineItem.BillingPeriodEnd = DateTime.Parse(items("Datum"))
+                Dim baseAmount = Decimal.Parse(items("EPreis"))
+                Dim actualAmount = baseAmount - Decimal.Parse(items("Rabatt"))
+                lineItem.GrossUnitPrice = baseAmount
+                lineItem.NetUnitPrice = actualAmount
+                lineItem.AddTradeAllowanceCharge(True, xRechnung.Currency, baseAmount, actualAmount, "")
+                lineItem.TaxPercent = Decimal.Parse(items("MwStProzent"))
+                lineItem.TaxType = TaxTypes.VAT
+                lineItem.Description = items("ArtikelbezLang")
+            Else
+                Dim lineItem = xRechnung.AddTradeLineItem(items("Bezeichnung"))
+                lineItem.SellerAssignedID = items("SpritID")
+                lineItem.BilledQuantity = Decimal.Parse(items("Menge"))
+                lineItem.UnitQuantity = Decimal.Parse(items("Menge"))
+                lineItem.UnitCode = CType([Enum].Parse(GetType(QuantityCodes), GetMeasurementCode(items("Mengeneinheit"))), QuantityCodes)
+                lineItem.LineTotalAmount = Decimal.Parse(items("Gesamtpreis"))
+                lineItem.BillingPeriodStart = DateTime.Parse(items("TankDatum"))
+                lineItem.BillingPeriodEnd = DateTime.Parse(items("TankDatum"))
+                Dim baseAmount = Decimal.Parse(items("EPreis"))
+                Dim actualAmount = baseAmount - Decimal.Parse(items("Rabatt"))
+                lineItem.GrossUnitPrice = baseAmount
+                lineItem.NetUnitPrice = actualAmount
+                lineItem.AddTradeAllowanceCharge(True, xRechnung.Currency, baseAmount, actualAmount, "")
+                lineItem.TaxPercent = Decimal.Parse(items("MwStProzent"))
+                lineItem.TaxType = TaxTypes.VAT
+                lineItem.Description = items("Bezeichnung")
+            End If
         Next
 
-        serializer.Serialize(xmlStream, xRechnung)
+        xRechnung.Save(xmlStream, ZUGFeRDVersion.Version22, Profile.XRechnung, ZUGFeRDFormats.UBL)
+        'serializer.Serialize(xmlStream, xRechnung)
     End Sub
 
     Private Function GetMeasurementCode(type As String) As String
