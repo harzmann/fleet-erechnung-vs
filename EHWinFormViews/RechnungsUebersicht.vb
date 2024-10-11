@@ -88,7 +88,7 @@ Public Class RechnungsUebersicht
             fileDialog.DefaultExt = "xml"
             Dim result = fileDialog.ShowDialog()
             If result <> DialogResult.OK Then Return
-            Using fileStream = System.IO.File.OpenWrite(fileDialog.FileName)
+            Using fileStream = System.IO.File.Create(fileDialog.FileName)
                 Try
                     _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
                 Catch ex As Exception

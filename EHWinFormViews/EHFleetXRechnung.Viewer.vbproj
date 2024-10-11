@@ -20,12 +20,23 @@
     <PackageReference Include="UI.for.WinForms.AllControls.Net48" Version="2024.3.806">
 		<Private>True</Private>
     </PackageReference>
-    <PackageReference Include="ZUGFeRD-csharp" Version="14.1.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\EHFleetXRechnung.Schemas\EHFleetXRechnung.Schemas.csproj" />
-  </ItemGroup>
+	<Target Name="ILRepacker" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+		<ItemGroup>
+			<InputAssemblies Include="$(TargetPath)" Condition="'%(filename)' != 'mscorlib' And '%(filename)' != 'System.Drawing' And '%(filename)' != 'Telerik.WinControls.RadSpreadsheet'" />
+			<!--<InputAssemblies Include="@(ReferencePathWithRefAssemblies)" Condition="'%(filename)' != 'mscorlib' And '%(filename)' != 'System.Drawing' And '%(filename)' != 'Telerik.WinControls.RadSpreadsheet'" />-->
+			<InputAssemblies Include="@(ReferencePathWithRefAssemblies)" Condition="'%(filename)' == 'Stimulsoft.Report' Or '%(filename)' == 'Stimulsoft.Base' Or '%(filename)' == 'Telerik.WinControls' Or '%(filename)' == 'Telerik.WinControls.UI'" />
+			<LibraryPath Include="$(TargetPath)" />
+			<LibraryPath Include="%(ReferencePathWithRefAssemblies.RelativeDir)" />
+		</ItemGroup>
+
+		<ILRepack AllowDuplicateResources="false" KeyFile="..\EHFleet.snk" DebugInfo="false" Internalize="false" InputAssemblies="@(InputAssemblies)" LibraryPath="@(LibraryPath)" OutputFile="$(TargetPath)" Parallel="true" TargetKind="SameAsPrimaryAssembly" Verbose="true" LogFile="repack.log" />
+	</Target>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\ZUGFeRD\ZUGFeRD.csproj" />
+	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="netstandard" />
 		<Reference Include="mscorlib" />
