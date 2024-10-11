@@ -377,6 +377,39 @@ namespace s2industries.ZUGFeRD
                 Writer.WriteValue(_formatDecimal(tradeLineItem.LineTotalAmount));
                 Writer.WriteEndElement();
 
+                IList<TradeAllowanceCharge> charges = tradeLineItem.GetTradeAllowanceCharges();
+                if (charges.Count > 0) // only one charge possible in UBL
+                {
+                    Writer.WriteStartElement("cac:AllowanceCharge");
+
+                    Writer.WriteElementString("cbc:ChargeIndicator", charges[0].ChargeIndicator ? "true" : "false");
+
+                    //Writer.WriteStartElement("cbc:MultiplierFactorNumeric"); // BT-138
+                    //Writer.WriteValue(_formatDecimal(charges[0].ChargePercentage));
+                    //Writer.WriteEndElement();
+
+                    if (!string.IsNullOrWhiteSpace(charges[0].Reason))
+                    {
+                        Writer.WriteStartElement("cbc:AllowanceChargeReason");
+                        Writer.WriteValue(charges[0].Reason);
+                        Writer.WriteEndElement();
+                    }
+
+                    Writer.WriteStartElement("cbc:Amount"); // BT-147
+                    Writer.WriteAttributeString("currencyID", this.Descriptor.Currency.EnumToString());
+                    Writer.WriteValue(_formatDecimal(charges[0].ActualAmount));
+                    Writer.WriteEndElement();
+
+                    if (charges[0].BasisAmount != null)
+                    {
+                        Writer.WriteStartElement("cbc:BaseAmount"); // BT-148
+                        Writer.WriteAttributeString("currencyID", this.Descriptor.Currency.EnumToString());
+                        Writer.WriteValue(_formatDecimal(charges[0].BasisAmount));
+                        Writer.WriteEndElement();
+                    }
+
+                    Writer.WriteEndElement(); // !AllowanceCharge()
+                }
 
                 Writer.WriteStartElement("cac:Item");
 
@@ -417,7 +450,7 @@ namespace s2industries.ZUGFeRD
 
                 Writer.WriteStartElement("cbc:PriceAmount");
                 Writer.WriteAttributeString("currencyID", this.Descriptor.Currency.EnumToString());
-                Writer.WriteValue(_formatDecimal(tradeLineItem.NetUnitPrice.Value));
+                Writer.WriteValue(_formatDecimal(tradeLineItem.GrossUnitPrice.Value));
                 Writer.WriteEndElement();
 
                 if (tradeLineItem.UnitQuantity != null)
@@ -426,30 +459,6 @@ namespace s2industries.ZUGFeRD
                     Writer.WriteAttributeString("unitCode", tradeLineItem.UnitCode.EnumToString()); // BT-150
                     Writer.WriteValue(tradeLineItem.UnitQuantity.ToString());
                     Writer.WriteEndElement();
-                }
-
-                IList<TradeAllowanceCharge> charges = tradeLineItem.GetTradeAllowanceCharges();
-                if (charges.Count > 0) // only one charge possible in UBL
-                {
-                    Writer.WriteStartElement("cac:AllowanceCharge");
-
-                    Writer.WriteElementString("cbc:ChargeIndicator", charges[0].ChargeIndicator ? "true" : "false");
-
-                    Writer.WriteStartElement("cbc:MultiplierFactorNumeric"); // BT-138
-                    Writer.WriteValue(_formatDecimal(charges[0].ChargePercentage));
-                    Writer.WriteEndElement();
-
-                    Writer.WriteStartElement("cbc:Amount"); // BT-147
-                    Writer.WriteAttributeString("currencyID", this.Descriptor.Currency.EnumToString());
-                    Writer.WriteValue(_formatDecimal(charges[0].ActualAmount));
-                    Writer.WriteEndElement();
-
-                    Writer.WriteStartElement("cbc:BaseAmount"); // BT-148
-                    Writer.WriteAttributeString("currencyID", this.Descriptor.Currency.EnumToString());
-                    Writer.WriteValue(_formatDecimal(charges[0].BasisAmount));
-                    Writer.WriteEndElement();
-
-                    Writer.WriteEndElement(); // !AllowanceCharge()
                 }
 
                 Writer.WriteEndElement(); //!Price

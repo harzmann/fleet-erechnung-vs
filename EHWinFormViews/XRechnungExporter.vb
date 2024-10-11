@@ -116,13 +116,13 @@ Public Class XRechnungExporter
                     Dim baseAmount = Decimal.Parse(lineItemData("EPreis"))
                     If Not String.IsNullOrWhiteSpace(lineItemData("Rabatt")) Then
                         Dim percentage = Decimal.Parse(lineItemData("Rabatt"))
-                        Dim discount = baseAmount * percentage
+                        Dim discount = lineItem.BilledQuantity * baseAmount * percentage
                         'discount = (lineItem.BilledQuantity * baseAmount - lineItem.LineTotalAmount) / lineItem.BilledQuantity
 
-                        Dim actualAmount = baseAmount - discount
+                        Dim actualAmount = baseAmount - (discount / lineItem.BilledQuantity)
                         lineItem.GrossUnitPrice = baseAmount
                         lineItem.NetUnitPrice = actualAmount
-                        lineItem.AddTradeAllowanceCharge(True, xRechnung.Currency, baseAmount, discount, percentage * 100, "")
+                        lineItem.AddTradeAllowanceCharge(True, xRechnung.Currency, Nothing, discount, "Discount")
                     Else
                         lineItem.GrossUnitPrice = baseAmount
                         lineItem.NetUnitPrice = baseAmount
@@ -146,13 +146,13 @@ Public Class XRechnungExporter
                     Dim baseAmount = Decimal.Parse(lineItemData("EPreis"))
                     If Not String.IsNullOrWhiteSpace(lineItemData("Rabatt")) Then
                         Dim percentage = Decimal.Parse(lineItemData("Rabatt"))
-                        Dim discount = baseAmount * percentage
+                        Dim discount = lineItem.BilledQuantity * baseAmount * percentage
                         'discount = (lineItem.BilledQuantity * baseAmount - lineItem.LineTotalAmount) / lineItem.BilledQuantity
 
-                        Dim actualAmount = baseAmount - discount
+                        Dim actualAmount = lineItem.LineTotalAmount / lineItem.BilledQuantity
                         lineItem.GrossUnitPrice = baseAmount
                         lineItem.NetUnitPrice = actualAmount
-                        lineItem.AddTradeAllowanceCharge(True, xRechnung.Currency, baseAmount, discount, percentage * 100, "")
+                        lineItem.AddTradeAllowanceCharge(True, xRechnung.Currency, Nothing, discount, "Discount")
                     Else
                         lineItem.GrossUnitPrice = baseAmount
                         lineItem.NetUnitPrice = baseAmount
@@ -204,11 +204,11 @@ Public Class XRechnungExporter
     Private Function GetMeasurementCode(type As String) As QuantityCodes
         Select Case type
             Case "Stk"
-                Return QuantityCodes.H87
+                Return QuantityCodes.C62
             Case "Stk."
-                Return QuantityCodes.H87
+                Return QuantityCodes.C62
             Case ""
-                Return QuantityCodes.H87
+                Return QuantityCodes.C62
             Case "L"
                 Return QuantityCodes.LTR
             Case "AW"
