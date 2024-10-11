@@ -435,6 +435,10 @@ namespace s2industries.ZUGFeRD
 
                     Writer.WriteElementString("cbc:ChargeIndicator", charges[0].ChargeIndicator ? "true" : "false");
 
+                    Writer.WriteStartElement("cbc:MultiplierFactorNumeric"); // BT-138
+                    Writer.WriteValue(_formatDecimal(charges[0].ChargePercentage));
+                    Writer.WriteEndElement();
+
                     Writer.WriteStartElement("cbc:Amount"); // BT-147
                     Writer.WriteAttributeString("currencyID", this.Descriptor.Currency.EnumToString());
                     Writer.WriteValue(_formatDecimal(charges[0].ActualAmount));
@@ -791,7 +795,7 @@ namespace s2industries.ZUGFeRD
         } // !_writeNotes()
 
 
-        private void _writeOptionalAmount(ProfileAwareXmlTextWriter writer, string tagName, decimal? value, int numDecimals = , bool forceCurrency = false, Profile profile = Profile.Unknown)
+        private void _writeOptionalAmount(ProfileAwareXmlTextWriter writer, string tagName, decimal? value, int numDecimals = 2, bool forceCurrency = false, Profile profile = Profile.Unknown)
         {
             if (value.HasValue)
             {

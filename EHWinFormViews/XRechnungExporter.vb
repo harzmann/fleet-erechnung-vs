@@ -122,7 +122,7 @@ Public Class XRechnungExporter
                         Dim actualAmount = baseAmount - discount
                         lineItem.GrossUnitPrice = baseAmount
                         lineItem.NetUnitPrice = actualAmount
-                        lineItem.AddTradeAllowanceCharge(True, xRechnung.Currency, baseAmount, discount, percentage, "")
+                        lineItem.AddTradeAllowanceCharge(True, xRechnung.Currency, baseAmount, discount, percentage * 100, "")
                     Else
                         lineItem.GrossUnitPrice = baseAmount
                         lineItem.NetUnitPrice = baseAmount
@@ -152,7 +152,7 @@ Public Class XRechnungExporter
                         Dim actualAmount = baseAmount - discount
                         lineItem.GrossUnitPrice = baseAmount
                         lineItem.NetUnitPrice = actualAmount
-                        lineItem.AddTradeAllowanceCharge(True, xRechnung.Currency, baseAmount, discount, percentage, "")
+                        lineItem.AddTradeAllowanceCharge(True, xRechnung.Currency, baseAmount, discount, percentage * 100, "")
                     Else
                         lineItem.GrossUnitPrice = baseAmount
                         lineItem.NetUnitPrice = baseAmount
