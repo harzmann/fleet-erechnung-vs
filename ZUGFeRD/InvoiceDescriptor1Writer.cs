@@ -509,12 +509,12 @@ namespace s2industries.ZUGFeRD
                         {
                             Writer.WriteStartElement("ram:BasisAmount", Profile.Extended);
                             Writer.WriteAttributeString("currencyID", tradeAllowanceCharge.Currency.EnumToString());
-                            Writer.WriteValue(_formatDecimal(tradeAllowanceCharge.BasisAmount.Value, 4));
+                            Writer.WriteValue(_formatDecimal(tradeAllowanceCharge.BasisAmount.Value, null));
                             Writer.WriteEndElement();
                         }
                         Writer.WriteStartElement("ram:ActualAmount", Profile.Comfort | Profile.Extended);
                         Writer.WriteAttributeString("currencyID", tradeAllowanceCharge.Currency.EnumToString());
-                        Writer.WriteValue(_formatDecimal(tradeAllowanceCharge.ActualAmount, 4));
+                        Writer.WriteValue(_formatDecimal(tradeAllowanceCharge.ActualAmount, null));
                         Writer.WriteEndElement();
 
                         Writer.WriteOptionalElementString("ram:Reason", tradeAllowanceCharge.Reason, Profile.Comfort | Profile.Extended);

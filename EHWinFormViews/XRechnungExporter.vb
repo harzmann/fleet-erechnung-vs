@@ -1,13 +1,8 @@
-﻿Imports ehfleet_classlibrary
-Imports EHFleetXRechnung.Schemas
-Imports s2industries.ZUGFeRD
-Imports Stimulsoft.Controls.Win.DotNetBar
-Imports Stimulsoft.Report
-Imports Stimulsoft.Report.Export
-Imports System.Globalization
+﻿Imports System.Globalization
 Imports System.IO
 Imports System.Threading
-Imports System.Xml.Serialization
+Imports ehfleet_classlibrary
+Imports s2industries.ZUGFeRD
 
 Public Class XRechnungExporter
     Private _dataConnection As General.Database
@@ -57,15 +52,26 @@ Public Class XRechnungExporter
         xRechnung.InvoiceDate = items("Rechnungsdatum")
 
         Dim dueDate = ""
+        Dim daysToDueDate = 0
         Try
             Dim billDate = DateTime.Parse(items("Rechnungsdatum"))
-            Dim daysToDueDate = Integer.Parse(items("NettoTage"))
+            daysToDueDate = Integer.Parse(items("NettoTage"))
             dueDate = billDate.AddDays(daysToDueDate)
         Catch ex As Exception
             dueDate = items("Rechnungsdatum")
         End Try
 
-        xRechnung.AddTradePaymentTerms("Fälligkeit", dueDate)
+        'Dim skontoDays = 0
+        'Decimal.TryParse(items("SkontoTage"), skontoDays)
+        'Dim skontoRate = 0
+        'Decimal.TryParse(items("SkontoProzent"), skontoRate)
+
+        'If Not String.IsNullOrWhiteSpace(skontoDays) AndAlso Not String.IsNullOrWhiteSpace(skontoRate) Then
+        '    xRechnung.AddTradePaymentTerms($"#SKONTO#TAGE={skontoDays}#PROZENT={skontoRate:F2}", dueDate)
+        'Else
+        '    xRechnung.AddTradePaymentTerms($"Fällig {daysToDueDate} Tage nach Rechnungsstellung", dueDate)
+        'End If
+
         xRechnung.SetPaymentMeans(PaymentMeansTypeCodes.CreditTransfer)
         xRechnung.AddCreditorFinancialAccount(additionalSellerData("Modul2"), additionalSellerData("Modul3"), Nothing, Nothing, additionalSellerData("Modul4"), additionalSellerData("Modul4"))
 

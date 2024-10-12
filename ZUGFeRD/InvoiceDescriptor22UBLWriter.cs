@@ -197,14 +197,14 @@ namespace s2industries.ZUGFeRD
 
                 Writer.WriteStartElement("cbc:Amount"); // BT-92 / BT-99
                 Writer.WriteAttributeString("currencyID", this.Descriptor.Currency.EnumToString());
-                Writer.WriteValue(_formatDecimal(tradeAllowanceCharge.ActualAmount));
+                Writer.WriteValue(_formatDecimal(tradeAllowanceCharge.ActualAmount, 2));
                 Writer.WriteEndElement();
 
                 if (tradeAllowanceCharge.BasisAmount != null)
                 {
                     Writer.WriteStartElement("cbc:BaseAmount"); // BT-93 / BT-100
                     Writer.WriteAttributeString("currencyID", this.Descriptor.Currency.EnumToString());
-                    Writer.WriteValue(_formatDecimal(tradeAllowanceCharge.BasisAmount));
+                    Writer.WriteValue(_formatDecimal(tradeAllowanceCharge.BasisAmount, null));
                     Writer.WriteEndElement();
                 }
 
@@ -322,13 +322,13 @@ namespace s2industries.ZUGFeRD
             if (this.Descriptor.Taxes.Any() && this.Descriptor.TaxTotalAmount != null)
             {
                 Writer.WriteStartElement("cac:TaxTotal");
-                _writeOptionalAmount(Writer, "cbc:TaxAmount", this.Descriptor.TaxTotalAmount, forceCurrency: true);
+                _writeOptionalAmount(Writer, "cbc:TaxAmount", this.Descriptor.TaxTotalAmount, numDecimals: null, forceCurrency: true);
 
                 foreach (Tax tax in this.Descriptor.Taxes)
                 {
                     Writer.WriteStartElement("cac:TaxSubtotal");
-                    _writeOptionalAmount(Writer, "cbc:TaxableAmount", tax.BasisAmount, forceCurrency: true);
-                    _writeOptionalAmount(Writer, "cbc:TaxAmount", tax.TaxAmount, forceCurrency: true);
+                    _writeOptionalAmount(Writer, "cbc:TaxableAmount", tax.BasisAmount, numDecimals: null, forceCurrency: true);
+                    _writeOptionalAmount(Writer, "cbc:TaxAmount", tax.TaxAmount, numDecimals: null, forceCurrency: true);
 
                     Writer.WriteStartElement("cac:TaxCategory");
                     Writer.WriteElementString("cbc:ID", tax.CategoryCode.ToString());
@@ -346,14 +346,14 @@ namespace s2industries.ZUGFeRD
             }
 
             Writer.WriteStartElement("cac:LegalMonetaryTotal");
-            _writeOptionalAmount(Writer, "cbc:LineExtensionAmount", this.Descriptor.LineTotalAmount, forceCurrency: true);
-            _writeOptionalAmount(Writer, "cbc:TaxExclusiveAmount", this.Descriptor.TaxBasisAmount, forceCurrency: true);
-            _writeOptionalAmount(Writer, "cbc:TaxInclusiveAmount", this.Descriptor.GrandTotalAmount, forceCurrency: true);
-            _writeOptionalAmount(Writer, "cbc:ChargeTotalAmount", this.Descriptor.ChargeTotalAmount, forceCurrency: true);
-            _writeOptionalAmount(Writer, "cbc:AllowanceTotalAmount", this.Descriptor.AllowanceTotalAmount, forceCurrency: true);
+            _writeOptionalAmount(Writer, "cbc:LineExtensionAmount", this.Descriptor.LineTotalAmount, numDecimals: null, forceCurrency: true);
+            _writeOptionalAmount(Writer, "cbc:TaxExclusiveAmount", this.Descriptor.TaxBasisAmount, numDecimals: null, forceCurrency: true);
+            _writeOptionalAmount(Writer, "cbc:TaxInclusiveAmount", this.Descriptor.GrandTotalAmount, numDecimals: null, forceCurrency: true);
+            _writeOptionalAmount(Writer, "cbc:ChargeTotalAmount", this.Descriptor.ChargeTotalAmount, numDecimals: null, forceCurrency: true);
+            _writeOptionalAmount(Writer, "cbc:AllowanceTotalAmount", this.Descriptor.AllowanceTotalAmount, numDecimals: null, forceCurrency: true);
             //_writeOptionalAmount(Writer, "cbc:TaxAmount", this.Descriptor.TaxTotalAmount, forceCurrency: true);
-            _writeOptionalAmount(Writer, "cbc:PrepaidAmount", this.Descriptor.TotalPrepaidAmount, forceCurrency: true);
-            _writeOptionalAmount(Writer, "cbc:PayableAmount", this.Descriptor.DuePayableAmount, forceCurrency: true);
+            _writeOptionalAmount(Writer, "cbc:PrepaidAmount", this.Descriptor.TotalPrepaidAmount, numDecimals: null, forceCurrency: true);
+            _writeOptionalAmount(Writer, "cbc:PayableAmount", this.Descriptor.DuePayableAmount, numDecimals: null, forceCurrency: true);
             //_writeOptionalAmount(Writer, "cbc:PayableAlternativeAmount", this.Descriptor.RoundingAmount, forceCurrency: true);
             Writer.WriteEndElement(); //!LegalMonetaryTotal
 
@@ -374,7 +374,7 @@ namespace s2industries.ZUGFeRD
                 //Writer.WriteElementString("cbc:LineExtensionAmount", tradeLineItem.LineTotalAmount.ToString());
                 Writer.WriteStartElement("cbc:LineExtensionAmount");
                 Writer.WriteAttributeString("currencyID", this.Descriptor.Currency.EnumToString());
-                Writer.WriteValue(_formatDecimal(tradeLineItem.LineTotalAmount));
+                Writer.WriteValue(_formatDecimal(tradeLineItem.LineTotalAmount, null));
                 Writer.WriteEndElement();
 
                 IList<TradeAllowanceCharge> charges = tradeLineItem.GetTradeAllowanceCharges();
@@ -397,14 +397,14 @@ namespace s2industries.ZUGFeRD
 
                     Writer.WriteStartElement("cbc:Amount"); // BT-147
                     Writer.WriteAttributeString("currencyID", this.Descriptor.Currency.EnumToString());
-                    Writer.WriteValue(_formatDecimal(charges[0].ActualAmount));
+                    Writer.WriteValue(_formatDecimal(charges[0].ActualAmount, 2));
                     Writer.WriteEndElement();
 
                     if (charges[0].BasisAmount != null)
                     {
                         Writer.WriteStartElement("cbc:BaseAmount"); // BT-148
                         Writer.WriteAttributeString("currencyID", this.Descriptor.Currency.EnumToString());
-                        Writer.WriteValue(_formatDecimal(charges[0].BasisAmount));
+                        Writer.WriteValue(_formatDecimal(charges[0].BasisAmount, null));
                         Writer.WriteEndElement();
                     }
 
@@ -450,7 +450,7 @@ namespace s2industries.ZUGFeRD
 
                 Writer.WriteStartElement("cbc:PriceAmount");
                 Writer.WriteAttributeString("currencyID", this.Descriptor.Currency.EnumToString());
-                Writer.WriteValue(_formatDecimal(tradeLineItem.GrossUnitPrice.Value));
+                Writer.WriteValue(_formatDecimal(tradeLineItem.GrossUnitPrice.Value, null));
                 Writer.WriteEndElement();
 
                 if (tradeLineItem.UnitQuantity != null)
@@ -804,7 +804,7 @@ namespace s2industries.ZUGFeRD
         } // !_writeNotes()
 
 
-        private void _writeOptionalAmount(ProfileAwareXmlTextWriter writer, string tagName, decimal? value, int numDecimals = 2, bool forceCurrency = false, Profile profile = Profile.Unknown)
+        private void _writeOptionalAmount(ProfileAwareXmlTextWriter writer, string tagName, decimal? value, int? numDecimals = 2, bool forceCurrency = false, Profile profile = Profile.Unknown)
         {
             if (value.HasValue)
             {
