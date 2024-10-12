@@ -314,7 +314,7 @@ namespace s2industries.ZUGFeRD
                 {
                     sbPaymentNotes.AppendLine(paymentTerms.Description);
                 }
-                Writer.WriteOptionalElementString("cbc:Note", sbPaymentNotes.ToString().TrimEnd());
+                Writer.WriteOptionalElementString("cbc:Note", sbPaymentNotes.ToString());
                 Writer.WriteEndElement();
             }
 

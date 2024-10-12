@@ -67,7 +67,7 @@ Public Class XRechnungExporter
         Decimal.TryParse(items("SkontoProzent"), skontoRate)
 
         If Not String.IsNullOrWhiteSpace(skontoDays) AndAlso Not String.IsNullOrWhiteSpace(skontoRate) Then
-            xRechnung.AddTradePaymentTerms($"#SKONTO#TAGE={skontoDays}#PROZENT={skontoRate:F2}#{Environment.NewLine}", dueDate)
+            xRechnung.AddTradePaymentTerms($"#SKONTO#TAGE={skontoDays}#PROZENT={skontoRate:F2}#", dueDate)
         End If
 
         'xRechnung.AddTradePaymentTerms($"Fällig {daysToDueDate} Tage nach Rechnungsstellung", dueDate)
