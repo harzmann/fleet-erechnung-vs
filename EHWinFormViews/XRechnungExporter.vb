@@ -61,17 +61,16 @@ Public Class XRechnungExporter
             dueDate = items("Rechnungsdatum")
         End Try
 
-        'Dim skontoDays = 0
-        'Decimal.TryParse(items("SkontoTage"), skontoDays)
-        'Dim skontoRate = 0
-        'Decimal.TryParse(items("SkontoProzent"), skontoRate)
+        Dim skontoDays = 0
+        Decimal.TryParse(items("SkontoTage"), skontoDays)
+        Dim skontoRate = 0
+        Decimal.TryParse(items("SkontoProzent"), skontoRate)
 
-        'If Not String.IsNullOrWhiteSpace(skontoDays) AndAlso Not String.IsNullOrWhiteSpace(skontoRate) Then
-        '    xRechnung.AddTradePaymentTerms($"#SKONTO#TAGE={skontoDays}#PROZENT={skontoRate:F2}", dueDate)
-        'Else
-        '    xRechnung.AddTradePaymentTerms($"Fällig {daysToDueDate} Tage nach Rechnungsstellung", dueDate)
-        'End If
+        If Not String.IsNullOrWhiteSpace(skontoDays) AndAlso Not String.IsNullOrWhiteSpace(skontoRate) Then
+            xRechnung.AddTradePaymentTerms($"#SKONTO#TAGE={skontoDays}#PROZENT={skontoRate:F2}#{Environment.NewLine}", dueDate)
+        End If
 
+        'xRechnung.AddTradePaymentTerms($"Fällig {daysToDueDate} Tage nach Rechnungsstellung", dueDate)
         xRechnung.SetPaymentMeans(PaymentMeansTypeCodes.CreditTransfer)
         xRechnung.AddCreditorFinancialAccount(additionalSellerData("Modul2"), additionalSellerData("Modul3"), Nothing, Nothing, additionalSellerData("Modul4"), additionalSellerData("Modul4"))
 
