@@ -70,7 +70,6 @@ Public Class XRechnungExporter
             xRechnung.AddTradePaymentTerms($"#SKONTO#TAGE={skontoDays}#PROZENT={skontoRate:F2}#", dueDate)
         End If
 
-        'xRechnung.AddTradePaymentTerms($"Fällig {daysToDueDate} Tage nach Rechnungsstellung", dueDate)
         xRechnung.SetPaymentMeans(PaymentMeansTypeCodes.CreditTransfer)
         xRechnung.AddCreditorFinancialAccount(additionalSellerData("Modul2"), additionalSellerData("Modul3"), Nothing, Nothing, additionalSellerData("Modul4"), additionalSellerData("Modul4"))
 
