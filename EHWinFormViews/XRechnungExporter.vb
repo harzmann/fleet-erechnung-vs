@@ -3,6 +3,7 @@ Imports System.IO
 Imports System.Threading
 Imports ehfleet_classlibrary
 Imports s2industries.ZUGFeRD
+Imports Stimulsoft.Database
 
 Public Class XRechnungExporter
     Private _dataConnection As General.Database
@@ -12,7 +13,6 @@ Public Class XRechnungExporter
     End Sub
 
     Public Sub CreateBillXml(xmlStream As Stream, billType As RechnungsArt, rechnungsNummer As Integer)
-        'Dim serializer = New XmlSerializer(GetType(Invoice))
         Dim sqls = GetSqlStatements(billType, New List(Of Integer) From {rechnungsNummer})
         Dim items = GetItemsFromQuery(GetSqlStatementForBill(billType, New List(Of Integer) From {rechnungsNummer})).FirstOrDefault
         If items Is Nothing Then Return
@@ -22,7 +22,24 @@ Public Class XRechnungExporter
         Dim additionalSellerData = GetAdditionalSellerParameter(billType)
         Dim buyerData = GetBuyerData(items("KundenNr"))
         Dim xRechnung = New InvoiceDescriptor()
-        xRechnung.InvoiceNo = rechnungsNummer.ToString()
+
+        Dim billTypeText = String.Empty
+        Dim referenceColumn = ""
+        Select Case billType
+            Case RechnungsArt.Werkstatt
+                referenceColumn = "WABez"
+                billTypeText = "WA"
+            Case RechnungsArt.Tanken
+                referenceColumn = "Anmerkungen"
+                billTypeText = "TA"
+            Case RechnungsArt.Manuell
+                referenceColumn = "Anmerkungen"
+                billTypeText = "MR"
+        End Select
+
+        Dim formattedInvoiceNumber = Sale.Invoicing.FormatInvoiceNumber(_dataConnection, billTypeText, rechnungsNummer)
+
+        xRechnung.InvoiceNo = formattedInvoiceNumber
         xRechnung.Currency = CType([Enum].Parse(GetType(CurrencyCodes), sellerData("Währung")), CurrencyCodes)
         Dim countryCode = CType([Enum].Parse(GetType(CountryCodes), buyerData("LandISO")), CountryCodes)
         xRechnung.SetBuyer(items("Firma"), items("Postleitzahl"), items("Ort"), items("Rechnungsadresse"), countryCode, items("KundenNr"))
@@ -38,17 +55,9 @@ Public Class XRechnungExporter
         End If
 
         xRechnung.SetBuyerContact(items("Kontakt"), items("Firma"), items("EmailAdresse"), items("Telefonnummer"))
-        Dim referenceColumn = ""
-        Select Case billType
-            Case RechnungsArt.Werkstatt
-                referenceColumn = "WABez"
-            Case RechnungsArt.Tanken
-                referenceColumn = "Anmerkungen"
-            Case RechnungsArt.Manuell
-                referenceColumn = "Anmerkungen"
-        End Select
 
-        xRechnung.PaymentReference = items(referenceColumn)
+
+        xRechnung.PaymentReference = formattedInvoiceNumber 'items(referenceColumn)
         xRechnung.InvoiceDate = items("Rechnungsdatum")
 
         Dim dueDate = ""
@@ -80,11 +89,11 @@ Public Class XRechnungExporter
         xRechnung.SetSellerContact(sellerData("Name"), sellerData("Firma"), additionalSellerData("Modul1"), sellerData("Telefon"), sellerData("Telefax"))
         xRechnung.SetSellerElectronicAddress(additionalSellerData("Modul1"), ElectronicAddressSchemeIdentifiers.EM)
 
-        Dim poReference As String = String.Empty
-        items.TryGetValue("WAID", poReference)
-        If String.IsNullOrWhiteSpace(poReference) Then items.TryGetValue("KostenstelleKunde", poReference)
-        xRechnung.ReferenceOrderNo = poReference
-        xRechnung.OrderNo = poReference
+        'Dim poReference As String = String.Empty
+        'items.TryGetValue("WAID", poReference)
+        'If String.IsNullOrWhiteSpace(poReference) Then items.TryGetValue("KostenstelleKunde", poReference)
+        xRechnung.ReferenceOrderNo = formattedInvoiceNumber
+        xRechnung.OrderNo = formattedInvoiceNumber
         xRechnung.ActualDeliveryDate = items("Lieferdatum")
 
         'add line items
@@ -121,7 +130,6 @@ Public Class XRechnungExporter
                     If Not String.IsNullOrWhiteSpace(lineItemData("Rabatt")) Then
                         Dim percentage = Decimal.Parse(lineItemData("Rabatt"))
                         Dim discount = lineItem.BilledQuantity * baseAmount * percentage
-                        'discount = (lineItem.BilledQuantity * baseAmount - lineItem.LineTotalAmount) / lineItem.BilledQuantity
 
                         Dim actualAmount = baseAmount - (discount / lineItem.BilledQuantity)
                         lineItem.GrossUnitPrice = baseAmount
@@ -151,8 +159,6 @@ Public Class XRechnungExporter
                     If Not String.IsNullOrWhiteSpace(lineItemData("Rabatt")) Then
                         Dim percentage = Decimal.Parse(lineItemData("Rabatt"))
                         Dim discount = lineItem.BilledQuantity * baseAmount * percentage
-                        'discount = (lineItem.BilledQuantity * baseAmount - lineItem.LineTotalAmount) / lineItem.BilledQuantity
-
                         Dim actualAmount = lineItem.LineTotalAmount / lineItem.BilledQuantity
                         lineItem.GrossUnitPrice = baseAmount
                         lineItem.NetUnitPrice = actualAmount
@@ -169,7 +175,6 @@ Public Class XRechnungExporter
             Next
         Next
 
-        'Dim discountSum = xRechnung.TradeLineItems.Sum(Function(item) item.GetTradeAllowanceCharges().Where(Function(x) Not x.ChargeIndicator).Sum(Function(x) x.ActualAmount))
         Dim lineNetSum = xRechnung.TradeLineItems.Sum(Function(item) item.LineTotalAmount)
         Dim vatAmount As Decimal
         Dim netSum As Decimal
