@@ -16,6 +16,7 @@ Public Class XRechnungExporter
         _dataConnection = dataConnection
         _logger = LogManager.GetLogger(Me.GetType())
         _logger.Debug($"Instantiating {NameOf(XRechnungExporter)}")
+        _logger.Debug($"Leaving {NameOf(XRechnungExporter)} constructor")
     End Sub
 
     Public Sub CreateBillXml(xmlStream As Stream, billType As RechnungsArt, rechnungsNummer As Integer)
