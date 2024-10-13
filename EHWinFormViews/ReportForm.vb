@@ -172,6 +172,11 @@ Public Class ReportForm
         StiViewerControl1.Report.Render()
     End Sub
 
+    Public Sub SavePdf()
+        Dim pdfExportService = StiOptions.Services.Exports.FirstOrDefault(Function(s) s.ServiceName.ToLower().Contains("pdf"))
+        StiViewerControl1.InvokeProcessExport(pdfExportService)
+    End Sub
+
     Private Function GetReportParameterId(rechnungsArt As RechnungsArt) As String
         Select Case rechnungsArt
             Case RechnungsArt.Werkstatt

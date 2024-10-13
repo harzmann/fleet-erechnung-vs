@@ -71,7 +71,9 @@ namespace s2industries.ZUGFeRD
             #endregion
 
 
-            Writer.WriteElementString("cbc:CustomizationID", "urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0");
+            //Writer.WriteElementString("cbc:CustomizationID", "urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0");
+            Writer.WriteElementString("cbc:CustomizationID", "urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0");
+            
             Writer.WriteElementString("cbc:ProfileID", "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0");
 
             Writer.WriteElementString("cbc:ID", this.Descriptor.InvoiceNo); //Rechnungsnummer
@@ -322,7 +324,7 @@ namespace s2industries.ZUGFeRD
             if (this.Descriptor.Taxes.Any() && this.Descriptor.TaxTotalAmount != null)
             {
                 Writer.WriteStartElement("cac:TaxTotal");
-                _writeOptionalAmount(Writer, "cbc:TaxAmount", this.Descriptor.TaxTotalAmount, numDecimals: null, forceCurrency: true);
+                _writeOptionalAmount(Writer, "cbc:TaxAmount", this.Descriptor.TaxTotalAmount, numDecimals: 2, forceCurrency: true);
 
                 foreach (Tax tax in this.Descriptor.Taxes)
                 {
@@ -348,12 +350,12 @@ namespace s2industries.ZUGFeRD
             Writer.WriteStartElement("cac:LegalMonetaryTotal");
             _writeOptionalAmount(Writer, "cbc:LineExtensionAmount", this.Descriptor.LineTotalAmount, numDecimals: null, forceCurrency: true);
             _writeOptionalAmount(Writer, "cbc:TaxExclusiveAmount", this.Descriptor.TaxBasisAmount, numDecimals: null, forceCurrency: true);
-            _writeOptionalAmount(Writer, "cbc:TaxInclusiveAmount", this.Descriptor.GrandTotalAmount, numDecimals: null, forceCurrency: true);
+            _writeOptionalAmount(Writer, "cbc:TaxInclusiveAmount", this.Descriptor.GrandTotalAmount, numDecimals: 2, forceCurrency: true);
             _writeOptionalAmount(Writer, "cbc:ChargeTotalAmount", this.Descriptor.ChargeTotalAmount, numDecimals: null, forceCurrency: true);
             _writeOptionalAmount(Writer, "cbc:AllowanceTotalAmount", this.Descriptor.AllowanceTotalAmount, numDecimals: null, forceCurrency: true);
             //_writeOptionalAmount(Writer, "cbc:TaxAmount", this.Descriptor.TaxTotalAmount, forceCurrency: true);
-            _writeOptionalAmount(Writer, "cbc:PrepaidAmount", this.Descriptor.TotalPrepaidAmount, numDecimals: null, forceCurrency: true);
-            _writeOptionalAmount(Writer, "cbc:PayableAmount", this.Descriptor.DuePayableAmount, numDecimals: null, forceCurrency: true);
+            _writeOptionalAmount(Writer, "cbc:PrepaidAmount", this.Descriptor.TotalPrepaidAmount, numDecimals: 2, forceCurrency: true);
+            _writeOptionalAmount(Writer, "cbc:PayableAmount", this.Descriptor.DuePayableAmount, numDecimals: 2, forceCurrency: true);
             //_writeOptionalAmount(Writer, "cbc:PayableAlternativeAmount", this.Descriptor.RoundingAmount, forceCurrency: true);
             Writer.WriteEndElement(); //!LegalMonetaryTotal
 

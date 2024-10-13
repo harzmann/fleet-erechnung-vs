@@ -1,6 +1,8 @@
 ﻿Imports System.Globalization
 Imports System.IO
+Imports System.Text
 Imports System.Threading
+Imports System.Windows.Forms
 Imports ehfleet_classlibrary
 Imports s2industries.ZUGFeRD
 Imports Stimulsoft.Database
@@ -208,6 +210,47 @@ Public Class XRechnungExporter
 
         Thread.CurrentThread.CurrentCulture = currentCulture
         Thread.CurrentThread.CurrentUICulture = currentUiCulture
+    End Sub
+
+    Public Sub Validate(file As String)
+        Dim currentFolder = Path.GetDirectoryName(Me.GetType().Assembly.Location)
+        Dim validatorFolder = Path.Combine(currentFolder, "validator")
+
+        CleanValidationReports(validatorFolder)
+
+        Dim configurationFolder = Path.Combine(validatorFolder, "configuration")
+        Dim validatorFileName = Path.Combine(validatorFolder, "validationtool-1.5.0-standalone.jar")
+        Dim configFile = Path.Combine(configurationFolder, "EN16931-UBL-validation.xslt")
+        Dim scenarioFile = Path.Combine(configurationFolder, "scenarios.xml")
+        Dim arguments = $"-jar ""{validatorFileName}"" -s ""{scenarioFile}"" -r ""{configurationFolder}"" -d ""{file}"" -h"
+        Dim pInfo = New ProcessStartInfo()
+        pInfo.UseShellExecute = False
+        pInfo.FileName = "java"
+        pInfo.Arguments = arguments
+        pInfo.WorkingDirectory = validatorFolder
+        pInfo.CreateNoWindow = False
+        Dim p = Process.Start(pInfo)
+        p.EnableRaisingEvents = True
+        p.WaitForExit()
+
+        If p.ExitCode <> 0 Then
+            Dim result = MessageBox.Show("Validierung Fehlgeschlagen. Html-Report anzeigen?", "Fehler", MessageBoxButtons.YesNo)
+            If result <> DialogResult.Yes Then Return
+
+            Dim reporFile = System.IO.Directory.EnumerateFiles(validatorFolder, "*.html").FirstOrDefault()
+            If reporFile Is Nothing Then
+                MessageBox.Show("Fehler: Reportdatei nicht gefunden!")
+            End If
+
+            Process.Start(reporFile)
+        Else
+            MessageBox.Show("Validierung erfolgreich!")
+        End If
+    End Sub
+
+    Private Sub CleanValidationReports(reportFolder As String)
+        Dim files = Directory.EnumerateFiles(reportFolder, "*.html").ToList
+        files.ForEach(Sub(f) File.Delete(f))
     End Sub
 
     Private Function GetMeasurementCode(type As String) As QuantityCodes
