@@ -315,7 +315,6 @@ Public Class XRechnungExporter
                 Return QuantityCodes.ACT
             Case Else
                 Return QuantityCodes.Unknown
-
         End Select
     End Function
 
@@ -329,18 +328,30 @@ Public Class XRechnungExporter
     Private Function GetSellerParameter(rechnungsArt As RechnungsArt) As Dictionary(Of String, String)
         Dim sql = GetSellerParameterSql(rechnungsArt)
         Dim dataTable = _dataConnection.FillDataTable(sql)
+        If dataTable.Rows.Count = 0 Then
+            _logger.Error($"Could not fetch seller parameters from DB ({sql})")
+            Return New Dictionary(Of String, String)
+        End If
         Return dataTable.Columns.OfType(Of DataColumn).ToDictionary(Function(column) column.ColumnName, Function(column) dataTable.Rows.OfType(Of DataRow)().First()(column.ColumnName).ToString)
     End Function
 
     Private Function GetAdditionalSellerParameter(rechnungsArt As RechnungsArt) As Dictionary(Of String, String)
         Dim sql = GetAdditionalSellerParameterSql(rechnungsArt)
         Dim dataTable = _dataConnection.FillDataTable(sql)
+        If dataTable.Rows.Count = 0 Then
+            _logger.Error($"Could not fetch additional seller parameters from DB ({sql})")
+            Return New Dictionary(Of String, String)
+        End If
         Return dataTable.Columns.OfType(Of DataColumn).ToDictionary(Function(column) column.ColumnName, Function(column) dataTable.Rows.OfType(Of DataRow)().First()(column.ColumnName).ToString)
     End Function
 
     Private Function GetBuyerData(kundenNr As String) As Dictionary(Of String, String)
         Dim sql = $"select * from Kunden where KundenNr = {kundenNr}"
         Dim dataTable = _dataConnection.FillDataTable(sql)
+        If dataTable.Rows.Count = 0 Then
+            _logger.Error($"Could not fetch customer parameters from DB ({sql})")
+            Return New Dictionary(Of String, String)
+        End If
         Return dataTable.Columns.OfType(Of DataColumn).ToDictionary(Function(column) column.ColumnName, Function(column) dataTable.Rows.OfType(Of DataRow)().First()(column.ColumnName).ToString)
     End Function
 
