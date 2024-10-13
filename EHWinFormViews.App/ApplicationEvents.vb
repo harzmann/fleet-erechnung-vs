@@ -1,5 +1,7 @@
-﻿Imports ehfleet_classlibrary
+﻿Imports System.IO
+Imports ehfleet_classlibrary
 Imports EHWinFormViews
+Imports log4net.Config
 Imports Microsoft.VisualBasic.ApplicationServices
 
 Namespace My
@@ -28,9 +30,20 @@ Namespace My
     Partial Friend Class MyApplication
 
         Protected Overrides Function OnStartup(eventArgs As StartupEventArgs) As Boolean
+            ConfigureLogging()
             Dim Form = New RechnungsUebersicht(New General.Database("Provider=MSOLEDBSQL;Data Source=.\SQLEXPRESS;Initial Catalog=EHFleet;Integrated Security=SSPI;"))
             MainForm = Form
             Return MyBase.OnStartup(eventArgs)
         End Function
+
+        Private Sub ConfigureLogging()
+            Dim libraryConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EHFleetXRechnung.Viewer.dll.config")
+            Dim logConfigFile = New FileInfo(libraryConfigPath)
+
+            If logConfigFile.Exists Then
+                log4net.GlobalContext.Properties("log4net:HostName") = Environment.MachineName
+                XmlConfigurator.Configure(logConfigFile)
+            End If
+        End Sub
     End Class
 End Namespace

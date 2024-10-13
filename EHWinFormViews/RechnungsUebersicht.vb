@@ -1,8 +1,7 @@
-﻿Imports System.Runtime.InteropServices
-Imports System.Windows.Forms
+﻿Imports System.Windows.Forms
 Imports ehfleet_classlibrary
 Imports EHWinFormViews.GermanRadGridViewLocalization
-Imports ExcelLibrary.BinaryFileFormat
+Imports log4net
 Imports Telerik.WinControls.UI
 Imports Telerik.WinControls.UI.Localization
 
@@ -12,11 +11,14 @@ Public Class RechnungsUebersicht
 
     Private ReadOnly _xmlExporter As XRechnungExporter
 
+    Private ReadOnly _logger As ILog
+
     Private _rechnungsArt As RechnungsArt
 
     Public Sub New(dbConnection As General.Database)
-        'ScreenScaling.SetProcessDpiAwareness(_Process_DPI_Awareness.Process_DPI_Unaware)
         _dbConnection = dbConnection
+        _logger = LogManager.GetLogger(Me.GetType())
+        _logger.Debug($"Instantiating {NameOf(RechnungsUebersicht)}")
         _xmlExporter = New XRechnungExporter(dbConnection)
         RadGridLocalizationProvider.CurrentProvider = New GermanRadGridLocalizationProvider
         ' This call is required by the designer.
@@ -24,7 +26,7 @@ Public Class RechnungsUebersicht
         DataGridView1.SelectionMode = GridViewSelectionMode.FullRowSelect
         DataGridView1.MultiSelect = True
 
-        ' Add any initialization after the InitializeComponent() call.
+        _logger.Debug($"Leaving {NameOf(RechnungsUebersicht)} constructor")
     End Sub
 
     Private Sub WerkstattRechnungButton_CheckedChanged(sender As Object, e As EventArgs) Handles WerkstattRechnungButton.CheckedChanged
@@ -123,7 +125,7 @@ Public Class RechnungsUebersicht
                 fileDialog.DefaultExt = "xml"
                 Dim result = fileDialog.ShowDialog()
                 If result <> DialogResult.OK Then Return
-                Using fileStream = System.IO.File.Create(fileDialog.FileName)
+                Using fileStream = IO.File.Create(fileDialog.FileName)
                     Try
                         _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
                     Catch ex As Exception
@@ -135,7 +137,6 @@ Public Class RechnungsUebersicht
                 _xmlExporter.Validate(fileDialog.FileName)
         End Select
     End Sub
-
 
     Private Function GetSqlStatement(rechnungsArt As RechnungsArt) As String
         Select Case rechnungsArt
@@ -211,9 +212,9 @@ Public Class RechnungsUebersicht
             Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, rechnungsNummern)
             reportForm.ShowDialog()
         Catch ex As Exception
-            MessageBox.Show(ex.Message)
+            _logger.Error($"Failed to create {NameOf(ReportForm)}")
+            MessageBox.Show("Unbekannter Fehler beim Anzeigen der Rechnung!")
         End Try
-
     End Sub
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
@@ -227,7 +228,8 @@ Public Class RechnungsUebersicht
                                                                                                             End Function).ToList())
             reportForm.ShowDialog()
         Catch ex As Exception
-            MessageBox.Show(ex.Message)
+            _logger.Error($"Failed to create {NameOf(ReportForm)}")
+            MessageBox.Show("Unbekannter Fehler beim Anzeigen der Rechnung!")
         End Try
 
     End Sub

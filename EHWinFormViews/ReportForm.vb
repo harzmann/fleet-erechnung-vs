@@ -1,28 +1,25 @@
 ﻿Imports System.IO
-Imports System.Net.Security
-Imports System.Runtime.Serialization
 Imports System.Windows.Forms
-Imports System.Xml.Serialization
-Imports AngleSharp.Css
 Imports ehfleet_classlibrary
-Imports EHFleetXRechnung.Schemas
-Imports QiHe.CodeLib
+Imports log4net
 Imports Stimulsoft.Base
-Imports Stimulsoft.Blockly.Blocks.Controls
-Imports Stimulsoft.Controls.Wpf.ControlsV3
-Imports Stimulsoft.Editor
 Imports Stimulsoft.Report
 Imports Stimulsoft.Report.Dictionary
 Imports Stimulsoft.Report.Export
 Imports Stimulsoft.Report.Helpers
-Imports Stimulsoft.Report.Viewer
+Imports Telerik.WinControls
 Imports Telerik.WinControls.UI
-Imports Telerik.Windows.Documents.Flow.Model
 
 Public Class ReportForm
     Private _dataConnection As General.Database
 
-    Private _xmlExporter As XRechnungExporter
+    Private ReadOnly _xmlExporter As XRechnungExporter
+
+    Private ReadOnly _logger As ILog
+
+    Private ReadOnly _rechnungsNummern As List(Of Integer)
+
+    Private ReadOnly _billType As RechnungsArt
 
     Public Property DataConnection As General.Database
         Get
@@ -34,64 +31,98 @@ Public Class ReportForm
     End Property
 
     Shared Sub New()
-        Stimulsoft.Base.StiLicense.LoadFromFile(Path.Combine(Path.GetDirectoryName(GetType(ReportForm).Assembly.Location), "license.key"))
+        StiLicense.LoadFromFile(Path.Combine(Path.GetDirectoryName(GetType(ReportForm).Assembly.Location), "license.key"))
     End Sub
 
     Public Sub New(dbConnection As General.Database, billType As RechnungsArt, rechnungsNummern As List(Of Integer))
         _dataConnection = dbConnection
+        _logger = LogManager.GetLogger(Me.GetType())
+        _logger.Debug($"Instantiating {NameOf(ReportForm)}")
         _xmlExporter = New XRechnungExporter(dbConnection)
+        _rechnungsNummern = rechnungsNummern
+        _billType = billType
 
         ' This call is required by the designer.
         InitializeComponent()
 
-        Dim reportParameterId = GetReportParameterId(billType)
+        Try
+            Dim reportParameterId = GetReportParameterId(billType)
+            Dim dataTable = DataConnection.FillDataTable($"SELECT [Text], [Aktiviert] FROM [EHFleet].[dbo].[Parameter] where ParameterNr = {reportParameterId}")
+            Dim reportPath = String.Empty
+            Dim isActive = False
+            If dataTable.Rows.Count > 0 Then
+                reportPath = dataTable.Rows(0).Item(0).ToString()
+                isActive = dataTable.Rows(0).Item(1)
+            Else
+                _logger.Error($"Parameter {reportParameterId} could not be found in DB")
+                MessageBox.Show($"Parameter {reportParameterId} not found!")
+                Return
+            End If
 
-        Dim dataTable = DataConnection.FillDataTable($"SELECT [Text], [Aktiviert] FROM [EHFleet].[dbo].[Parameter] where ParameterNr = {reportParameterId}")
-        Dim reportPath = String.Empty
-        Dim isActive = False
-        If dataTable.Rows.Count > 0 Then
-            reportPath = dataTable.Rows(0).Item(0).ToString()
-            isActive = dataTable.Rows(0).Item(1)
-        End If
+            If isActive AndAlso File.Exists(reportPath) Then
+                StiViewerControl1.Report = StiReport.CreateNewReport
+                StiViewerControl1.Report.Load(reportPath)
+            Else
+                _logger.Error($"Parameter {reportParameterId} not active or report file cannot be found ({reportPath})")
+                MessageBox.Show($"Report {reportPath} nicht gefunden")
+                Return
+            End If
 
-        If isActive AndAlso File.Exists(reportPath) Then
-            StiViewerControl1.Report = StiReport.CreateNewReport
-            StiViewerControl1.Report.Load(reportPath)
-        End If
+            If StiViewerControl1.Report Is Nothing OrElse StiViewerControl1.Report.Dictionary.Databases Is Nothing Then
+                _logger.Error($"Failed to open or load report {reportPath}")
+                MessageBox.Show($"Bericht konnte nicht geladen werden ({reportPath})")
+                Return
+            End If
 
-        If StiViewerControl1.Report Is Nothing OrElse StiViewerControl1.Report.Dictionary.Databases Is Nothing Then
-            Throw New Exception("Bericht konnte nicht gefunden oder geladen werden")
+            Dim relations = StiViewerControl1.Report.Dictionary.Relations.SaveToJsonObject(StiJsonSaveMode.Report)
+
+            StiViewerControl1.Report.Dictionary.Databases.Clear()
+            StiViewerControl1.Report.Dictionary.Databases.Add(New StiOleDbDatabase("OLE DB", DataConnection.ConnectionString))
+
+            StiViewerControl1.Report.Dictionary.DataSources.Clear()
+            Dim queries = GetSqlStatements(billType, rechnungsNummern)
+            StiViewerControl1.Report.Dictionary.DataSources.AddRange(queries.Select(Function(statement)
+                                                                                        Dim ds = (New StiOleDbSource("OLE DB", statement.Key, statement.Key, statement.Value))
+                                                                                        ds.Dictionary = StiViewerControl1.Report.Dictionary
+                                                                                        Return ds
+                                                                                    End Function).ToArray)
+
+            If relations IsNot Nothing Then
+                StiViewerControl1.Report.Dictionary.Relations.LoadFromJsonObject(relations)
+            End If
+
+            StiViewerControl1.Report.Dictionary.RegRelations()
+            StiViewerControl1.Report.Dictionary.SynchronizeRelations()
+            StiViewerControl1.Report.Dictionary.Synchronize()
+
+            AddHandler StiViewerControl1.ProcessExport, AddressOf HandleProcesExport
+
+            StiViewerControl1.Report.Render()
+        Catch ex As Exception
+            _logger.Error($"Exception during {NameOf(ReportForm)} constructor", ex)
+            Throw
+        Finally
+            _logger.Debug($"Leaving {NameOf(ReportForm)} constructor")
+        End Try
+    End Sub
+
+    Public Sub SavePdf()
+        Dim pdfExportService = StiOptions.Services.Exports.FirstOrDefault(Function(s) s.ServiceName.ToLower().Contains("pdf"))
+        StiViewerControl1.InvokeProcessExport(pdfExportService)
+    End Sub
+
+    Private Sub HandleProcesExport(sender As Object, args As EventArgs)
+        ' Check if the user is trying to export as PDF
+        Dim service = TryCast(sender, StiPdfExportService)
+        If service Is Nothing Then
+            RemoveHandler StiViewerControl1.ProcessExport, AddressOf HandleProcesExport
+            StiViewerControl1.InvokeProcessExport(sender)
+            AddHandler StiViewerControl1.ProcessExport, AddressOf HandleProcesExport
             Return
         End If
 
-        Dim relations = StiViewerControl1.Report.Dictionary.Relations.SaveToJsonObject(Stimulsoft.Base.StiJsonSaveMode.Report)
-
-        StiViewerControl1.Report.Dictionary.Databases.Clear()
-        StiViewerControl1.Report.Dictionary.Databases.Add(New StiOleDbDatabase("OLE DB", DataConnection.ConnectionString))
-
-        StiViewerControl1.Report.Dictionary.DataSources.Clear()
-        Dim queries = GetSqlStatements(billType, rechnungsNummern)
-        StiViewerControl1.Report.Dictionary.DataSources.AddRange(queries.Select(Function(statement)
-                                                                                    Dim ds = (New StiOleDbSource("OLE DB", statement.Key, statement.Key, statement.Value))
-                                                                                    ds.Dictionary = StiViewerControl1.Report.Dictionary
-                                                                                    Return ds
-                                                                                End Function).ToArray)
-
-        If relations IsNot Nothing Then
-            StiViewerControl1.Report.Dictionary.Relations.LoadFromJsonObject(relations)
-        End If
-
-        StiViewerControl1.Report.Dictionary.RegRelations()
-        StiViewerControl1.Report.Dictionary.SynchronizeRelations()
-        StiViewerControl1.Report.Dictionary.Synchronize()
-
-        AddHandler StiViewerControl1.ProcessExport,
-            Sub(sender As Object, args As EventArgs)
-                ' Check if the user is trying to export as PDF
-                Dim service = TryCast(sender, StiPdfExportService)
-                If service Is Nothing Then Return
-                Using stiFormRunner = StiGuiOptions.GetExportFormRunner("StiPdfExportSetupForm", StiGuiMode.Gdi, Me)
-                    AddHandler stiFormRunner.Complete,
+        Using stiFormRunner = StiGuiOptions.GetExportFormRunner("StiPdfExportSetupForm", StiGuiMode.Gdi, Me)
+            AddHandler stiFormRunner.Complete,
                     Sub(form As IStiFormRunner, e As StiShowDialogCompleteEvetArgs)
                         Dim saveDialog = New SaveFileDialog
                         saveDialog.AddExtension = True
@@ -101,6 +132,7 @@ Public Class ReportForm
                         Dim result = saveDialog.ShowDialog()
                         If result = DialogResult.OK Then
                             Try
+                                _logger.Debug($"Attempting to export bill pdf with embedded xml data to {saveDialog.FileName}")
                                 Using stream = New FileStream(saveDialog.FileName, FileMode.Create)
                                     Dim settings = New StiPdfExportSettings()
                                     settings.PageRange = form("PagesRange")
@@ -123,9 +155,9 @@ Public Class ReportForm
                                     settings.ImageResolutionMode = form("ImageResolutionMode")
                                     settings.CertificateThumbprint = form("CertificateThumbprint")
 
-                                    For Each rechnungsNummer In rechnungsNummern
+                                    For Each rechnungsNummer In _rechnungsNummern
                                         Using xmlStream = New MemoryStream
-                                            _xmlExporter.CreateBillXml(xmlStream, billType, rechnungsNummer)
+                                            _xmlExporter.CreateBillXml(xmlStream, _billType, rechnungsNummer)
                                             settings.EmbeddedFiles.Add(New StiPdfEmbeddedFileData($"XRechnung_{rechnungsNummer}.xml", $"XRechnung Nr. {rechnungsNummer}", xmlStream.GetBuffer(), "application/xml"))
                                         End Using
                                     Next
@@ -135,46 +167,19 @@ Public Class ReportForm
                                 End Using
 
                             Catch ex As Exception
+                                _logger.Error($"Exception while trying to save report to pdf file", ex)
                                 MessageBox.Show("Fehler beim Speichern!")
                                 Return
+                            Finally
+                                _logger.Debug("Finished exporting bill pdf.")
                             End Try
 
                             MessageBox.Show("Speichern erfolgreich!")
                         End If
                     End Sub
 
-                    stiFormRunner.ShowDialog()
-
-
-                End Using
-
-
-                'service.Export(StiViewerControl1.Report)
-                'If viewer.expo = StiExportFormat.Pdf Then
-                '    ' Cancel the default export operation
-                '    e.Cancel = True
-
-                '    ' Get the report
-                '    Dim report = viewer.Report
-
-                '    ' Define custom PDF export settings (like embedding XML for XRechnung)
-                '    Dim pdfSettings As New StiPdfExportSettings()
-                '    pdfSettings.PdfACompliance = StiPdfACompliance.PdfA3B
-
-                '    ' Assume xmlPath is the path to your XRechnung XML file
-                '    pdfSettings.EmbeddedFiles.Add(New StiPdfEmbeddedFile("XRechnung.xml", xmlPath, True))
-
-                '    ' Manually export the report with the custom settings
-                '    report.ExportDocument(StiExportFormat.Pdf, "output.pdf", pdfSettings)
-                'End If
-            End Sub
-
-        StiViewerControl1.Report.Render()
-    End Sub
-
-    Public Sub SavePdf()
-        Dim pdfExportService = StiOptions.Services.Exports.FirstOrDefault(Function(s) s.ServiceName.ToLower().Contains("pdf"))
-        StiViewerControl1.InvokeProcessExport(pdfExportService)
+            stiFormRunner.ShowDialog()
+        End Using
     End Sub
 
     Private Function GetReportParameterId(rechnungsArt As RechnungsArt) As String
