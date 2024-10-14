@@ -108,13 +108,13 @@ Public Class RechnungsUebersicht
                         Try
                             _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
                         Catch ex As Exception
-                            MessageBox.Show("Speichern fehlgeschlagen!")
+                            MessageBox.Show("Speichern fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
                             Return
                         End Try
 
                     End Using
 
-                    MessageBox.Show("Speichern erfolgreich!")
+                    MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
                 Case "Hybrid"
                     Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New List(Of Integer) From {rechnungsNummer})
                     reportForm.SavePdf()
@@ -130,7 +130,7 @@ Public Class RechnungsUebersicht
                         Try
                             _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
                         Catch ex As Exception
-                            MessageBox.Show("Speichern fehlgeschlagen!")
+                            MessageBox.Show("Speichern fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
                             Return
                         End Try
                     End Using
@@ -138,7 +138,7 @@ Public Class RechnungsUebersicht
                     _xmlExporter.Validate(fileDialog.FileName)
             End Select
         Catch ex As Exception
-            MessageBox.Show(ex.Message)
+            MessageBox.Show(ex.Message, "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
     End Sub
 
@@ -217,7 +217,7 @@ Public Class RechnungsUebersicht
             reportForm.ShowDialog()
         Catch ex As Exception
             _logger.Error($"Failed to create {NameOf(ReportForm)}")
-            MessageBox.Show("Unbekannter Fehler beim Anzeigen der Rechnung!")
+            MessageBox.Show("Unbekannter Fehler beim Anzeigen der Rechnung!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
     End Sub
 
@@ -233,7 +233,7 @@ Public Class RechnungsUebersicht
             reportForm.ShowDialog()
         Catch ex As Exception
             _logger.Error($"Failed to create {NameOf(ReportForm)}")
-            MessageBox.Show("Unbekannter Fehler beim Anzeigen der Rechnung!")
+            MessageBox.Show("Unbekannter Fehler beim Anzeigen der Rechnung!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
 
     End Sub

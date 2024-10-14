@@ -222,7 +222,7 @@ Public Class XRechnungExporter
             'MessageBox.Show("Rechnung wurde erfolgreich gespeichert.")
         Catch ex As Exception
             _logger.Error($"Exception during {NameOf(CreateBillXml)}", ex)
-            MessageBox.Show("Speichern fehlgschlagen!")
+            MessageBox.Show("Speichern fehlgschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
         Finally
             _logger.Debug($"Leaving {NameOf(CreateBillXml)}")
         End Try
@@ -244,14 +244,14 @@ Public Class XRechnungExporter
 
             If Not IO.File.Exists(validatorFileName) OrElse Not Directory.Exists(configurationFolder) OrElse Not IO.File.Exists(configFile) OrElse Not IO.File.Exists(scenarioFile) Then
                 _logger.Error($"Validator or configuration not found.")
-                MessageBox.Show("Validator not installed!")
+                MessageBox.Show("Validator nicht installiert!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
                 Return
             End If
 
             Dim javaFolder = Environment.ExpandEnvironmentVariables("JRE_HOME")
             If String.IsNullOrWhiteSpace(javaFolder) Then
                 _logger.Error("Java JRE not installed")
-                MessageBox.Show("Jave JRE not found!")
+                MessageBox.Show("Jave JRE nicht installiert!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
                 Return
             End If
 
@@ -267,18 +267,18 @@ Public Class XRechnungExporter
             p.WaitForExit()
 
             If p.ExitCode <> 0 Then
-                Dim result = MessageBox.Show("Validierung Fehlgeschlagen. Html-Report anzeigen?", "Fehler", MessageBoxButtons.YesNo)
+                Dim result = MessageBox.Show("Validierung Fehlgeschlagen. Html-Report anzeigen?", , "Fleet Fuhrpark IM System", MessageBoxButtons.YesNo, MessageBoxIcon.Error)
                 If result <> DialogResult.Yes Then Return
 
-                Dim reporFile = Directory.EnumerateFiles(validatorFolder, "*.html").FirstOrDefault()
+                Dim reporFile = Directory.EnumerateFiles(reportFolder, "*.html").FirstOrDefault()
                 If reporFile Is Nothing Then
-                    MessageBox.Show("Fehler: Reportdatei nicht gefunden!")
+                    MessageBox.Show("Fehler: Reportdatei nicht gefunden!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
                     Return
                 End If
 
                 Process.Start(reporFile)
             Else
-                MessageBox.Show("Validierung erfolgreich!")
+                MessageBox.Show("Validierung erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
             End If
         Catch ex As Exception
             _logger.Error($"Exception during {NameOf(Validate)}", ex)
