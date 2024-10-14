@@ -91,51 +91,55 @@ Public Class RechnungsUebersicht
         Dim row = dataTable.Rows(e.RowIndex)
         Dim rechnungsNummer = Convert.ToInt32(row.Item(0))
 
-        Select Case e.Column.Name
-            Case "Pdf"
-                Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New List(Of Integer) From {rechnungsNummer})
-                reportForm.ShowDialog()
-            Case "Xml"
-                Dim fileDialog = New SaveFileDialog
-                fileDialog.Title = "Bitte XRechnung Speicherort auswählen."
-                fileDialog.Filter = "XRechnung|*.xml"
-                fileDialog.AddExtension = True
-                fileDialog.DefaultExt = "xml"
-                Dim result = fileDialog.ShowDialog()
-                If result <> DialogResult.OK Then Return
-                Using fileStream = System.IO.File.Create(fileDialog.FileName)
-                    Try
-                        _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
-                    Catch ex As Exception
-                        MessageBox.Show("Speichern fehlgeschlagen!")
-                        Return
-                    End Try
+        Try
+            Select Case e.Column.Name
+                Case "Pdf"
+                    Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New List(Of Integer) From {rechnungsNummer})
+                    reportForm.ShowDialog()
+                Case "Xml"
+                    Dim fileDialog = New SaveFileDialog
+                    fileDialog.Title = "Bitte XRechnung Speicherort auswählen."
+                    fileDialog.Filter = "XRechnung|*.xml"
+                    fileDialog.AddExtension = True
+                    fileDialog.DefaultExt = "xml"
+                    Dim result = fileDialog.ShowDialog()
+                    If result <> DialogResult.OK Then Return
+                    Using fileStream = System.IO.File.Create(fileDialog.FileName)
+                        Try
+                            _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
+                        Catch ex As Exception
+                            MessageBox.Show("Speichern fehlgeschlagen!")
+                            Return
+                        End Try
 
-                End Using
+                    End Using
 
-                MessageBox.Show("Speichern erfolgreich!")
-            Case "Hybrid"
-                Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New List(Of Integer) From {rechnungsNummer})
-                reportForm.SavePdf()
-            Case "Validator"
-                Dim fileDialog = New SaveFileDialog
-                fileDialog.Title = "Bitte XRechnung Speicherort auswählen."
-                fileDialog.Filter = "XRechnung|*.xml"
-                fileDialog.AddExtension = True
-                fileDialog.DefaultExt = "xml"
-                Dim result = fileDialog.ShowDialog()
-                If result <> DialogResult.OK Then Return
-                Using fileStream = IO.File.Create(fileDialog.FileName)
-                    Try
-                        _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
-                    Catch ex As Exception
-                        MessageBox.Show("Speichern fehlgeschlagen!")
-                        Return
-                    End Try
-                End Using
+                    MessageBox.Show("Speichern erfolgreich!")
+                Case "Hybrid"
+                    Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New List(Of Integer) From {rechnungsNummer})
+                    reportForm.SavePdf()
+                Case "Validator"
+                    Dim fileDialog = New SaveFileDialog
+                    fileDialog.Title = "Bitte XRechnung Speicherort auswählen."
+                    fileDialog.Filter = "XRechnung|*.xml"
+                    fileDialog.AddExtension = True
+                    fileDialog.DefaultExt = "xml"
+                    Dim result = fileDialog.ShowDialog()
+                    If result <> DialogResult.OK Then Return
+                    Using fileStream = IO.File.Create(fileDialog.FileName)
+                        Try
+                            _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
+                        Catch ex As Exception
+                            MessageBox.Show("Speichern fehlgeschlagen!")
+                            Return
+                        End Try
+                    End Using
 
-                _xmlExporter.Validate(fileDialog.FileName)
-        End Select
+                    _xmlExporter.Validate(fileDialog.FileName)
+            End Select
+        Catch ex As Exception
+            MessageBox.Show(ex.Message)
+        End Try
     End Sub
 
     Private Function GetSqlStatement(rechnungsArt As RechnungsArt) As String

@@ -86,7 +86,7 @@ Public Class XRechnungExporter
             Dim skontoRate = 0
             Decimal.TryParse(GetDataFromColumn(items, "SkontoProzent"), skontoRate)
 
-            If Not String.IsNullOrWhiteSpace(skontoDays) AndAlso Not String.IsNullOrWhiteSpace(skontoRate) Then
+            If skontoDays > 0 AndAlso skontoRate > 0 Then
                 xRechnung.AddTradePaymentTerms($"#SKONTO#TAGE={skontoDays}#PROZENT={skontoRate:F2}#", dueDate)
             End If
 
@@ -219,7 +219,7 @@ Public Class XRechnungExporter
 
             Thread.CurrentThread.CurrentCulture = currentCulture
             Thread.CurrentThread.CurrentUICulture = currentUiCulture
-            MessageBox.Show("Rechnung wurde erfolgreich gespeichert.")
+            'MessageBox.Show("Rechnung wurde erfolgreich gespeichert.")
         Catch ex As Exception
             _logger.Error($"Exception during {NameOf(CreateBillXml)}", ex)
             MessageBox.Show("Speichern fehlgschlagen!")
@@ -233,8 +233,9 @@ Public Class XRechnungExporter
         Try
             Dim currentFolder = Path.GetDirectoryName(Me.GetType().Assembly.Location)
             Dim validatorFolder = Path.Combine(currentFolder, "validator")
-
-            CleanValidationReports(validatorFolder)
+            Dim reportFolder = Path.Combine(currentFolder, "logs", "html")
+            Directory.CreateDirectory(reportFolder)
+            CleanValidationReports(reportFolder)
 
             Dim configurationFolder = Path.Combine(validatorFolder, "configuration")
             Dim validatorFileName = Path.Combine(validatorFolder, "validationtool-1.5.0-standalone.jar")
@@ -259,7 +260,7 @@ Public Class XRechnungExporter
             pInfo.UseShellExecute = False
             pInfo.FileName = "java"
             pInfo.Arguments = arguments
-            pInfo.WorkingDirectory = validatorFolder
+            pInfo.WorkingDirectory = Path.Combine(currentFolder, "logs", "html")
             pInfo.CreateNoWindow = False
             Dim p = Process.Start(pInfo)
             p.EnableRaisingEvents = True

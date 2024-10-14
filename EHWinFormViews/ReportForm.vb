@@ -64,8 +64,7 @@ Public Class ReportForm
                 StiViewerControl1.Report.Load(reportPath)
             Else
                 _logger.Error($"Parameter {reportParameterId} not active or report file cannot be found ({reportPath})")
-                MessageBox.Show($"Report {reportPath} nicht gefunden")
-                Return
+                Throw New Exception($"Report {reportPath} nicht gefunden")
             End If
 
             If StiViewerControl1.Report Is Nothing OrElse StiViewerControl1.Report.Dictionary.Databases Is Nothing Then
