@@ -55,7 +55,7 @@ Public Class ReportForm
                 isActive = dataTable.Rows(0).Item(1)
             Else
                 _logger.Error($"Parameter {reportParameterId} could not be found in DB")
-                MessageBox.Show($"Parameter {reportParameterId} not found!")
+                MessageBox.Show($"Parameter {reportParameterId} nicht gefunden!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
                 Return
             End If
 
@@ -69,7 +69,7 @@ Public Class ReportForm
 
             If StiViewerControl1.Report Is Nothing OrElse StiViewerControl1.Report.Dictionary.Databases Is Nothing Then
                 _logger.Error($"Failed to open or load report {reportPath}")
-                MessageBox.Show($"Bericht konnte nicht geladen werden ({reportPath})")
+                MessageBox.Show($"Bericht konnte nicht geladen werden ({reportPath})", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
                 Return
             End If
 
@@ -167,13 +167,13 @@ Public Class ReportForm
 
                             Catch ex As Exception
                                 _logger.Error($"Exception while trying to save report to pdf file", ex)
-                                MessageBox.Show("Fehler beim Speichern!")
+                                MessageBox.Show("Fehler beim Speichern!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
                                 Return
                             Finally
                                 _logger.Debug("Finished exporting bill pdf.")
                             End Try
 
-                            MessageBox.Show("Speichern erfolgreich!")
+                            MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
                         End If
                     End Sub
 
