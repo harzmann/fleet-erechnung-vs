@@ -1,4 +1,5 @@
-﻿Imports System.Windows.Forms
+﻿Imports System.Web.UI.WebControls
+Imports System.Windows.Forms
 Imports ehfleet_classlibrary
 Imports EHWinFormViews.GermanRadGridViewLocalization
 Imports log4net
@@ -47,6 +48,7 @@ Public Class RechnungsUebersicht
 
     Private Function RefreshGrid()
         DataGridView1.Columns.Clear()
+        DataGridView1.AutoSizeRows = True
         Dim sql = GetSqlStatement(_rechnungsArt)
         Dim dataTable = _dbConnection.FillDataTable(sql)
 
@@ -60,7 +62,9 @@ Public Class RechnungsUebersicht
         buttonColumn.DefaultText = "Bericht"
         buttonColumn.UseDefaultText = False
         buttonColumn.Image = ImageListIcons32.Images.Item(0)
-        buttonColumn.ImageLayout = ImageLayout.Center
+        buttonColumn.ImageLayout = ImageLayout.Stretch
+        buttonColumn.ImageAlignment = Drawing.ContentAlignment.MiddleCenter
+        buttonColumn.AutoSizeMode = True
         DataGridView1.Columns.Add(buttonColumn)
 
         buttonColumn = New GridViewCommandColumn()
@@ -69,6 +73,9 @@ Public Class RechnungsUebersicht
         buttonColumn.DefaultText = "XRechnung XML"
         buttonColumn.UseDefaultText = False
         buttonColumn.Image = ImageListIcons32.Images.Item(2)
+        buttonColumn.ImageLayout = ImageLayout.Stretch
+        buttonColumn.ImageAlignment = Drawing.ContentAlignment.MiddleCenter
+        buttonColumn.AutoSizeMode = True
         DataGridView1.Columns.Add(buttonColumn)
 
         buttonColumn = New GridViewCommandColumn()
@@ -77,6 +84,9 @@ Public Class RechnungsUebersicht
         buttonColumn.DefaultText = "XRechnung Hybrid"
         buttonColumn.UseDefaultText = False
         buttonColumn.Image = ImageListIcons32.Images.Item(5)
+        buttonColumn.ImageLayout = ImageLayout.Stretch
+        buttonColumn.ImageAlignment = Drawing.ContentAlignment.MiddleCenter
+        buttonColumn.AutoSizeMode = True
         DataGridView1.Columns.Add(buttonColumn)
 
         buttonColumn = New GridViewCommandColumn()
@@ -85,6 +95,9 @@ Public Class RechnungsUebersicht
         buttonColumn.DefaultText = "XRechnung Validator"
         buttonColumn.UseDefaultText = False
         buttonColumn.Image = ImageListIcons32.Images.Item(7)
+        buttonColumn.ImageLayout = ImageLayout.Stretch
+        buttonColumn.ImageAlignment = Drawing.ContentAlignment.MiddleCenter
+        buttonColumn.AutoSizeMode = True
         DataGridView1.Columns.Add(buttonColumn)
     End Function
 
