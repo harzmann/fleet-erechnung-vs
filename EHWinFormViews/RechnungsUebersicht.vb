@@ -49,6 +49,7 @@ Public Class RechnungsUebersicht
     Private Function RefreshGrid()
         DataGridView1.Columns.Clear()
         DataGridView1.AutoSizeRows = True
+        DataGridView1.AutoSizeColumnsMode = GridViewAutoSizeColumnsMode.Fill
         Dim sql = GetSqlStatement(_rechnungsArt)
         Dim dataTable = _dbConnection.FillDataTable(sql)
 
