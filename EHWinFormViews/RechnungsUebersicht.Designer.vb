@@ -25,7 +25,7 @@ Partial Class RechnungsUebersicht
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(RechnungsUebersicht))
-        Dim TableViewDefinition2 As Telerik.WinControls.UI.TableViewDefinition = New Telerik.WinControls.UI.TableViewDefinition()
+        Dim TableViewDefinition1 As Telerik.WinControls.UI.TableViewDefinition = New Telerik.WinControls.UI.TableViewDefinition()
         Me.PanelMenu = New System.Windows.Forms.Panel()
         Me.GroupBoxBerichte = New System.Windows.Forms.GroupBox()
         Me.Button2 = New System.Windows.Forms.Button()
@@ -52,7 +52,7 @@ Partial Class RechnungsUebersicht
         Me.PanelMenu.Location = New System.Drawing.Point(0, 0)
         Me.PanelMenu.Margin = New System.Windows.Forms.Padding(2)
         Me.PanelMenu.Name = "PanelMenu"
-        Me.PanelMenu.Size = New System.Drawing.Size(831, 94)
+        Me.PanelMenu.Size = New System.Drawing.Size(1262, 118)
         Me.PanelMenu.TabIndex = 13
         '
         'GroupBoxBerichte
@@ -60,31 +60,31 @@ Partial Class RechnungsUebersicht
         Me.GroupBoxBerichte.Controls.Add(Me.Button2)
         Me.GroupBoxBerichte.Controls.Add(Me.Button1)
         Me.GroupBoxBerichte.Dock = System.Windows.Forms.DockStyle.Left
-        Me.GroupBoxBerichte.Location = New System.Drawing.Point(208, 0)
+        Me.GroupBoxBerichte.Location = New System.Drawing.Point(260, 0)
         Me.GroupBoxBerichte.Margin = New System.Windows.Forms.Padding(2)
         Me.GroupBoxBerichte.Name = "GroupBoxBerichte"
         Me.GroupBoxBerichte.Padding = New System.Windows.Forms.Padding(2)
-        Me.GroupBoxBerichte.Size = New System.Drawing.Size(191, 94)
+        Me.GroupBoxBerichte.Size = New System.Drawing.Size(239, 118)
         Me.GroupBoxBerichte.TabIndex = 12
         Me.GroupBoxBerichte.TabStop = False
         Me.GroupBoxBerichte.Text = "Berichte"
         '
         'Button2
         '
-        Me.Button2.Location = New System.Drawing.Point(4, 17)
+        Me.Button2.Location = New System.Drawing.Point(5, 21)
         Me.Button2.Margin = New System.Windows.Forms.Padding(2)
         Me.Button2.Name = "Button2"
-        Me.Button2.Size = New System.Drawing.Size(176, 21)
+        Me.Button2.Size = New System.Drawing.Size(220, 26)
         Me.Button2.TabIndex = 11
         Me.Button2.Text = "Alle Rechnungen anzeigen"
         Me.Button2.UseVisualStyleBackColor = True
         '
         'Button1
         '
-        Me.Button1.Location = New System.Drawing.Point(4, 43)
+        Me.Button1.Location = New System.Drawing.Point(5, 54)
         Me.Button1.Margin = New System.Windows.Forms.Padding(2)
         Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(176, 21)
+        Me.Button1.Size = New System.Drawing.Size(220, 26)
         Me.Button1.TabIndex = 10
         Me.Button1.Text = "Ausgewählte Rechnungen anzeigen"
         Me.Button1.UseVisualStyleBackColor = True
@@ -99,7 +99,7 @@ Partial Class RechnungsUebersicht
         Me.GroupBoxRechnungsart.Margin = New System.Windows.Forms.Padding(2)
         Me.GroupBoxRechnungsart.Name = "GroupBoxRechnungsart"
         Me.GroupBoxRechnungsart.Padding = New System.Windows.Forms.Padding(2)
-        Me.GroupBoxRechnungsart.Size = New System.Drawing.Size(208, 94)
+        Me.GroupBoxRechnungsart.Size = New System.Drawing.Size(260, 118)
         Me.GroupBoxRechnungsart.TabIndex = 11
         Me.GroupBoxRechnungsart.TabStop = False
         Me.GroupBoxRechnungsart.Text = "Rechnungsart"
@@ -109,10 +109,10 @@ Partial Class RechnungsUebersicht
         Me.ManuelleRechnungButton.Appearance = System.Windows.Forms.Appearance.Button
         Me.ManuelleRechnungButton.Image = CType(resources.GetObject("ManuelleRechnungButton.Image"), System.Drawing.Image)
         Me.ManuelleRechnungButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter
-        Me.ManuelleRechnungButton.Location = New System.Drawing.Point(134, 17)
+        Me.ManuelleRechnungButton.Location = New System.Drawing.Point(168, 21)
         Me.ManuelleRechnungButton.Margin = New System.Windows.Forms.Padding(2)
         Me.ManuelleRechnungButton.Name = "ManuelleRechnungButton"
-        Me.ManuelleRechnungButton.Size = New System.Drawing.Size(64, 64)
+        Me.ManuelleRechnungButton.Size = New System.Drawing.Size(80, 80)
         Me.ManuelleRechnungButton.TabIndex = 9
         Me.ManuelleRechnungButton.TabStop = True
         Me.ManuelleRechnungButton.Text = "MR"
@@ -124,10 +124,10 @@ Partial Class RechnungsUebersicht
         Me.TankabrechnungButton.Appearance = System.Windows.Forms.Appearance.Button
         Me.TankabrechnungButton.Image = CType(resources.GetObject("TankabrechnungButton.Image"), System.Drawing.Image)
         Me.TankabrechnungButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter
-        Me.TankabrechnungButton.Location = New System.Drawing.Point(69, 17)
+        Me.TankabrechnungButton.Location = New System.Drawing.Point(86, 21)
         Me.TankabrechnungButton.Margin = New System.Windows.Forms.Padding(2)
         Me.TankabrechnungButton.Name = "TankabrechnungButton"
-        Me.TankabrechnungButton.Size = New System.Drawing.Size(64, 64)
+        Me.TankabrechnungButton.Size = New System.Drawing.Size(80, 80)
         Me.TankabrechnungButton.TabIndex = 8
         Me.TankabrechnungButton.TabStop = True
         Me.TankabrechnungButton.Text = "Tankstelle"
@@ -139,10 +139,10 @@ Partial Class RechnungsUebersicht
         Me.WerkstattRechnungButton.Appearance = System.Windows.Forms.Appearance.Button
         Me.WerkstattRechnungButton.Image = CType(resources.GetObject("WerkstattRechnungButton.Image"), System.Drawing.Image)
         Me.WerkstattRechnungButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter
-        Me.WerkstattRechnungButton.Location = New System.Drawing.Point(4, 17)
+        Me.WerkstattRechnungButton.Location = New System.Drawing.Point(5, 21)
         Me.WerkstattRechnungButton.Margin = New System.Windows.Forms.Padding(2)
         Me.WerkstattRechnungButton.Name = "WerkstattRechnungButton"
-        Me.WerkstattRechnungButton.Size = New System.Drawing.Size(64, 64)
+        Me.WerkstattRechnungButton.Size = New System.Drawing.Size(80, 80)
         Me.WerkstattRechnungButton.TabIndex = 7
         Me.WerkstattRechnungButton.TabStop = True
         Me.WerkstattRechnungButton.Text = "Werkstatt"
@@ -153,10 +153,10 @@ Partial Class RechnungsUebersicht
         '
         Me.PanelDatagrid.Controls.Add(Me.DataGridView1)
         Me.PanelDatagrid.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.PanelDatagrid.Location = New System.Drawing.Point(0, 94)
+        Me.PanelDatagrid.Location = New System.Drawing.Point(0, 118)
         Me.PanelDatagrid.Margin = New System.Windows.Forms.Padding(2)
         Me.PanelDatagrid.Name = "PanelDatagrid"
-        Me.PanelDatagrid.Size = New System.Drawing.Size(831, 399)
+        Me.PanelDatagrid.Size = New System.Drawing.Size(1262, 603)
         Me.PanelDatagrid.TabIndex = 14
         '
         'DataGridView1
@@ -176,16 +176,16 @@ Partial Class RechnungsUebersicht
         Me.DataGridView1.MasterTemplate.ClipboardPasteMode = Telerik.WinControls.UI.GridViewClipboardPasteMode.Disable
         Me.DataGridView1.MasterTemplate.EnableFiltering = True
         Me.DataGridView1.MasterTemplate.ShowGroupedColumns = True
-        Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition2
+        Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition1
         Me.DataGridView1.Name = "DataGridView1"
-        Me.DataGridView1.Size = New System.Drawing.Size(831, 399)
+        Me.DataGridView1.Size = New System.Drawing.Size(1262, 603)
         Me.DataGridView1.TabIndex = 13
         '
         'RechnungsUebersicht
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(120.0!, 120.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
-        Me.ClientSize = New System.Drawing.Size(831, 493)
+        Me.ClientSize = New System.Drawing.Size(1262, 721)
         Me.Controls.Add(Me.PanelDatagrid)
         Me.Controls.Add(Me.PanelMenu)
         Me.Margin = New System.Windows.Forms.Padding(2)
