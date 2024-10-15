@@ -88,6 +88,8 @@ Public Class XRechnungExporter
 
             If skontoDays > 0 AndAlso skontoRate > 0 Then
                 xRechnung.AddTradePaymentTerms($"#SKONTO#TAGE={skontoDays}#PROZENT={skontoRate:F2}#", dueDate)
+            Else
+                xRechnung.AddTradePaymentTerms($"Zahlbar in {daysToDueDate} Tagen", dueDate)
             End If
 
             xRechnung.SetPaymentMeans(PaymentMeansTypeCodes.CreditTransfer)
