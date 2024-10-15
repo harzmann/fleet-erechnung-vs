@@ -22,6 +22,7 @@ Public Class RechnungsUebersicht
         _xmlExporter = New XRechnungExporter(dbConnection)
         RadGridLocalizationProvider.CurrentProvider = New GermanRadGridLocalizationProvider
         ' This call is required by the designer.
+
         InitializeComponent()
         DataGridView1.SelectionMode = GridViewSelectionMode.FullRowSelect
         DataGridView1.MultiSelect = True
@@ -82,7 +83,7 @@ Public Class RechnungsUebersicht
         DataGridView1.Columns.Add(buttonColumn)
     End Function
 
-    Private Sub DataGridView1_CellClick(sender As Object, e As GridViewCellEventArgs) Handles DataGridView1.CommandCellClick
+    Private Sub DataGridView1_CellClick(sender As Object, e As GridViewCellEventArgs) Handles DataGridView1.CellClick
         ' Check if the click is on a button column
         If e.RowIndex < 0 Then Return
 
@@ -237,4 +238,5 @@ Public Class RechnungsUebersicht
         End Try
 
     End Sub
+
 End Class

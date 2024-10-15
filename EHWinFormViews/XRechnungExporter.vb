@@ -244,7 +244,7 @@ Public Class XRechnungExporter
 
             If Not IO.File.Exists(validatorFileName) OrElse Not Directory.Exists(configurationFolder) OrElse Not IO.File.Exists(configFile) OrElse Not IO.File.Exists(scenarioFile) Then
                 _logger.Error($"Validator or configuration not found.")
-                MessageBox.Show("Validator not installed!")
+                MessageBox.Show("Validator not installed!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
                 Return
             End If
 
