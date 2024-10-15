@@ -24,8 +24,9 @@ Partial Class RechnungsUebersicht
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
+        Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(RechnungsUebersicht))
-        Dim TableViewDefinition1 As Telerik.WinControls.UI.TableViewDefinition = New Telerik.WinControls.UI.TableViewDefinition()
+        Dim TableViewDefinition2 As Telerik.WinControls.UI.TableViewDefinition = New Telerik.WinControls.UI.TableViewDefinition()
         Me.PanelMenu = New System.Windows.Forms.Panel()
         Me.GroupBoxBerichte = New System.Windows.Forms.GroupBox()
         Me.Button2 = New System.Windows.Forms.Button()
@@ -36,6 +37,7 @@ Partial Class RechnungsUebersicht
         Me.WerkstattRechnungButton = New System.Windows.Forms.RadioButton()
         Me.PanelDatagrid = New System.Windows.Forms.Panel()
         Me.DataGridView1 = New Telerik.WinControls.UI.RadGridView()
+        Me.ImageListIcons32 = New System.Windows.Forms.ImageList(Me.components)
         Me.PanelMenu.SuspendLayout()
         Me.GroupBoxBerichte.SuspendLayout()
         Me.GroupBoxRechnungsart.SuspendLayout()
@@ -176,10 +178,23 @@ Partial Class RechnungsUebersicht
         Me.DataGridView1.MasterTemplate.ClipboardPasteMode = Telerik.WinControls.UI.GridViewClipboardPasteMode.Disable
         Me.DataGridView1.MasterTemplate.EnableFiltering = True
         Me.DataGridView1.MasterTemplate.ShowGroupedColumns = True
-        Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition1
+        Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition2
         Me.DataGridView1.Name = "DataGridView1"
         Me.DataGridView1.Size = New System.Drawing.Size(1262, 603)
         Me.DataGridView1.TabIndex = 13
+        '
+        'ImageListIcons32
+        '
+        Me.ImageListIcons32.ImageStream = CType(resources.GetObject("ImageListIcons32.ImageStream"), System.Windows.Forms.ImageListStreamer)
+        Me.ImageListIcons32.TransparentColor = System.Drawing.Color.Transparent
+        Me.ImageListIcons32.Images.SetKeyName(0, "approval_32x32.png")
+        Me.ImageListIcons32.Images.SetKeyName(1, "car-repair_32x32.png")
+        Me.ImageListIcons32.Images.SetKeyName(2, "file_32x32.png")
+        Me.ImageListIcons32.Images.SetKeyName(3, "garage_32x32.png")
+        Me.ImageListIcons32.Images.SetKeyName(4, "gasoline_32x32.png")
+        Me.ImageListIcons32.Images.SetKeyName(5, "pdf_32x32.png")
+        Me.ImageListIcons32.Images.SetKeyName(6, "service_32x32.png")
+        Me.ImageListIcons32.Images.SetKeyName(7, "trust_32x32.png")
         '
         'RechnungsUebersicht
         '
@@ -210,4 +225,5 @@ Partial Class RechnungsUebersicht
     Friend WithEvents Button1 As Windows.Forms.Button
     Friend WithEvents PanelDatagrid As Windows.Forms.Panel
     Public WithEvents DataGridView1 As RadGridView
+    Friend WithEvents ImageListIcons32 As Windows.Forms.ImageList
 End Class

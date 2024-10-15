@@ -55,31 +55,36 @@ Public Class RechnungsUebersicht
         DataGridView1.DataSource = dataTableBindingSource
 
         Dim buttonColumn As New GridViewCommandColumn()
-        buttonColumn.Name = "Pdf"
-        buttonColumn.HeaderText = "Pdf"
-        buttonColumn.DefaultText = "X Rechnung Pdf"
-        buttonColumn.UseDefaultText = True
+        buttonColumn.Name = "Bericht"
+        buttonColumn.HeaderText = "Bericht"
+        buttonColumn.DefaultText = "Bericht"
+        buttonColumn.UseDefaultText = False
+        buttonColumn.Image = ImageListIcons32.Images.Item(0)
+        buttonColumn.ImageLayout = ImageLayout.Center
         DataGridView1.Columns.Add(buttonColumn)
 
         buttonColumn = New GridViewCommandColumn()
-        buttonColumn.Name = "Xml"
-        buttonColumn.HeaderText = "Xml"
-        buttonColumn.DefaultText = "X Rechnung Xml"
-        buttonColumn.UseDefaultText = True
+        buttonColumn.Name = "XML"
+        buttonColumn.HeaderText = "XML"
+        buttonColumn.DefaultText = "XRechnung XML"
+        buttonColumn.UseDefaultText = False
+        buttonColumn.Image = ImageListIcons32.Images.Item(2)
         DataGridView1.Columns.Add(buttonColumn)
 
         buttonColumn = New GridViewCommandColumn()
-        buttonColumn.Name = "Hybrid"
-        buttonColumn.HeaderText = "Hybrid"
-        buttonColumn.DefaultText = "X Rechnung Hybrid"
-        buttonColumn.UseDefaultText = True
+        buttonColumn.Name = "PDF"
+        buttonColumn.HeaderText = "PDF"
+        buttonColumn.DefaultText = "XRechnung Hybrid"
+        buttonColumn.UseDefaultText = False
+        buttonColumn.Image = ImageListIcons32.Images.Item(5)
         DataGridView1.Columns.Add(buttonColumn)
 
         buttonColumn = New GridViewCommandColumn()
         buttonColumn.Name = "Validator"
         buttonColumn.HeaderText = "Validator"
-        buttonColumn.DefaultText = "X Rechnung Validator"
-        buttonColumn.UseDefaultText = True
+        buttonColumn.DefaultText = "XRechnung Validator"
+        buttonColumn.UseDefaultText = False
+        buttonColumn.Image = ImageListIcons32.Images.Item(7)
         DataGridView1.Columns.Add(buttonColumn)
     End Function
 

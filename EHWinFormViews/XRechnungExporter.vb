@@ -267,7 +267,7 @@ Public Class XRechnungExporter
             p.WaitForExit()
 
             If p.ExitCode <> 0 Then
-                Dim result = MessageBox.Show("Validierung Fehlgeschlagen. Html-Report anzeigen?", , "Fleet Fuhrpark IM System", MessageBoxButtons.YesNo, MessageBoxIcon.Error)
+                Dim result = MessageBox.Show("Validierung Fehlgeschlagen. Html-Report anzeigen?", "Fleet Fuhrpark IM System", MessageBoxButtons.YesNo, MessageBoxIcon.Error)
                 If result <> DialogResult.Yes Then Return
 
                 Dim reporFile = Directory.EnumerateFiles(reportFolder, "*.html").FirstOrDefault()
