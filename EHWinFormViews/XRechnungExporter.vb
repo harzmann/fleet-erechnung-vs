@@ -88,6 +88,8 @@ Public Class XRechnungExporter
 
             If skontoDays > 0 AndAlso skontoRate > 0 Then
                 xRechnung.AddTradePaymentTerms($"#SKONTO#TAGE={skontoDays}#PROZENT={skontoRate:F2}#", dueDate)
+            Else
+                xRechnung.AddTradePaymentTerms($"Zahlbar in {daysToDueDate} Tagen", dueDate)
             End If
 
             xRechnung.SetPaymentMeans(PaymentMeansTypeCodes.CreditTransfer)
@@ -267,7 +269,7 @@ Public Class XRechnungExporter
             p.WaitForExit()
 
             If p.ExitCode <> 0 Then
-                Dim result = MessageBox.Show("Validierung Fehlgeschlagen. Html-Report anzeigen?", , "Fleet Fuhrpark IM System", MessageBoxButtons.YesNo, MessageBoxIcon.Error)
+                Dim result = MessageBox.Show("Validierung Fehlgeschlagen. Html-Report anzeigen?", "Fleet Fuhrpark IM System", MessageBoxButtons.YesNo, MessageBoxIcon.Error)
                 If result <> DialogResult.Yes Then Return
 
                 Dim reporFile = Directory.EnumerateFiles(reportFolder, "*.html").FirstOrDefault()
