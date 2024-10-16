@@ -308,10 +308,10 @@ Public Class XRechnungExporter
         Return path
     End Function
 
-    Public Function GetExportFilePath(billType As RechnungsArt, rechnungsNummer As Integer, billDate As Date) As String
+    Public Function GetExportFilePath(billType As RechnungsArt, rechnungsNummer As Integer, billDate As Date, extension As String) As String
         Dim exportPath = GetExportPath(billType)
-        Dim formattedBillNumber = GetFormattedBillNumber(billType, rechnungsNummer)
-        Dim fileName = $"{formattedBillNumber}_{billDate.ToString("yyyyMMdd_HHmmss")}"
+        Dim formattedBillNumber = GetFormattedBillNumber(rechnungsNummer, billType)
+        Dim fileName = $"{formattedBillNumber}_{billDate.ToString("yyyyMMdd_HHmmss")}.{extension}"
         Dim filePath = Path.Combine(exportPath, fileName)
         Directory.CreateDirectory(exportPath)
         Return filePath

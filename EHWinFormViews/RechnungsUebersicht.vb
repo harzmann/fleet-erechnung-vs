@@ -188,7 +188,6 @@ Public Class RechnungsUebersicht
         buttonColumn.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
         buttonColumn.Width = 80
         DataGridView1.Columns.Add(buttonColumn)
-
     End Function
 
     Private Sub DataGridView1_CellClick(sender As Object, e As GridViewCellEventArgs) Handles DataGridView1.CellClick
@@ -207,8 +206,8 @@ Public Class RechnungsUebersicht
                     Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New Dictionary(Of Integer, Date) From {{rechnungsNummer, billDate}})
                     reportForm.ShowDialog()
                 Case "XML"
-                    Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, rechnungsNummer, billDate)
-                    Using fileStream = System.IO.File.Create(filePath)
+                    Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, rechnungsNummer, billDate, "xml")
+                    Using fileStream = File.Create(filePath)
                         Try
                             _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
                         Catch ex As Exception
@@ -223,14 +222,8 @@ Public Class RechnungsUebersicht
                     Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New Dictionary(Of Integer, Date) From {{rechnungsNummer, billDate}})
                     reportForm.SavePdf()
                 Case "Validator"
-                    Dim fileDialog = New SaveFileDialog
-                    fileDialog.Title = "Bitte XRechnung Speicherort auswählen."
-                    fileDialog.Filter = "XRechnung|*.xml"
-                    fileDialog.AddExtension = True
-                    fileDialog.DefaultExt = "xml"
-                    Dim result = fileDialog.ShowDialog()
-                    If result <> DialogResult.OK Then Return
-                    Using fileStream = File.Create(fileDialog.FileName)
+                    Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, rechnungsNummer, billDate, "xml")
+                    Using fileStream = File.Create(filePath)
                         Try
                             _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
                         Catch ex As Exception
@@ -239,7 +232,7 @@ Public Class RechnungsUebersicht
                         End Try
                     End Using
 
-                    _xmlExporter.Validate(fileDialog.FileName)
+                    _xmlExporter.Validate(filePath)
             End Select
         Catch ex As Exception
             MessageBox.Show(ex.Message, "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -396,7 +389,7 @@ Public Class RechnungsUebersicht
                 End Function)
 
             For Each bill In bills.Keys
-                Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, bill, bills(bill))
+                Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, bill, bills(bill), "xml")
                 Try
                     Using fileStream = File.Create(filePath)
                         _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, bill)
@@ -416,7 +409,7 @@ Public Class RechnungsUebersicht
         Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
         Dim dataTable = CType(dataSource.DataSource, DataTable)
 
-        Dim rechnungsNummern = DataGridView1.Rows.Where(Function(r) r.GetType() = GetType(GridDataRowElement)).ToDictionary(
+        Dim rechnungsNummern = DataGridView1.Rows.Where(Function(r) r.GetType() = GetType(GridViewDataRowInfo)).ToDictionary(
             Function(rowInfo)
                 Dim dataRow = dataTable.Rows(rowInfo.Index)
                 Return Convert.ToInt32(dataRow.Item(0))
@@ -451,7 +444,7 @@ Public Class RechnungsUebersicht
                 End Function)
 
             For Each bill In bills.Keys
-                Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, bill, bills(bill))
+                Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, bill, bills(bill), "xml")
                 Try
                     Using fileStream = File.Create(filePath)
                         _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, bill)

@@ -189,7 +189,7 @@ Public Class ReportForm
             Try
                 For Each billNumber In _rechnungsNummern.Keys
                     Dim billDate = _rechnungsNummern(billNumber)
-                    Dim exportFilePath = _xmlExporter.GetExportFilePath(_billType, billNumber, billDate)
+                    Dim exportFilePath = _xmlExporter.GetExportFilePath(_billType, billNumber, billDate, "pdf")
 
                     _logger.Debug($"Attempting to export bill pdf with embedded xml data to {exportFilePath}")
                     Using stream = File.Create(exportFilePath)
