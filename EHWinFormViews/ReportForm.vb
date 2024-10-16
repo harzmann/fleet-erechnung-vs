@@ -17,7 +17,7 @@ Public Class ReportForm
 
     Private ReadOnly _logger As ILog
 
-    Private ReadOnly _rechnungsNummern As Dictionary(Of Integer, DateTime)
+    Private ReadOnly _rechnungsNummern As List(Of Integer)
 
     Private ReadOnly _billType As RechnungsArt
 
@@ -36,7 +36,7 @@ Public Class ReportForm
         StiLicense.LoadFromFile(Path.Combine(Path.GetDirectoryName(GetType(ReportForm).Assembly.Location), "license.key"))
     End Sub
 
-    Public Sub New(dbConnection As General.Database, billType As RechnungsArt, rechnungsNummern As Dictionary(Of Integer, DateTime))
+    Public Sub New(dbConnection As General.Database, billType As RechnungsArt, rechnungsNummern As List(Of Integer))
         _dataConnection = dbConnection
         _logger = LogManager.GetLogger(Me.GetType())
         _logger.Debug($"Instantiating {NameOf(ReportForm)}")
@@ -81,7 +81,7 @@ Public Class ReportForm
             StiViewerControl1.Report.Dictionary.Databases.Add(New StiOleDbDatabase("OLE DB", DataConnection.ConnectionString))
 
             StiViewerControl1.Report.Dictionary.DataSources.Clear()
-            Dim queries = GetSqlStatements(billType, rechnungsNummern.Keys.ToList)
+            Dim queries = GetSqlStatements(billType, rechnungsNummern)
             StiViewerControl1.Report.Dictionary.DataSources.AddRange(queries.Select(Function(statement)
                                                                                         Dim ds = (New StiOleDbSource("OLE DB", statement.Key, statement.Key, statement.Value))
                                                                                         ds.Dictionary = StiViewerControl1.Report.Dictionary
@@ -158,7 +158,7 @@ Public Class ReportForm
                                     settings.ImageResolutionMode = form("ImageResolutionMode")
                                     settings.CertificateThumbprint = form("CertificateThumbprint")
 
-                                    For Each rechnungsNummer In _rechnungsNummern.Keys
+                                    For Each rechnungsNummer In _rechnungsNummern
                                         Using xmlStream = New MemoryStream
                                             _xmlExporter.CreateBillXml(xmlStream, _billType, rechnungsNummer)
                                             Dim billdate = _rechnungsNummern(rechnungsNummer)
@@ -187,9 +187,8 @@ Public Class ReportForm
             End Using
         Else
             Try
-                For Each billNumber In _rechnungsNummern.Keys
-                    Dim billDate = _rechnungsNummern(billNumber)
-                    Dim exportFilePath = _xmlExporter.GetExportFilePath(_billType, billNumber, billDate, "pdf")
+                For Each billNumber In _rechnungsNummern
+                    Dim exportFilePath = _xmlExporter.GetExportFilePath(_billType, billNumber, "pdf")
 
                     _logger.Debug($"Attempting to export bill pdf with embedded xml data to {exportFilePath}")
                     Using stream = File.Create(exportFilePath)
@@ -217,7 +216,7 @@ Public Class ReportForm
                         Using xmlStream = New MemoryStream
                             _xmlExporter.CreateBillXml(xmlStream, _billType, billNumber)
                             Dim formattedBillNumber = _xmlExporter.GetFormattedBillNumber(_billType, billNumber)
-                            Dim xmlFileName = $"{formattedBillNumber}_{billDate.ToString("yyyyMMdd_HHmmss")}"
+                            Dim xmlFileName = _xmlExporter.GetExportFilePath(_billType, billNumber, "xml")
                             settings.EmbeddedFiles.Add(New StiPdfEmbeddedFileData(xmlFileName, $"XRechnung Nr. {formattedBillNumber}", xmlStream.GetBuffer(), "application/xml"))
                         End Using
 

@@ -198,15 +198,14 @@ Public Class RechnungsUebersicht
         Dim dataTable = CType(dataSource.DataSource, DataTable)
         Dim row = dataTable.Rows(e.RowIndex)
         Dim rechnungsNummer = Convert.ToInt32(row.Item(0))
-        Dim billDate = Convert.ToDateTime(row.Item(1))
 
         Try
             Select Case e.Column.Name
                 Case "Bericht"
-                    Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New Dictionary(Of Integer, Date) From {{rechnungsNummer, billDate}})
+                    Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New List(Of Integer) From {rechnungsNummer})
                     reportForm.ShowDialog()
                 Case "XML"
-                    Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, rechnungsNummer, billDate, "xml")
+                    Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, rechnungsNummer, "xml")
                     Using fileStream = File.Create(filePath)
                         Try
                             _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
@@ -219,10 +218,10 @@ Public Class RechnungsUebersicht
 
                     MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
                 Case "PDF"
-                    Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New Dictionary(Of Integer, Date) From {{rechnungsNummer, billDate}})
+                    Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New List(Of Integer) From {rechnungsNummer})
                     reportForm.SavePdf()
                 Case "Validator"
-                    Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, rechnungsNummer, billDate, "xml")
+                    Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, rechnungsNummer, "xml")
                     Using fileStream = File.Create(filePath)
                         Try
                             _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
@@ -309,15 +308,11 @@ Public Class RechnungsUebersicht
         Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
         Dim dataTable = CType(dataSource.DataSource, DataTable)
 
-        Dim rechnungsNummern = DataGridView1.Rows.Where(Function(r) r.GetType() = GetType(GridDataRowElement)).ToDictionary(
+        Dim rechnungsNummern = DataGridView1.Rows.Where(Function(r) r.GetType() = GetType(GridDataRowElement)).Select(
             Function(rowInfo)
                 Dim dataRow = dataTable.Rows(rowInfo.Index)
                 Return Convert.ToInt32(dataRow.Item(0))
-            End Function,
-            Function(rowInfo)
-                Dim dataRow = dataTable.Rows(rowInfo.Index)
-                Return Convert.ToDateTime(dataRow.Item(1))
-            End Function)
+            End Function).ToList
 
         Try
             Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, rechnungsNummern)
@@ -333,15 +328,11 @@ Public Class RechnungsUebersicht
         Dim dataTable = CType(dataSource.DataSource, DataTable)
 
         Try
-            Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, DataGridView1.SelectedRows.ToDictionary(
+            Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, DataGridView1.SelectedRows.Select(
                 Function(rowInfo)
                     Dim dataRow = dataTable.Rows(rowInfo.Index)
                     Return Convert.ToInt32(dataRow.Item(0))
-                End Function,
-                Function(rowInfo)
-                    Dim dataRow = dataTable.Rows(rowInfo.Index)
-                    Return Convert.ToDateTime(dataRow.Item(1))
-                End Function))
+                End Function).ToList)
 
             reportForm.ShowDialog()
         Catch ex As Exception
@@ -356,15 +347,11 @@ Public Class RechnungsUebersicht
         Dim dataTable = CType(dataSource.DataSource, DataTable)
 
         Try
-            Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, DataGridView1.SelectedRows.ToDictionary(
+            Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, DataGridView1.SelectedRows.Select(
                 Function(rowInfo)
                     Dim dataRow = dataTable.Rows(rowInfo.Index)
                     Return Convert.ToInt32(dataRow.Item(0))
-                End Function,
-                Function(rowInfo)
-                    Dim dataRow = dataTable.Rows(rowInfo.Index)
-                    Return Convert.ToDateTime(dataRow.Item(1))
-                End Function))
+                End Function).ToList)
 
             reportForm.SavePdf()
         Catch ex As Exception
@@ -389,7 +376,7 @@ Public Class RechnungsUebersicht
                 End Function)
 
             For Each bill In bills.Keys
-                Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, bill, bills(bill), "xml")
+                Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, bill, "xml")
                 Try
                     Using fileStream = File.Create(filePath)
                         _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, bill)
@@ -409,15 +396,11 @@ Public Class RechnungsUebersicht
         Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
         Dim dataTable = CType(dataSource.DataSource, DataTable)
 
-        Dim rechnungsNummern = DataGridView1.Rows.Where(Function(r) r.GetType() = GetType(GridViewDataRowInfo)).ToDictionary(
+        Dim rechnungsNummern = DataGridView1.Rows.Where(Function(r) r.GetType() = GetType(GridViewDataRowInfo)).Select(
             Function(rowInfo)
                 Dim dataRow = dataTable.Rows(rowInfo.Index)
                 Return Convert.ToInt32(dataRow.Item(0))
-            End Function,
-            Function(rowInfo)
-                Dim dataRow = dataTable.Rows(rowInfo.Index)
-                Return Convert.ToDateTime(dataRow.Item(1))
-            End Function)
+            End Function).ToList
 
         Try
             Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, rechnungsNummern)
@@ -444,7 +427,7 @@ Public Class RechnungsUebersicht
                 End Function)
 
             For Each bill In bills.Keys
-                Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, bill, bills(bill), "xml")
+                Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, bill, "xml")
                 Try
                     Using fileStream = File.Create(filePath)
                         _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, bill)

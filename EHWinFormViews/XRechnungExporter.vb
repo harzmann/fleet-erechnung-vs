@@ -98,6 +98,8 @@ Public Class XRechnungExporter
 
             If skontoDays > 0 AndAlso skontoRate > 0 Then
                 xRechnung.AddTradePaymentTerms($"#SKONTO#TAGE={skontoDays}#PROZENT={skontoRate:F2}#", dueDate)
+            Else
+                xRechnung.AddTradePaymentTerms($"Zahlung fällig in {daysToDueDate} Tagen")
             End If
 
             xRechnung.SetPaymentMeans(PaymentMeansTypeCodes.CreditTransfer)
@@ -308,10 +310,10 @@ Public Class XRechnungExporter
         Return path
     End Function
 
-    Public Function GetExportFilePath(billType As RechnungsArt, rechnungsNummer As Integer, billDate As Date, extension As String) As String
+    Public Function GetExportFilePath(billType As RechnungsArt, rechnungsNummer As Integer, extension As String) As String
         Dim exportPath = GetExportPath(billType)
         Dim formattedBillNumber = GetFormattedBillNumber(rechnungsNummer, billType)
-        Dim fileName = $"{formattedBillNumber}_{billDate.ToString("yyyyMMdd_HHmmss")}.{extension}"
+        Dim fileName = $"{formattedBillNumber}_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.{extension}"
         Dim filePath = Path.Combine(exportPath, fileName)
         Directory.CreateDirectory(exportPath)
         Return filePath
