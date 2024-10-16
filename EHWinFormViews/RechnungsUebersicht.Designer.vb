@@ -24,9 +24,8 @@ Partial Class RechnungsUebersicht
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(RechnungsUebersicht))
-        Dim TableViewDefinition1 As Telerik.WinControls.UI.TableViewDefinition = New Telerik.WinControls.UI.TableViewDefinition()
+        Dim TableViewDefinition2 As Telerik.WinControls.UI.TableViewDefinition = New Telerik.WinControls.UI.TableViewDefinition()
         Me.PanelMenu = New System.Windows.Forms.Panel()
         Me.GroupBoxBerichte = New System.Windows.Forms.GroupBox()
         Me.Button2 = New Telerik.WinControls.UI.RadButton()
@@ -37,8 +36,14 @@ Partial Class RechnungsUebersicht
         Me.WerkstattRechnungButton = New Telerik.WinControls.UI.RadToggleButton()
         Me.PanelDatagrid = New System.Windows.Forms.Panel()
         Me.DataGridView1 = New Telerik.WinControls.UI.RadGridView()
-        Me.ImageListIcons32 = New System.Windows.Forms.ImageList(Me.components)
         Me.CrystalTheme1 = New Telerik.WinControls.Themes.CrystalTheme()
+        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.GroupBox2 = New System.Windows.Forms.GroupBox()
+        Me.GroupBox3 = New System.Windows.Forms.GroupBox()
+        Me.SelectedPdfExportButton = New Telerik.WinControls.UI.RadButton()
+        Me.SelectedXmlExportButton = New Telerik.WinControls.UI.RadButton()
+        Me.AllXmlExportButton = New Telerik.WinControls.UI.RadButton()
+        Me.AllPdfExportButton = New Telerik.WinControls.UI.RadButton()
         Me.PanelMenu.SuspendLayout()
         Me.GroupBoxBerichte.SuspendLayout()
         CType(Me.Button2, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -50,10 +55,18 @@ Partial Class RechnungsUebersicht
         Me.PanelDatagrid.SuspendLayout()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.DataGridView1.MasterTemplate, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.GroupBox1.SuspendLayout()
+        Me.GroupBox2.SuspendLayout()
+        Me.GroupBox3.SuspendLayout()
+        CType(Me.SelectedPdfExportButton, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.SelectedXmlExportButton, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.AllXmlExportButton, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.AllPdfExportButton, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'PanelMenu
         '
+        Me.PanelMenu.Controls.Add(Me.GroupBox1)
         Me.PanelMenu.Controls.Add(Me.GroupBoxBerichte)
         Me.PanelMenu.Controls.Add(Me.GroupBoxRechnungsart)
         Me.PanelMenu.Dock = System.Windows.Forms.DockStyle.Top
@@ -190,24 +203,112 @@ Partial Class RechnungsUebersicht
         Me.DataGridView1.MasterTemplate.ClipboardPasteMode = Telerik.WinControls.UI.GridViewClipboardPasteMode.Disable
         Me.DataGridView1.MasterTemplate.EnableFiltering = True
         Me.DataGridView1.MasterTemplate.ShowGroupedColumns = True
-        Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition1
+        Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition2
         Me.DataGridView1.Name = "DataGridView1"
         Me.DataGridView1.Size = New System.Drawing.Size(1010, 483)
         Me.DataGridView1.TabIndex = 13
         Me.DataGridView1.ThemeName = "Crystal"
         '
-        'ImageListIcons32
+        'GroupBox1
         '
-        Me.ImageListIcons32.ImageStream = CType(resources.GetObject("ImageListIcons32.ImageStream"), System.Windows.Forms.ImageListStreamer)
-        Me.ImageListIcons32.TransparentColor = System.Drawing.Color.Transparent
-        Me.ImageListIcons32.Images.SetKeyName(0, "approval_32x32.png")
-        Me.ImageListIcons32.Images.SetKeyName(1, "car-repair_32x32.png")
-        Me.ImageListIcons32.Images.SetKeyName(2, "file_32x32.png")
-        Me.ImageListIcons32.Images.SetKeyName(3, "garage_32x32.png")
-        Me.ImageListIcons32.Images.SetKeyName(4, "gasoline_32x32.png")
-        Me.ImageListIcons32.Images.SetKeyName(5, "pdf_32x32.png")
-        Me.ImageListIcons32.Images.SetKeyName(6, "service_32x32.png")
-        Me.ImageListIcons32.Images.SetKeyName(7, "trust_32x32.png")
+        Me.GroupBox1.Controls.Add(Me.GroupBox3)
+        Me.GroupBox1.Controls.Add(Me.GroupBox2)
+        Me.GroupBox1.Dock = System.Windows.Forms.DockStyle.Left
+        Me.GroupBox1.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.GroupBox1.Location = New System.Drawing.Point(443, 0)
+        Me.GroupBox1.Margin = New System.Windows.Forms.Padding(2)
+        Me.GroupBox1.Name = "GroupBox1"
+        Me.GroupBox1.Padding = New System.Windows.Forms.Padding(2)
+        Me.GroupBox1.Size = New System.Drawing.Size(268, 94)
+        Me.GroupBox1.TabIndex = 13
+        Me.GroupBox1.TabStop = False
+        Me.GroupBox1.Text = "Export"
+        '
+        'GroupBox2
+        '
+        Me.GroupBox2.Controls.Add(Me.SelectedXmlExportButton)
+        Me.GroupBox2.Controls.Add(Me.SelectedPdfExportButton)
+        Me.GroupBox2.Dock = System.Windows.Forms.DockStyle.Left
+        Me.GroupBox2.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.GroupBox2.Location = New System.Drawing.Point(2, 18)
+        Me.GroupBox2.Margin = New System.Windows.Forms.Padding(2)
+        Me.GroupBox2.Name = "GroupBox2"
+        Me.GroupBox2.Padding = New System.Windows.Forms.Padding(2)
+        Me.GroupBox2.Size = New System.Drawing.Size(132, 74)
+        Me.GroupBox2.TabIndex = 14
+        Me.GroupBox2.TabStop = False
+        Me.GroupBox2.Text = "Ausgewählte"
+        '
+        'GroupBox3
+        '
+        Me.GroupBox3.Controls.Add(Me.AllXmlExportButton)
+        Me.GroupBox3.Controls.Add(Me.AllPdfExportButton)
+        Me.GroupBox3.Dock = System.Windows.Forms.DockStyle.Left
+        Me.GroupBox3.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.GroupBox3.Location = New System.Drawing.Point(134, 18)
+        Me.GroupBox3.Margin = New System.Windows.Forms.Padding(2)
+        Me.GroupBox3.Name = "GroupBox3"
+        Me.GroupBox3.Padding = New System.Windows.Forms.Padding(2)
+        Me.GroupBox3.Size = New System.Drawing.Size(132, 74)
+        Me.GroupBox3.TabIndex = 15
+        Me.GroupBox3.TabStop = False
+        Me.GroupBox3.Text = "Alle"
+        '
+        'SelectedPdfExportButton
+        '
+        Me.SelectedPdfExportButton.Font = New System.Drawing.Font("Segoe UI", 10.2!)
+        Me.SelectedPdfExportButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
+        Me.SelectedPdfExportButton.Location = New System.Drawing.Point(4, 19)
+        Me.SelectedPdfExportButton.Margin = New System.Windows.Forms.Padding(2)
+        Me.SelectedPdfExportButton.Name = "SelectedPdfExportButton"
+        Me.SelectedPdfExportButton.Padding = New System.Windows.Forms.Padding(2)
+        Me.SelectedPdfExportButton.Size = New System.Drawing.Size(60, 50)
+        Me.SelectedPdfExportButton.TabIndex = 10
+        Me.SelectedPdfExportButton.Text = "PDF"
+        Me.SelectedPdfExportButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
+        Me.SelectedPdfExportButton.ThemeName = "Crystal"
+        '
+        'SelectedXmlExportButton
+        '
+        Me.SelectedXmlExportButton.Font = New System.Drawing.Font("Segoe UI", 10.2!)
+        Me.SelectedXmlExportButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
+        Me.SelectedXmlExportButton.Location = New System.Drawing.Point(68, 19)
+        Me.SelectedXmlExportButton.Margin = New System.Windows.Forms.Padding(2)
+        Me.SelectedXmlExportButton.Name = "SelectedXmlExportButton"
+        Me.SelectedXmlExportButton.Padding = New System.Windows.Forms.Padding(2)
+        Me.SelectedXmlExportButton.Size = New System.Drawing.Size(60, 50)
+        Me.SelectedXmlExportButton.TabIndex = 11
+        Me.SelectedXmlExportButton.Text = "XML"
+        Me.SelectedXmlExportButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
+        Me.SelectedXmlExportButton.ThemeName = "Crystal"
+        '
+        'AllXmlExportButton
+        '
+        Me.AllXmlExportButton.Font = New System.Drawing.Font("Segoe UI", 10.2!)
+        Me.AllXmlExportButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
+        Me.AllXmlExportButton.Location = New System.Drawing.Point(68, 19)
+        Me.AllXmlExportButton.Margin = New System.Windows.Forms.Padding(2)
+        Me.AllXmlExportButton.Name = "AllXmlExportButton"
+        Me.AllXmlExportButton.Padding = New System.Windows.Forms.Padding(2)
+        Me.AllXmlExportButton.Size = New System.Drawing.Size(60, 50)
+        Me.AllXmlExportButton.TabIndex = 13
+        Me.AllXmlExportButton.Text = "XML"
+        Me.AllXmlExportButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
+        Me.AllXmlExportButton.ThemeName = "Crystal"
+        '
+        'AllPdfExportButton
+        '
+        Me.AllPdfExportButton.Font = New System.Drawing.Font("Segoe UI", 10.2!)
+        Me.AllPdfExportButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
+        Me.AllPdfExportButton.Location = New System.Drawing.Point(4, 19)
+        Me.AllPdfExportButton.Margin = New System.Windows.Forms.Padding(2)
+        Me.AllPdfExportButton.Name = "AllPdfExportButton"
+        Me.AllPdfExportButton.Padding = New System.Windows.Forms.Padding(2)
+        Me.AllPdfExportButton.Size = New System.Drawing.Size(60, 50)
+        Me.AllPdfExportButton.TabIndex = 12
+        Me.AllPdfExportButton.Text = "PDF"
+        Me.AllPdfExportButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
+        Me.AllPdfExportButton.ThemeName = "Crystal"
         '
         'RechnungsUebersicht
         '
@@ -232,6 +333,13 @@ Partial Class RechnungsUebersicht
         Me.PanelDatagrid.ResumeLayout(False)
         CType(Me.DataGridView1.MasterTemplate, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.GroupBox1.ResumeLayout(False)
+        Me.GroupBox2.ResumeLayout(False)
+        Me.GroupBox3.ResumeLayout(False)
+        CType(Me.SelectedPdfExportButton, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.SelectedXmlExportButton, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.AllXmlExportButton, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.AllPdfExportButton, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -245,6 +353,12 @@ Partial Class RechnungsUebersicht
     Friend WithEvents Button1 As Telerik.WinControls.UI.RadButton
     Friend WithEvents PanelDatagrid As Windows.Forms.Panel
     Public WithEvents DataGridView1 As RadGridView
-    Friend WithEvents ImageListIcons32 As Windows.Forms.ImageList
     Friend WithEvents CrystalTheme1 As Telerik.WinControls.Themes.CrystalTheme
+    Friend WithEvents GroupBox1 As Windows.Forms.GroupBox
+    Friend WithEvents GroupBox3 As Windows.Forms.GroupBox
+    Friend WithEvents GroupBox2 As Windows.Forms.GroupBox
+    Friend WithEvents SelectedPdfExportButton As RadButton
+    Friend WithEvents AllXmlExportButton As RadButton
+    Friend WithEvents AllPdfExportButton As RadButton
+    Friend WithEvents SelectedXmlExportButton As RadButton
 End Class

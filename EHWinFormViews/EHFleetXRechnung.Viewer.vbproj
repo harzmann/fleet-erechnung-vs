@@ -8,14 +8,20 @@
 
   <ItemGroup>
     <None Remove="Icons\approval.svg" />
+    <None Remove="Icons\car-repair.svg" />
     <None Remove="Icons\file.svg" />
+    <None Remove="Icons\garage.svg" />
+    <None Remove="Icons\gasoline.svg" />
     <None Remove="Icons\pdf.svg" />
     <None Remove="Icons\trust.svg" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Icons\approval.svg" />
+    <EmbeddedResource Include="Icons\car-repair.svg" />
     <EmbeddedResource Include="Icons\file.svg" />
+    <EmbeddedResource Include="Icons\garage.svg" />
+    <EmbeddedResource Include="Icons\gasoline.svg" />
     <EmbeddedResource Include="Icons\pdf.svg" />
     <EmbeddedResource Include="Icons\trust.svg" />
   </ItemGroup>

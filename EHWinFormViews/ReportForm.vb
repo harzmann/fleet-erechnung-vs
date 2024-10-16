@@ -17,9 +17,11 @@ Public Class ReportForm
 
     Private ReadOnly _logger As ILog
 
-    Private ReadOnly _rechnungsNummern As List(Of Integer)
+    Private ReadOnly _rechnungsNummern As Dictionary(Of Integer, DateTime)
 
     Private ReadOnly _billType As RechnungsArt
+
+    Private _saveSinglePdf As Boolean
 
     Public Property DataConnection As General.Database
         Get
@@ -34,7 +36,7 @@ Public Class ReportForm
         StiLicense.LoadFromFile(Path.Combine(Path.GetDirectoryName(GetType(ReportForm).Assembly.Location), "license.key"))
     End Sub
 
-    Public Sub New(dbConnection As General.Database, billType As RechnungsArt, rechnungsNummern As List(Of Integer))
+    Public Sub New(dbConnection As General.Database, billType As RechnungsArt, rechnungsNummern As Dictionary(Of Integer, DateTime))
         _dataConnection = dbConnection
         _logger = LogManager.GetLogger(Me.GetType())
         _logger.Debug($"Instantiating {NameOf(ReportForm)}")
@@ -79,7 +81,7 @@ Public Class ReportForm
             StiViewerControl1.Report.Dictionary.Databases.Add(New StiOleDbDatabase("OLE DB", DataConnection.ConnectionString))
 
             StiViewerControl1.Report.Dictionary.DataSources.Clear()
-            Dim queries = GetSqlStatements(billType, rechnungsNummern)
+            Dim queries = GetSqlStatements(billType, rechnungsNummern.Keys.ToList)
             StiViewerControl1.Report.Dictionary.DataSources.AddRange(queries.Select(Function(statement)
                                                                                         Dim ds = (New StiOleDbSource("OLE DB", statement.Key, statement.Key, statement.Value))
                                                                                         ds.Dictionary = StiViewerControl1.Report.Dictionary
@@ -106,8 +108,13 @@ Public Class ReportForm
     End Sub
 
     Public Sub SavePdf()
+        _saveSinglePdf = True
         Dim pdfExportService = StiOptions.Services.Exports.FirstOrDefault(Function(s) s.ServiceName.ToLower().Contains("pdf"))
         StiViewerControl1.InvokeProcessExport(pdfExportService)
+    End Sub
+
+    Public Sub SendEmail()
+
     End Sub
 
     Private Sub HandleProcesExport(sender As Object, args As EventArgs)
@@ -120,8 +127,9 @@ Public Class ReportForm
             Return
         End If
 
-        Using stiFormRunner = StiGuiOptions.GetExportFormRunner("StiPdfExportSetupForm", StiGuiMode.Gdi, Me)
-            AddHandler stiFormRunner.Complete,
+        If Not _saveSinglePdf Then
+            Using stiFormRunner = StiGuiOptions.GetExportFormRunner("StiPdfExportSetupForm", StiGuiMode.Gdi, Me)
+                AddHandler stiFormRunner.Complete,
                     Sub(form As IStiFormRunner, e As StiShowDialogCompleteEvetArgs)
                         Dim saveDialog = New SaveFileDialog
                         saveDialog.AddExtension = True
@@ -154,10 +162,13 @@ Public Class ReportForm
                                     settings.ImageResolutionMode = form("ImageResolutionMode")
                                     settings.CertificateThumbprint = form("CertificateThumbprint")
 
-                                    For Each rechnungsNummer In _rechnungsNummern
+                                    For Each rechnungsNummer In _rechnungsNummern.Keys
                                         Using xmlStream = New MemoryStream
                                             _xmlExporter.CreateBillXml(xmlStream, _billType, rechnungsNummer)
-                                            settings.EmbeddedFiles.Add(New StiPdfEmbeddedFileData($"XRechnung_{rechnungsNummer}.xml", $"XRechnung Nr. {rechnungsNummer}", xmlStream.GetBuffer(), "application/xml"))
+                                            Dim billdate = _rechnungsNummern(rechnungsNummer)
+                                            Dim formattedBillNumber = _xmlExporter.GetFormattedBillNumber(_billType, rechnungsNummer)
+                                            Dim xmlFileName = $"{formattedBillNumber}_{billdate.ToString("yyyyMMdd_HHmmss")}"
+                                            settings.EmbeddedFiles.Add(New StiPdfEmbeddedFileData(xmlFileName, $"XRechnung Nr. {formattedBillNumber}", xmlStream.GetBuffer(), "application/xml"))
                                         End Using
                                     Next
 
@@ -176,9 +187,57 @@ Public Class ReportForm
                             MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
                         End If
                     End Sub
+                stiFormRunner.ShowDialog()
+            End Using
+        Else
+            Try
+                For Each billNumber In _rechnungsNummern.Keys
+                    Dim billDate = _rechnungsNummern(billNumber)
+                    Dim exportFilePath = _xmlExporter.GetExportFilePath(_billType, billNumber, billDate)
 
-            stiFormRunner.ShowDialog()
-        End Using
+                    _logger.Debug($"Attempting to export bill pdf with embedded xml data to {exportFilePath}")
+                    Using stream = File.Create(exportFilePath)
+                        Dim settings = New StiPdfExportSettings()
+                        settings.PageRange = StiPagesRange.All
+                        settings.ImageQuality = 75
+                        settings.ImageCompressionMethod = StiPdfImageCompressionMethod.Jpeg
+                        settings.ImageResolution = 100
+                        'settings.EmbeddedFonts = Form("EmbeddedFonts") AndAlso Form("EmbeddedFontsEnabled")
+                        settings.ExportRtfTextAsImage = False
+                        'settings.PasswordInputUser = Form("UserPassword")
+                        'settings.PasswordInputOwner = Form("OwnerPassword")
+                        'settings.UserAccessPrivileges = Form("UserAccessPrivileges")
+                        'settings.KeyLength = Form("EncryptionKeyLength")
+                        'settings.GetCertificateFromCryptoUI = Form("GetCertificateFromCryptoUI")
+                        'settings.UseDigitalSignature = Form("UseDigitalSignature")
+                        'settings.SubjectNameString = Form("SubjectNameString")
+                        settings.PdfComplianceMode = Export.StiPdfComplianceMode.A3
+                        settings.ImageFormat = StiImageFormat.Color
+                        settings.DitheringType = StiMonochromeDitheringType.None
+                        settings.AllowEditable = False
+                        settings.ImageResolutionMode = StiImageResolutionMode.Auto
+                        'settings.CertificateThumbprint = Form("CertificateThumbprint")
+
+                        Using xmlStream = New MemoryStream
+                            _xmlExporter.CreateBillXml(xmlStream, _billType, billNumber)
+                            Dim formattedBillNumber = _xmlExporter.GetFormattedBillNumber(_billType, billNumber)
+                            Dim xmlFileName = $"{formattedBillNumber}_{billDate.ToString("yyyyMMdd_HHmmss")}"
+                            settings.EmbeddedFiles.Add(New StiPdfEmbeddedFileData(xmlFileName, $"XRechnung Nr. {formattedBillNumber}", xmlStream.GetBuffer(), "application/xml"))
+                        End Using
+
+                        service.ExportTo(StiViewerControl1.Report, stream, settings)
+                    End Using
+                Next
+                MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Catch ex As Exception
+                _logger.Error($"Exception while trying to save report to pdf file", ex)
+                MessageBox.Show("Fehler beim Speichern!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Finally
+                _logger.Debug("Finished exporting bill pdf.")
+                _saveSinglePdf = False
+            End Try
+        End If
+
     End Sub
 
     Private Function GetReportParameterId(rechnungsArt As RechnungsArt) As String

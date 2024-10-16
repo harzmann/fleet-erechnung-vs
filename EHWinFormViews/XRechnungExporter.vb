@@ -8,15 +8,25 @@ Imports s2industries.ZUGFeRD
 Imports Stimulsoft.Database
 
 Public Class XRechnungExporter
-    Private _dataConnection As General.Database
+    Private ReadOnly _dataConnection As General.Database
 
-    Private _logger As ILog
+    Private ReadOnly _logger As ILog
+
+    Private ReadOnly _exportPaths As Dictionary(Of RechnungsArt, String) = New Dictionary(Of RechnungsArt, String)
 
     Public Sub New(dataConnection As General.Database)
         _dataConnection = dataConnection
         _logger = LogManager.GetLogger(Me.GetType())
         _logger.Debug($"Instantiating {NameOf(XRechnungExporter)}")
         _logger.Debug($"Leaving {NameOf(XRechnungExporter)} constructor")
+
+        _exportPaths = [Enum].GetValues(GetType(RechnungsArt)).OfType(Of RechnungsArt).ToDictionary(Function(billType) billType,
+                                                                                     Function(billType)
+                                                                                         Dim sellerData = GetAdditionalSellerParameter(billType)
+                                                                                         Dim path = String.Empty
+                                                                                         sellerData.TryGetValue("Ausgabepfad", path)
+                                                                                         Return path
+                                                                                     End Function)
     End Sub
 
     Public Sub CreateBillXml(xmlStream As Stream, billType As RechnungsArt, rechnungsNummer As Integer)
@@ -105,7 +115,9 @@ Public Class XRechnungExporter
             'If String.IsNullOrWhiteSpace(poReference) Then items.TryGetValue("KostenstelleKunde", poReference)
             xRechnung.ReferenceOrderNo = formattedInvoiceNumber
             xRechnung.OrderNo = formattedInvoiceNumber
-            xRechnung.ActualDeliveryDate = Date.Parse(GetDataFromColumn(items, "Lieferdatum"))
+            Dim deliveryDate = xRechnung.InvoiceDate
+            Date.TryParse(GetDataFromColumn(items, "Lieferdatum"), deliveryDate)
+            xRechnung.ActualDeliveryDate = deliveryDate
 
             'add line items
             For Each query In sqls
@@ -287,6 +299,43 @@ Public Class XRechnungExporter
         End Try
     End Sub
 
+    Public Function GetExportPath(billType As RechnungsArt) As String
+        Dim path = String.Empty
+        If Not _exportPaths.TryGetValue(billType, path) OrElse String.IsNullOrWhiteSpace(path) Then
+            Throw New Exception($"Exportpfad nicht definiert!")
+        End If
+
+        Return path
+    End Function
+
+    Public Function GetExportFilePath(billType As RechnungsArt, rechnungsNummer As Integer, billDate As Date) As String
+        Dim exportPath = GetExportPath(billType)
+        Dim formattedBillNumber = GetFormattedBillNumber(billType, rechnungsNummer)
+        Dim fileName = $"{formattedBillNumber}_{billDate.ToString("yyyyMMdd_HHmmss")}"
+        Dim filePath = Path.Combine(exportPath, fileName)
+        Directory.CreateDirectory(exportPath)
+        Return filePath
+    End Function
+
+    Public Function GetFormattedBillNumber(billNumber As Integer, billType As RechnungsArt)
+        Return Sale.Invoicing.FormatInvoiceNumber(_dataConnection, GetBillTypeText(billType), billNumber)
+    End Function
+
+    Private Function GetBillTypeText(billType As RechnungsArt) As String
+        Dim billTypeText = String.Empty
+        Dim referenceColumn = ""
+        Select Case billType
+            Case RechnungsArt.Werkstatt
+                billTypeText = "WA"
+            Case RechnungsArt.Tanken
+                billTypeText = "TA"
+            Case RechnungsArt.Manuell
+                billTypeText = "MR"
+        End Select
+
+        Return billTypeText
+    End Function
+
     Private Function GetDataFromColumn(data As Dictionary(Of String, String), column As String, Optional defaultValue As String = "")
         Dim value = defaultValue
         If Not data.TryGetValue(column, value) AndAlso Not String.IsNullOrWhiteSpace(defaultValue) Then
@@ -396,15 +445,14 @@ Public Class XRechnungExporter
         End Select
     End Function
 
-
     Private Function GetSqlStatementForBill(rechnungsArt As RechnungsArt, rechnungsNummern As List(Of Integer)) As String
         Dim inClausePlaceholders As String = String.Join(",", rechnungsNummern.Select(Function(v) $"{v}").ToArray())
         Select Case rechnungsArt
-            Case rechnungsArt.Werkstatt
+            Case RechnungsArt.Werkstatt
                 Return $"select * from abfr_wavkreport where RechnungsNr IN ({inClausePlaceholders})"
-            Case rechnungsArt.Tanken
+            Case RechnungsArt.Tanken
                 Return $"select * from abfr_tankreport WHERE RechnungsNr IN ({inClausePlaceholders})"
-            Case rechnungsArt.Manuell
+            Case RechnungsArt.Manuell
                 Return $"select * from abfr_mrvkreport WHERE RechnungsNr IN ({inClausePlaceholders})"
         End Select
     End Function

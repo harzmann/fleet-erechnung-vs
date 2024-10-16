@@ -1,7 +1,9 @@
-﻿Imports System.Windows.Forms
+﻿Imports System.IO
+Imports System.Windows.Forms
 Imports ehfleet_classlibrary
 Imports EHFleetXRechnung.Viewer.GermanRadGridViewLocalization
 Imports log4net
+Imports Stimulsoft.Report.Export
 Imports Telerik.WinControls
 Imports Telerik.WinControls.UI
 Imports Telerik.WinControls.UI.Localization
@@ -40,7 +42,7 @@ Public Class RechnungsUebersicht
                                                                  buttonElement.AutoSize = True
                                                                  buttonElement.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
                                                                  buttonElement.Alignment = System.Drawing.ContentAlignment.MiddleCenter
-                                                                 buttonElement.SvgImage = GetSvgImage(buttonElement.Name, New System.Drawing.Size(30, 30))
+                                                                 buttonElement.SvgImage = GetSvgImage(e.Column.Name, New System.Drawing.Size(30, 30))
                                                              End If
                                                          End If
                                                      End If
@@ -55,7 +57,13 @@ Public Class RechnungsUebersicht
     End Sub
 
     Private Sub InitializeTelerikControls()
-
+        WerkstattRechnungButton.SvgImage = GetSvgImage("werkstatt", New System.Drawing.Size(35, 35))
+        TankabrechnungButton.SvgImage = GetSvgImage("tanken", New System.Drawing.Size(35, 35))
+        ManuelleRechnungButton.SvgImage = GetSvgImage("manuell", New System.Drawing.Size(35, 35))
+        SelectedXmlExportButton.SvgImage = GetSvgImage("xml", New System.Drawing.Size(25, 25))
+        AllXmlExportButton.SvgImage = GetSvgImage("xml", New System.Drawing.Size(25, 25))
+        SelectedPdfExportButton.SvgImage = GetSvgImage("pdf", New System.Drawing.Size(25, 25))
+        AllPdfExportButton.SvgImage = GetSvgImage("pdf", New System.Drawing.Size(25, 25))
     End Sub
 
     Private Function GetSvgImage(name As String, desiredSize As System.Drawing.Size) As RadSvgImage
@@ -71,6 +79,12 @@ Public Class RechnungsUebersicht
                 name = $"{currentNameSpace}.file.svg"
             Case "validator"
                 name = $"{currentNameSpace}.trust.svg"
+            Case "werkstatt"
+                name = $"{currentNameSpace}.garage.svg"
+            Case "tanken"
+                name = $"{currentNameSpace}.gasoline.svg"
+            Case "manuell"
+                name = $"{currentNameSpace}.car-repair.svg"
         End Select
 
         If Not resources.Contains(name) Then Return Nothing
@@ -125,7 +139,7 @@ Public Class RechnungsUebersicht
 
         Dim sql = GetSqlStatement(_rechnungsArt)
         Dim dataTable = _dbConnection.FillDataTable(sql)
-        Dim dataTableBindingSource = New Windows.Forms.BindingSource()
+        Dim dataTableBindingSource = New BindingSource()
 
         DataGridView1.Columns.Clear()
         DataGridView1.AutoSizeRows = False
@@ -140,10 +154,8 @@ Public Class RechnungsUebersicht
         buttonColumn.HeaderText = "Bericht"
         buttonColumn.DefaultText = "Bericht"
         buttonColumn.UseDefaultText = False
-        buttonColumn.Image = ImageListIcons32.Images.Item(0)
         buttonColumn.ImageLayout = ImageLayout.Center
         buttonColumn.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
-        'buttonColumn.AutoSizeMode = True
         buttonColumn.Width = 80
         DataGridView1.Columns.Add(buttonColumn)
 
@@ -152,11 +164,9 @@ Public Class RechnungsUebersicht
         buttonColumn.HeaderText = "XML"
         buttonColumn.DefaultText = "XRechnung XML"
         buttonColumn.UseDefaultText = False
-        buttonColumn.Image = ImageListIcons32.Images.Item(2)
         buttonColumn.ImageLayout = ImageLayout.Center
         buttonColumn.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
         buttonColumn.Width = 80
-        'buttonColumn.AutoSizeMode = True
         DataGridView1.Columns.Add(buttonColumn)
 
         buttonColumn = New GridViewCommandColumn()
@@ -164,11 +174,9 @@ Public Class RechnungsUebersicht
         buttonColumn.HeaderText = "PDF"
         buttonColumn.DefaultText = "XRechnung Hybrid"
         buttonColumn.UseDefaultText = False
-        buttonColumn.Image = ImageListIcons32.Images.Item(5)
         buttonColumn.ImageLayout = ImageLayout.Center
         buttonColumn.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
         buttonColumn.Width = 80
-        'buttonColumn.AutoSizeMode = True
         DataGridView1.Columns.Add(buttonColumn)
 
         buttonColumn = New GridViewCommandColumn()
@@ -176,11 +184,9 @@ Public Class RechnungsUebersicht
         buttonColumn.HeaderText = "Validator"
         buttonColumn.DefaultText = "XRechnung Validator"
         buttonColumn.UseDefaultText = False
-        buttonColumn.Image = ImageListIcons32.Images.Item(7)
         buttonColumn.ImageLayout = ImageLayout.Center
         buttonColumn.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
         buttonColumn.Width = 80
-        'buttonColumn.AutoSizeMode = True
         DataGridView1.Columns.Add(buttonColumn)
 
     End Function
@@ -193,21 +199,16 @@ Public Class RechnungsUebersicht
         Dim dataTable = CType(dataSource.DataSource, DataTable)
         Dim row = dataTable.Rows(e.RowIndex)
         Dim rechnungsNummer = Convert.ToInt32(row.Item(0))
+        Dim billDate = Convert.ToDateTime(row.Item(1))
 
         Try
             Select Case e.Column.Name
                 Case "Bericht"
-                    Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New List(Of Integer) From {rechnungsNummer})
+                    Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New Dictionary(Of Integer, Date) From {{rechnungsNummer, billDate}})
                     reportForm.ShowDialog()
                 Case "XML"
-                    Dim fileDialog = New SaveFileDialog
-                    fileDialog.Title = "Bitte XRechnung Speicherort auswählen."
-                    fileDialog.Filter = "XRechnung|*.xml"
-                    fileDialog.AddExtension = True
-                    fileDialog.DefaultExt = "xml"
-                    Dim result = fileDialog.ShowDialog()
-                    If result <> DialogResult.OK Then Return
-                    Using fileStream = System.IO.File.Create(fileDialog.FileName)
+                    Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, rechnungsNummer, billDate)
+                    Using fileStream = System.IO.File.Create(filePath)
                         Try
                             _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
                         Catch ex As Exception
@@ -219,7 +220,7 @@ Public Class RechnungsUebersicht
 
                     MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
                 Case "PDF"
-                    Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New List(Of Integer) From {rechnungsNummer})
+                    Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New Dictionary(Of Integer, Date) From {{rechnungsNummer, billDate}})
                     reportForm.SavePdf()
                 Case "Validator"
                     Dim fileDialog = New SaveFileDialog
@@ -229,7 +230,7 @@ Public Class RechnungsUebersicht
                     fileDialog.DefaultExt = "xml"
                     Dim result = fileDialog.ShowDialog()
                     If result <> DialogResult.OK Then Return
-                    Using fileStream = IO.File.Create(fileDialog.FileName)
+                    Using fileStream = File.Create(fileDialog.FileName)
                         Try
                             _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
                         Catch ex As Exception
@@ -251,14 +252,16 @@ Public Class RechnungsUebersicht
                 Dim columnMapping As New Dictionary(Of String, String) From
                     {
                         {"RechnungsNr", "'RG-Nr.'"},
-                        {"Rechnungsdatum", "'RG-Datum'"},
+                        {"FORMAT (Rechnungsdatum, 'dd.MM.yyyy')", "'RG-Datum'"},
                         {"WANr", "'WA-Kurzbezeichnung'"},
-                        {"Datum", "'WA-Datum'"},
+                        {"FORMAT (Datum, 'dd.MM.yyyy')", "'WA-Datum'"},
                         {"Auftragsart", "'WA-Art'"},
                         {"Belegart", "Belegart"},
                         {"KundenNr", "'KD-Nr.'"},
                         {"DebitorNr", "'Debitor-Nr.'"},
                         {"Firma", "Firma"},
+                        {"LeitwegeID", "'Leitweg-Id'"},
+                        {"EmailRechnung", "'EmailRechnung'"},
                         {"Summe", "'Summe netto'"},
                         {"Exportiert", "X"},
                         {"Gebucht", "B"},
@@ -270,12 +273,14 @@ Public Class RechnungsUebersicht
                 Dim columnMapping As New Dictionary(Of String, String) From
                     {
                         {"RechnungsNr", "'RG-Nr.'"},
-                        {"Rechnungsdatum", "'RG-Datum'"},
+                        {"FORMAT (Rechnungsdatum, 'dd.MM.yyyy')", "'RG-Datum'"},
                         {"Anmerkungen", "Anmerkungen"},
                         {"Belegart", "Belegart"},
                         {"KundenNr", "'KD-Nr.'"},
                         {"DebitorNr", "'Debitor-Nr.'"},
                         {"Firma", "Firma"},
+                        {"LeitwegeID", "'Leitweg-Id'"},
+                        {"EmailRechnung", "'EmailRechnung'"},
                         {"Summe", "'Summe netto'"},
                         {"Exportiert", "X"},
                         {"Gebucht", "B"},
@@ -287,12 +292,14 @@ Public Class RechnungsUebersicht
                 Dim columnMapping As New Dictionary(Of String, String) From
                     {
                         {"RechnungsNr", "'RG-Nr.'"},
-                        {"Rechnungsdatum", "'RG-Datum'"},
+                        {"FORMAT (Rechnungsdatum, 'dd.MM.yyyy')", "'RG-Datum'"},
                         {"Anmerkungen", "Anmerkungen"},
                         {"Belegart", "Belegart"},
                         {"KundenNr", "'KD-Nr.'"},
                         {"DebitorNr", "'Debitor-Nr.'"},
                         {"Firma", "Firma"},
+                        {"LeitwegeID", "'Leitweg-Id'"},
+                        {"EmailRechnung", "'EmailRechnung'"},
                         {"Summe", "'Summe netto'"},
                         {"Exportiert", "X"},
                         {"Gebucht", "B"},
@@ -309,11 +316,15 @@ Public Class RechnungsUebersicht
         Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
         Dim dataTable = CType(dataSource.DataSource, DataTable)
 
-        Dim rechnungsNummern = DataGridView1.CurrentView.VisualRows.Where(Function(r) r.GetType() = GetType(GridDataRowElement)).Select(
-        Function(rowInfo)
-            Dim dataRow = dataTable.Rows(rowInfo.RowInfo.Index)
-            Return Convert.ToInt32(dataRow.Item(0))
-        End Function).ToList()
+        Dim rechnungsNummern = DataGridView1.Rows.Where(Function(r) r.GetType() = GetType(GridDataRowElement)).ToDictionary(
+            Function(rowInfo)
+                Dim dataRow = dataTable.Rows(rowInfo.Index)
+                Return Convert.ToInt32(dataRow.Item(0))
+            End Function,
+            Function(rowInfo)
+                Dim dataRow = dataTable.Rows(rowInfo.Index)
+                Return Convert.ToDateTime(dataRow.Item(1))
+            End Function)
 
         Try
             Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, rechnungsNummern)
@@ -329,10 +340,16 @@ Public Class RechnungsUebersicht
         Dim dataTable = CType(dataSource.DataSource, DataTable)
 
         Try
-            Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, DataGridView1.SelectedRows.Select(Function(row)
-                                                                                                                Dim dataRow = dataTable.Rows(row.Index)
-                                                                                                                Return Convert.ToInt32(dataRow.Item(0))
-                                                                                                            End Function).ToList())
+            Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, DataGridView1.SelectedRows.ToDictionary(
+                Function(rowInfo)
+                    Dim dataRow = dataTable.Rows(rowInfo.Index)
+                    Return Convert.ToInt32(dataRow.Item(0))
+                End Function,
+                Function(rowInfo)
+                    Dim dataRow = dataTable.Rows(rowInfo.Index)
+                    Return Convert.ToDateTime(dataRow.Item(1))
+                End Function))
+
             reportForm.ShowDialog()
         Catch ex As Exception
             _logger.Error($"Failed to create {NameOf(ReportForm)}")
@@ -341,4 +358,114 @@ Public Class RechnungsUebersicht
 
     End Sub
 
+    Private Sub SelectedPdfExportButton_Clicked(sender As Object, args As EventArgs) Handles SelectedPdfExportButton.Click
+        Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
+        Dim dataTable = CType(dataSource.DataSource, DataTable)
+
+        Try
+            Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, DataGridView1.SelectedRows.ToDictionary(
+                Function(rowInfo)
+                    Dim dataRow = dataTable.Rows(rowInfo.Index)
+                    Return Convert.ToInt32(dataRow.Item(0))
+                End Function,
+                Function(rowInfo)
+                    Dim dataRow = dataTable.Rows(rowInfo.Index)
+                    Return Convert.ToDateTime(dataRow.Item(1))
+                End Function))
+
+            reportForm.SavePdf()
+        Catch ex As Exception
+            _logger.Error($"Failed to create {NameOf(ReportForm)}")
+            MessageBox.Show("Unbekannter Fehler beim Anzeigen der Rechnung!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+
+    Private Sub SelectedXmlExportButton_Clicked(sender As Object, args As EventArgs) Handles SelectedXmlExportButton.Click
+        Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
+        Dim dataTable = CType(dataSource.DataSource, DataTable)
+
+        Try
+            Dim bills = DataGridView1.SelectedRows.ToDictionary(
+                Function(rowInfo)
+                    Dim dataRow = dataTable.Rows(rowInfo.Index)
+                    Return Convert.ToInt32(dataRow.Item(0))
+                End Function,
+                Function(rowInfo)
+                    Dim dataRow = dataTable.Rows(rowInfo.Index)
+                    Return Convert.ToDateTime(dataRow.Item(1))
+                End Function)
+
+            For Each bill In bills.Keys
+                Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, bill, bills(bill))
+                Try
+                    Using fileStream = File.Create(filePath)
+                        _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, bill)
+                    End Using
+                Catch ex As Exception
+                    _logger.Error($"Error saving bill xml file to {filePath}", ex)
+                End Try
+            Next
+        Catch ex As Exception
+            _logger.Error("Exception while saving bill xml files", ex)
+            MessageBox.Show("Speichern fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Return
+        End Try
+    End Sub
+
+    Private Sub AllPdfExportButton_Clicked(sender As Object, args As EventArgs) Handles AllPdfExportButton.Click
+        Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
+        Dim dataTable = CType(dataSource.DataSource, DataTable)
+
+        Dim rechnungsNummern = DataGridView1.Rows.Where(Function(r) r.GetType() = GetType(GridDataRowElement)).ToDictionary(
+            Function(rowInfo)
+                Dim dataRow = dataTable.Rows(rowInfo.Index)
+                Return Convert.ToInt32(dataRow.Item(0))
+            End Function,
+            Function(rowInfo)
+                Dim dataRow = dataTable.Rows(rowInfo.Index)
+                Return Convert.ToDateTime(dataRow.Item(1))
+            End Function)
+
+        Try
+            Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, rechnungsNummern)
+            reportForm.SavePdf()
+        Catch ex As Exception
+            _logger.Error($"Failed to create {NameOf(ReportForm)}")
+            MessageBox.Show("Unbekannter Fehler beim Anzeigen der Rechnung!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+
+    Private Sub AllXmlExportButton_Clicked(sender As Object, args As EventArgs) Handles AllXmlExportButton.Click
+        Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
+        Dim dataTable = CType(dataSource.DataSource, DataTable)
+
+        Try
+            Dim bills = DataGridView1.Rows.ToDictionary(
+                Function(rowInfo)
+                    Dim dataRow = dataTable.Rows(rowInfo.Index)
+                    Return Convert.ToInt32(dataRow.Item(0))
+                End Function,
+                Function(rowInfo)
+                    Dim dataRow = dataTable.Rows(rowInfo.Index)
+                    Return Convert.ToDateTime(dataRow.Item(1))
+                End Function)
+
+            For Each bill In bills.Keys
+                Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, bill, bills(bill))
+                Try
+                    Using fileStream = File.Create(filePath)
+                        _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, bill)
+                    End Using
+                Catch ex As Exception
+                    _logger.Error($"Error saving bill xml file to {filePath}", ex)
+                End Try
+            Next
+
+            MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        Catch ex As Exception
+            _logger.Error("Exception while saving bill xml files", ex)
+            MessageBox.Show("Speichern fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Return
+        End Try
+    End Sub
 End Class
