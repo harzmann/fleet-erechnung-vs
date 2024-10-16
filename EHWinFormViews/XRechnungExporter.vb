@@ -88,8 +88,6 @@ Public Class XRechnungExporter
 
             If skontoDays > 0 AndAlso skontoRate > 0 Then
                 xRechnung.AddTradePaymentTerms($"#SKONTO#TAGE={skontoDays}#PROZENT={skontoRate:F2}#", dueDate)
-            Else
-                xRechnung.AddTradePaymentTerms($"Zahlbar in {daysToDueDate} Tagen", dueDate)
             End If
 
             xRechnung.SetPaymentMeans(PaymentMeansTypeCodes.CreditTransfer)
@@ -361,11 +359,11 @@ Public Class XRechnungExporter
     Private Function GetSellerParameterSql(rechnungsArt As RechnungsArt) As String
         Dim parameterNumber = ""
         Select Case rechnungsArt
-            Case RechnungsArt.Werkstatt
+            Case rechnungsArt.Werkstatt
                 parameterNumber = "1"
-            Case RechnungsArt.Tanken
+            Case rechnungsArt.Tanken
                 parameterNumber = "11"
-            Case RechnungsArt.Manuell
+            Case rechnungsArt.Manuell
                 parameterNumber = "21"
         End Select
 
@@ -375,11 +373,11 @@ Public Class XRechnungExporter
     Private Function GetAdditionalSellerParameterSql(rechnungsArt As RechnungsArt) As String
         Dim parameterNumber = ""
         Select Case rechnungsArt
-            Case RechnungsArt.Werkstatt
+            Case rechnungsArt.Werkstatt
                 parameterNumber = "211"
-            Case RechnungsArt.Tanken
+            Case rechnungsArt.Tanken
                 parameterNumber = "1211"
-            Case RechnungsArt.Manuell
+            Case rechnungsArt.Manuell
                 parameterNumber = "2211"
         End Select
 
@@ -389,11 +387,11 @@ Public Class XRechnungExporter
     Private Function GetSqlStatementForVat(rechnungsArt As RechnungsArt, rechnungsNummern As List(Of Integer)) As String
         Dim inClausePlaceholders As String = String.Join(",", rechnungsNummern.Select(Function(v) $"{v}").ToArray())
         Select Case rechnungsArt
-            Case RechnungsArt.Werkstatt
+            Case rechnungsArt.Werkstatt
                 Return $"SELECT * FROM abfr_wavkabrmwst WHERE RechnungsNr IN ({inClausePlaceholders})"
-            Case RechnungsArt.Tanken
+            Case rechnungsArt.Tanken
                 Return $"SELECT * FROM abfr_tankabrmwst WHERE RechnungsNr IN ({inClausePlaceholders})"
-            Case RechnungsArt.Manuell
+            Case rechnungsArt.Manuell
                 Return $"SELECT * FROM abfr_mrvkabrmwst WHERE RechnungsNr IN ({inClausePlaceholders})"
         End Select
     End Function
@@ -402,11 +400,11 @@ Public Class XRechnungExporter
     Private Function GetSqlStatementForBill(rechnungsArt As RechnungsArt, rechnungsNummern As List(Of Integer)) As String
         Dim inClausePlaceholders As String = String.Join(",", rechnungsNummern.Select(Function(v) $"{v}").ToArray())
         Select Case rechnungsArt
-            Case RechnungsArt.Werkstatt
+            Case rechnungsArt.Werkstatt
                 Return $"select * from abfr_wavkreport where RechnungsNr IN ({inClausePlaceholders})"
-            Case RechnungsArt.Tanken
+            Case rechnungsArt.Tanken
                 Return $"select * from abfr_tankreport WHERE RechnungsNr IN ({inClausePlaceholders})"
-            Case RechnungsArt.Manuell
+            Case rechnungsArt.Manuell
                 Return $"select * from abfr_mrvkreport WHERE RechnungsNr IN ({inClausePlaceholders})"
         End Select
     End Function
@@ -414,20 +412,20 @@ Public Class XRechnungExporter
     Private Function GetSqlStatements(rechnungsArt As RechnungsArt, rechnungsNummern As List(Of Integer)) As List(Of String)
         Dim inClausePlaceholders As String = String.Join(",", rechnungsNummern.Select(Function(v) $"{v}").ToArray())
         Select Case rechnungsArt
-            Case RechnungsArt.Werkstatt
+            Case rechnungsArt.Werkstatt
                 Return New List(Of String) From
                     {
                         $"select * from abfr_wavkabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) AND ArtikelNr is not Null AND PersonalID is Null ORDER BY RechnungsDetailNr",
                         $"select * from abfr_wavkabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) AND PersonalID Is Not Null And ArtikelNr Is Null ORDER By RechnungsDetailNr",
                         $"select * from abfr_wavkabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) AND PersonalID is Null AND ArtikelNr is Null ORDER BY RechnungsDetailNr"
                     }
-            Case RechnungsArt.Tanken
+            Case rechnungsArt.Tanken
                 Return New List(Of String) From
                     {
                         $"SELECT * FROM abfr_tankabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) ORDER BY RechnungsDetailNr",
                         $"SELECT * FROM TankabrechnungDetail WHERE RechnungsNr IN ({inClausePlaceholders}) AND SpritID is Null AND ArtikelNr is Null ORDER BY RechnungsDetailNr"
                     }
-            Case RechnungsArt.Manuell
+            Case rechnungsArt.Manuell
                 Return New List(Of String) From
                     {
                         $"select * from abfr_mrvkabrdetail WHERE RechnungsNr IN ({inClausePlaceholders}) AND ArtikelNr is not Null AND PersonalID is Null ORDER BY RechnungsDetailNr",

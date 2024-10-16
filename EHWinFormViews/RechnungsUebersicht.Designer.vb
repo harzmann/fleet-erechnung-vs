@@ -68,7 +68,8 @@ Partial Class RechnungsUebersicht
         Me.GroupBoxBerichte.Controls.Add(Me.Button2)
         Me.GroupBoxBerichte.Controls.Add(Me.Button1)
         Me.GroupBoxBerichte.Dock = System.Windows.Forms.DockStyle.Left
-        Me.GroupBoxBerichte.Location = New System.Drawing.Point(257, 0)
+        Me.GroupBoxBerichte.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.GroupBoxBerichte.Location = New System.Drawing.Point(260, 0)
         Me.GroupBoxBerichte.Margin = New System.Windows.Forms.Padding(2)
         Me.GroupBoxBerichte.Name = "GroupBoxBerichte"
         Me.GroupBoxBerichte.Padding = New System.Windows.Forms.Padding(2)
@@ -79,22 +80,24 @@ Partial Class RechnungsUebersicht
         '
         'Button2
         '
-        Me.Button2.Location = New System.Drawing.Point(4, 17)
+        Me.Button2.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button2.Location = New System.Drawing.Point(4, 21)
         Me.Button2.Margin = New System.Windows.Forms.Padding(2)
         Me.Button2.Name = "Button2"
         Me.Button2.Size = New System.Drawing.Size(178, 21)
         Me.Button2.TabIndex = 11
-        Me.Button2.Text = "Alle Rechnungen anzeigen"
+        Me.Button2.Text = "Alle anzeigen"
         Me.Button2.ThemeName = "Crystal"
         '
         'Button1
         '
-        Me.Button1.Location = New System.Drawing.Point(4, 43)
+        Me.Button1.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button1.Location = New System.Drawing.Point(5, 61)
         Me.Button1.Margin = New System.Windows.Forms.Padding(2)
         Me.Button1.Name = "Button1"
         Me.Button1.Size = New System.Drawing.Size(178, 44)
         Me.Button1.TabIndex = 10
-        Me.Button1.Text = "Ausgewählte Rechnungen anzeigen"
+        Me.Button1.Text = "Ausgewählte anzeigen"
         Me.Button1.TextWrap = True
         Me.Button1.ThemeName = "Crystal"
         '
@@ -104,6 +107,7 @@ Partial Class RechnungsUebersicht
         Me.GroupBoxRechnungsart.Controls.Add(Me.TankabrechnungButton)
         Me.GroupBoxRechnungsart.Controls.Add(Me.WerkstattRechnungButton)
         Me.GroupBoxRechnungsart.Dock = System.Windows.Forms.DockStyle.Left
+        Me.GroupBoxRechnungsart.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.GroupBoxRechnungsart.Location = New System.Drawing.Point(0, 0)
         Me.GroupBoxRechnungsart.Margin = New System.Windows.Forms.Padding(2)
         Me.GroupBoxRechnungsart.Name = "GroupBoxRechnungsart"
@@ -115,6 +119,7 @@ Partial Class RechnungsUebersicht
         '
         'ManuelleRechnungButton
         '
+        Me.ManuelleRechnungButton.Font = New System.Drawing.Font("Segoe UI", 10.2!)
         Me.ManuelleRechnungButton.Image = CType(resources.GetObject("ManuelleRechnungButton.Image"), System.Drawing.Image)
         Me.ManuelleRechnungButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
         Me.ManuelleRechnungButton.Location = New System.Drawing.Point(172, 17)
@@ -129,6 +134,7 @@ Partial Class RechnungsUebersicht
         '
         'TankabrechnungButton
         '
+        Me.TankabrechnungButton.Appearance = System.Windows.Forms.Appearance.Button
         Me.TankabrechnungButton.Image = CType(resources.GetObject("TankabrechnungButton.Image"), System.Drawing.Image)
         Me.TankabrechnungButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
         Me.TankabrechnungButton.Location = New System.Drawing.Point(88, 17)
@@ -137,12 +143,14 @@ Partial Class RechnungsUebersicht
         Me.TankabrechnungButton.Padding = New System.Windows.Forms.Padding(5)
         Me.TankabrechnungButton.Size = New System.Drawing.Size(80, 70)
         Me.TankabrechnungButton.TabIndex = 8
-        Me.TankabrechnungButton.Text = "Tankstelle"
+        Me.TankabrechnungButton.TabStop = True
+        Me.TankabrechnungButton.Text = "TA"
         Me.TankabrechnungButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
         Me.TankabrechnungButton.ThemeName = "Crystal"
         '
         'WerkstattRechnungButton
         '
+        Me.WerkstattRechnungButton.Font = New System.Drawing.Font("Segoe UI", 10.2!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.WerkstattRechnungButton.Image = CType(resources.GetObject("WerkstattRechnungButton.Image"), System.Drawing.Image)
         Me.WerkstattRechnungButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
         Me.WerkstattRechnungButton.Location = New System.Drawing.Point(4, 17)
@@ -151,7 +159,9 @@ Partial Class RechnungsUebersicht
         Me.WerkstattRechnungButton.Padding = New System.Windows.Forms.Padding(5)
         Me.WerkstattRechnungButton.Size = New System.Drawing.Size(80, 70)
         Me.WerkstattRechnungButton.TabIndex = 7
-        Me.WerkstattRechnungButton.Text = "Werkstatt"
+        Me.WerkstattRechnungButton.TabStop = True
+
+        Me.WerkstattRechnungButton.Text = "WA"
         Me.WerkstattRechnungButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
         Me.WerkstattRechnungButton.ThemeName = "Crystal"
         '
@@ -159,7 +169,7 @@ Partial Class RechnungsUebersicht
         '
         Me.PanelDatagrid.Controls.Add(Me.DataGridView1)
         Me.PanelDatagrid.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.PanelDatagrid.Location = New System.Drawing.Point(0, 94)
+        Me.PanelDatagrid.Font = New System.Drawing.Font("Microsoft Sans Serif", 10.2!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.PanelDatagrid.Margin = New System.Windows.Forms.Padding(2)
         Me.PanelDatagrid.Name = "PanelDatagrid"
         Me.PanelDatagrid.Size = New System.Drawing.Size(1010, 483)
@@ -169,6 +179,7 @@ Partial Class RechnungsUebersicht
         '
         Me.DataGridView1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.DataGridView1.EnableGestures = False
+        Me.DataGridView1.Font = New System.Drawing.Font("Segoe UI", 10.2!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.DataGridView1.Location = New System.Drawing.Point(0, 0)
         Me.DataGridView1.Margin = New System.Windows.Forms.Padding(12)
         '
@@ -208,9 +219,11 @@ Partial Class RechnungsUebersicht
         Me.ClientSize = New System.Drawing.Size(1010, 577)
         Me.Controls.Add(Me.PanelDatagrid)
         Me.Controls.Add(Me.PanelMenu)
+        Me.Font = New System.Drawing.Font("Segoe UI", 10.2!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Margin = New System.Windows.Forms.Padding(2)
         Me.Name = "RechnungsUebersicht"
         Me.Text = "FLEET XRechnung"
+        Me.WindowState = System.Windows.Forms.FormWindowState.Maximized
         Me.PanelMenu.ResumeLayout(False)
         Me.GroupBoxBerichte.ResumeLayout(False)
         CType(Me.Button2, System.ComponentModel.ISupportInitialize).EndInit()
