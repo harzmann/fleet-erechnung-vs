@@ -47,15 +47,18 @@ Public Class RechnungsUebersicht
     End Sub
 
     Private Function RefreshGrid()
-        DataGridView1.Columns.Clear()
-        DataGridView1.AutoSizeRows = True
-        DataGridView1.AutoSizeColumnsMode = GridViewAutoSizeColumnsMode.Fill
+
         Dim sql = GetSqlStatement(_rechnungsArt)
         Dim dataTable = _dbConnection.FillDataTable(sql)
-
         Dim dataTableBindingSource = New Windows.Forms.BindingSource()
+
+        DataGridView1.Columns.Clear()
+        DataGridView1.AutoSizeRows = False
+        DataGridView1.TableElement.RowHeight = 40
+        DataGridView1.AutoSizeColumnsMode = GridViewAutoSizeColumnsMode.None
         dataTableBindingSource.DataSource = dataTable
         DataGridView1.DataSource = dataTableBindingSource
+        DataGridView1.BestFitColumns(BestFitColumnMode.DisplayedCells)
 
         Dim buttonColumn As New GridViewCommandColumn()
         buttonColumn.Name = "Bericht"
@@ -63,9 +66,10 @@ Public Class RechnungsUebersicht
         buttonColumn.DefaultText = "Bericht"
         buttonColumn.UseDefaultText = False
         buttonColumn.Image = ImageListIcons32.Images.Item(0)
-        buttonColumn.ImageLayout = ImageLayout.Stretch
+        buttonColumn.ImageLayout = ImageLayout.Center
         buttonColumn.ImageAlignment = Drawing.ContentAlignment.MiddleCenter
-        buttonColumn.AutoSizeMode = True
+        'buttonColumn.AutoSizeMode = True
+        buttonColumn.Width = 80
         DataGridView1.Columns.Add(buttonColumn)
 
         buttonColumn = New GridViewCommandColumn()
@@ -74,9 +78,10 @@ Public Class RechnungsUebersicht
         buttonColumn.DefaultText = "XRechnung XML"
         buttonColumn.UseDefaultText = False
         buttonColumn.Image = ImageListIcons32.Images.Item(2)
-        buttonColumn.ImageLayout = ImageLayout.Stretch
+        buttonColumn.ImageLayout = ImageLayout.Center
         buttonColumn.ImageAlignment = Drawing.ContentAlignment.MiddleCenter
-        buttonColumn.AutoSizeMode = True
+        buttonColumn.Width = 80
+        'buttonColumn.AutoSizeMode = True
         DataGridView1.Columns.Add(buttonColumn)
 
         buttonColumn = New GridViewCommandColumn()
@@ -85,9 +90,10 @@ Public Class RechnungsUebersicht
         buttonColumn.DefaultText = "XRechnung Hybrid"
         buttonColumn.UseDefaultText = False
         buttonColumn.Image = ImageListIcons32.Images.Item(5)
-        buttonColumn.ImageLayout = ImageLayout.Stretch
+        buttonColumn.ImageLayout = ImageLayout.Center
         buttonColumn.ImageAlignment = Drawing.ContentAlignment.MiddleCenter
-        buttonColumn.AutoSizeMode = True
+        buttonColumn.Width = 80
+        'buttonColumn.AutoSizeMode = True
         DataGridView1.Columns.Add(buttonColumn)
 
         buttonColumn = New GridViewCommandColumn()
@@ -96,10 +102,12 @@ Public Class RechnungsUebersicht
         buttonColumn.DefaultText = "XRechnung Validator"
         buttonColumn.UseDefaultText = False
         buttonColumn.Image = ImageListIcons32.Images.Item(7)
-        buttonColumn.ImageLayout = ImageLayout.Stretch
+        buttonColumn.ImageLayout = ImageLayout.Center
         buttonColumn.ImageAlignment = Drawing.ContentAlignment.MiddleCenter
-        buttonColumn.AutoSizeMode = True
+        buttonColumn.Width = 80
+        'buttonColumn.AutoSizeMode = True
         DataGridView1.Columns.Add(buttonColumn)
+
     End Function
 
     Private Sub DataGridView1_CellClick(sender As Object, e As GridViewCellEventArgs) Handles DataGridView1.CellClick
