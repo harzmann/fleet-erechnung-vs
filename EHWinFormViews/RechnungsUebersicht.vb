@@ -142,7 +142,7 @@ Public Class RechnungsUebersicht
         buttonColumn.UseDefaultText = False
         buttonColumn.Image = ImageListIcons32.Images.Item(0)
         buttonColumn.ImageLayout = ImageLayout.Center
-        buttonColumn.ImageAlignment = Drawing.ContentAlignment.MiddleCenter
+        buttonColumn.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
         'buttonColumn.AutoSizeMode = True
         buttonColumn.Width = 80
         DataGridView1.Columns.Add(buttonColumn)
@@ -154,7 +154,7 @@ Public Class RechnungsUebersicht
         buttonColumn.UseDefaultText = False
         buttonColumn.Image = ImageListIcons32.Images.Item(2)
         buttonColumn.ImageLayout = ImageLayout.Center
-        buttonColumn.ImageAlignment = Drawing.ContentAlignment.MiddleCenter
+        buttonColumn.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
         buttonColumn.Width = 80
         'buttonColumn.AutoSizeMode = True
         DataGridView1.Columns.Add(buttonColumn)
@@ -166,7 +166,7 @@ Public Class RechnungsUebersicht
         buttonColumn.UseDefaultText = False
         buttonColumn.Image = ImageListIcons32.Images.Item(5)
         buttonColumn.ImageLayout = ImageLayout.Center
-        buttonColumn.ImageAlignment = Drawing.ContentAlignment.MiddleCenter
+        buttonColumn.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
         buttonColumn.Width = 80
         'buttonColumn.AutoSizeMode = True
         DataGridView1.Columns.Add(buttonColumn)
@@ -178,7 +178,7 @@ Public Class RechnungsUebersicht
         buttonColumn.UseDefaultText = False
         buttonColumn.Image = ImageListIcons32.Images.Item(7)
         buttonColumn.ImageLayout = ImageLayout.Center
-        buttonColumn.ImageAlignment = Drawing.ContentAlignment.MiddleCenter
+        buttonColumn.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
         buttonColumn.Width = 80
         'buttonColumn.AutoSizeMode = True
         DataGridView1.Columns.Add(buttonColumn)
@@ -247,7 +247,7 @@ Public Class RechnungsUebersicht
 
     Private Function GetSqlStatement(rechnungsArt As RechnungsArt) As String
         Select Case rechnungsArt
-            Case rechnungsArt.Werkstatt
+            Case RechnungsArt.Werkstatt
                 Dim columnMapping As New Dictionary(Of String, String) From
                     {
                         {"RechnungsNr", "'RG-Nr.'"},
@@ -266,7 +266,7 @@ Public Class RechnungsUebersicht
                     }
 
                 Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_wavkliste]"
-            Case rechnungsArt.Tanken
+            Case RechnungsArt.Tanken
                 Dim columnMapping As New Dictionary(Of String, String) From
                     {
                         {"RechnungsNr", "'RG-Nr.'"},
@@ -283,7 +283,7 @@ Public Class RechnungsUebersicht
                     }
 
                 Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_tavkliste]"
-            Case rechnungsArt.Manuell
+            Case RechnungsArt.Manuell
                 Dim columnMapping As New Dictionary(Of String, String) From
                     {
                         {"RechnungsNr", "'RG-Nr.'"},
