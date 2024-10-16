@@ -113,10 +113,6 @@ Public Class ReportForm
         StiViewerControl1.InvokeProcessExport(pdfExportService)
     End Sub
 
-    Public Sub SendEmail()
-
-    End Sub
-
     Private Sub HandleProcesExport(sender As Object, args As EventArgs)
         ' Check if the user is trying to export as PDF
         Dim service = TryCast(sender, StiPdfExportService)
