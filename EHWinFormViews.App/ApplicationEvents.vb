@@ -1,6 +1,6 @@
 ﻿Imports System.IO
 Imports ehfleet_classlibrary
-Imports EHWinFormViews
+Imports EHFleetXRechnung.Viewer
 Imports log4net.Config
 Imports Microsoft.VisualBasic.ApplicationServices
 

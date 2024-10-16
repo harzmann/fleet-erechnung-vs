@@ -1,8 +1,8 @@
-﻿Imports System.Web.UI.WebControls
-Imports System.Windows.Forms
+﻿Imports System.Windows.Forms
 Imports ehfleet_classlibrary
-Imports EHWinFormViews.GermanRadGridViewLocalization
+Imports EHFleetXRechnung.Viewer.GermanRadGridViewLocalization
 Imports log4net
+Imports Telerik.WinControls
 Imports Telerik.WinControls.UI
 Imports Telerik.WinControls.UI.Localization
 
@@ -25,24 +25,99 @@ Public Class RechnungsUebersicht
         ' This call is required by the designer.
 
         InitializeComponent()
+        InitializeTelerikControls()
+        WerkstattRechnungButton.CheckState = CheckState.Checked
+        AddHandler DataGridView1.CellFormatting, Sub(sender, e)
+                                                     If TypeOf e.Column Is GridViewCommandColumn AndAlso e.RowIndex >= 0 Then
+                                                         Dim commandCell As GridCommandCellElement = TryCast(e.CellElement, GridCommandCellElement)
+                                                         If commandCell IsNot Nothing AndAlso commandCell.Children.Count > 0 Then
+                                                             Dim buttonElement As RadButtonElement = TryCast(commandCell.Children(0), RadButtonElement)
+                                                             If buttonElement IsNot Nothing Then
+                                                                 commandCell.FitToSizeMode = RadFitToSizeMode.FitToParentBounds
+                                                                 commandCell.AutoSize = True
+                                                                 commandCell.TextAlignment = System.Drawing.ContentAlignment.MiddleCenter
+                                                                 commandCell.Alignment = System.Drawing.ContentAlignment.MiddleCenter
+                                                                 buttonElement.AutoSize = True
+                                                                 buttonElement.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
+                                                                 buttonElement.Alignment = System.Drawing.ContentAlignment.MiddleCenter
+                                                                 buttonElement.SvgImage = GetSvgImage(buttonElement.Name, New System.Drawing.Size(30, 30))
+                                                             End If
+                                                         End If
+                                                     End If
+                                                 End Sub
+
         DataGridView1.SelectionMode = GridViewSelectionMode.FullRowSelect
         DataGridView1.MultiSelect = True
+        DataGridView1.VirtualMode = False
+        RefreshGrid()
 
         _logger.Debug($"Leaving {NameOf(RechnungsUebersicht)} constructor")
     End Sub
 
-    Private Sub WerkstattRechnungButton_CheckedChanged(sender As Object, e As EventArgs) Handles WerkstattRechnungButton.CheckedChanged
+    Private Sub InitializeTelerikControls()
+
+    End Sub
+
+    Private Function GetSvgImage(name As String, desiredSize As System.Drawing.Size) As RadSvgImage
+        Dim currentNameSpace = Me.GetType.Namespace
+        Dim currentAssembly = Me.GetType.Assembly
+        Dim resources = currentAssembly.GetManifestResourceNames.ToHashSet
+        Select Case name.ToLower()
+            Case "pdf"
+                name = $"{currentNameSpace}.pdf.svg"
+            Case "bericht"
+                name = $"{currentNameSpace}.approval.svg"
+            Case "xml"
+                name = $"{currentNameSpace}.file.svg"
+            Case "validator"
+                name = $"{currentNameSpace}.trust.svg"
+        End Select
+
+        If Not resources.Contains(name) Then Return Nothing
+
+        Using stream = currentAssembly.GetManifestResourceStream(name)
+            Dim image = RadSvgImage.FromStream(stream)
+            image.Size = desiredSize
+            Return image
+        End Using
+    End Function
+
+    Private Sub WerkstattRechnungButton_CheckedChanged(sender As Object, e As EventArgs) Handles WerkstattRechnungButton.CheckStateChanged
+        If _rechnungsArt = RechnungsArt.Werkstatt Then
+            WerkstattRechnungButton.CheckState = CheckState.Checked
+            Return
+        End If
+
+        If WerkstattRechnungButton.CheckState = CheckState.Unchecked Then Return
         _rechnungsArt = RechnungsArt.Werkstatt
+        TankabrechnungButton.CheckState = CheckState.Unchecked
+        ManuelleRechnungButton.CheckState = CheckState.Unchecked
         RefreshGrid()
     End Sub
 
-    Private Sub TankabrechnungButton_CheckedChanged(sender As Object, e As EventArgs) Handles TankabrechnungButton.CheckedChanged
+    Private Sub TankabrechnungButton_CheckedChanged(sender As Object, e As EventArgs) Handles TankabrechnungButton.CheckStateChanged
+        If _rechnungsArt = RechnungsArt.Tanken Then
+            TankabrechnungButton.CheckState = CheckState.Checked
+            Return
+        End If
+
+        If TankabrechnungButton.CheckState = CheckState.Unchecked Then Return
         _rechnungsArt = RechnungsArt.Tanken
+        ManuelleRechnungButton.CheckState = CheckState.Unchecked
+        WerkstattRechnungButton.CheckState = CheckState.Unchecked
         RefreshGrid()
     End Sub
 
-    Private Sub ManuelleRechnungButton_CheckedChanged(sender As Object, e As EventArgs) Handles ManuelleRechnungButton.CheckedChanged
+    Private Sub ManuelleRechnungButton_CheckedChanged(sender As Object, e As EventArgs) Handles ManuelleRechnungButton.CheckStateChanged
+        If _rechnungsArt = RechnungsArt.Manuell Then
+            ManuelleRechnungButton.CheckState = CheckState.Checked
+            Return
+        End If
+
+        If ManuelleRechnungButton.CheckState = CheckState.Unchecked Then Return
         _rechnungsArt = RechnungsArt.Manuell
+        TankabrechnungButton.CheckState = CheckState.Unchecked
+        WerkstattRechnungButton.CheckState = CheckState.Unchecked
         RefreshGrid()
     End Sub
 
@@ -50,10 +125,11 @@ Public Class RechnungsUebersicht
         DataGridView1.Columns.Clear()
         DataGridView1.AutoSizeRows = True
         DataGridView1.AutoSizeColumnsMode = GridViewAutoSizeColumnsMode.Fill
+
         Dim sql = GetSqlStatement(_rechnungsArt)
         Dim dataTable = _dbConnection.FillDataTable(sql)
 
-        Dim dataTableBindingSource = New Windows.Forms.BindingSource()
+        Dim dataTableBindingSource = New BindingSource()
         dataTableBindingSource.DataSource = dataTable
         DataGridView1.DataSource = dataTableBindingSource
 
@@ -63,9 +139,9 @@ Public Class RechnungsUebersicht
         buttonColumn.DefaultText = "Bericht"
         buttonColumn.UseDefaultText = False
         buttonColumn.Image = ImageListIcons32.Images.Item(0)
-        buttonColumn.ImageLayout = ImageLayout.Stretch
-        buttonColumn.ImageAlignment = Drawing.ContentAlignment.MiddleCenter
-        buttonColumn.AutoSizeMode = True
+        buttonColumn.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
+        buttonColumn.ImageLayout = ImageLayout.Center
+        buttonColumn.TextAlignment = System.Drawing.ContentAlignment.MiddleCenter
         DataGridView1.Columns.Add(buttonColumn)
 
         buttonColumn = New GridViewCommandColumn()
@@ -74,9 +150,9 @@ Public Class RechnungsUebersicht
         buttonColumn.DefaultText = "XRechnung XML"
         buttonColumn.UseDefaultText = False
         buttonColumn.Image = ImageListIcons32.Images.Item(2)
-        buttonColumn.ImageLayout = ImageLayout.Stretch
-        buttonColumn.ImageAlignment = Drawing.ContentAlignment.MiddleCenter
-        buttonColumn.AutoSizeMode = True
+        buttonColumn.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
+        buttonColumn.ImageLayout = ImageLayout.Center
+        buttonColumn.TextAlignment = System.Drawing.ContentAlignment.MiddleCenter
         DataGridView1.Columns.Add(buttonColumn)
 
         buttonColumn = New GridViewCommandColumn()
@@ -85,9 +161,9 @@ Public Class RechnungsUebersicht
         buttonColumn.DefaultText = "XRechnung Hybrid"
         buttonColumn.UseDefaultText = False
         buttonColumn.Image = ImageListIcons32.Images.Item(5)
-        buttonColumn.ImageLayout = ImageLayout.Stretch
-        buttonColumn.ImageAlignment = Drawing.ContentAlignment.MiddleCenter
-        buttonColumn.AutoSizeMode = True
+        buttonColumn.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
+        buttonColumn.ImageLayout = ImageLayout.Center
+        buttonColumn.TextAlignment = System.Drawing.ContentAlignment.MiddleCenter
         DataGridView1.Columns.Add(buttonColumn)
 
         buttonColumn = New GridViewCommandColumn()
@@ -96,9 +172,9 @@ Public Class RechnungsUebersicht
         buttonColumn.DefaultText = "XRechnung Validator"
         buttonColumn.UseDefaultText = False
         buttonColumn.Image = ImageListIcons32.Images.Item(7)
-        buttonColumn.ImageLayout = ImageLayout.Stretch
-        buttonColumn.ImageAlignment = Drawing.ContentAlignment.MiddleCenter
-        buttonColumn.AutoSizeMode = True
+        buttonColumn.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
+        buttonColumn.ImageLayout = ImageLayout.Center
+        buttonColumn.TextAlignment = System.Drawing.ContentAlignment.MiddleCenter
         DataGridView1.Columns.Add(buttonColumn)
     End Function
 
@@ -113,10 +189,10 @@ Public Class RechnungsUebersicht
 
         Try
             Select Case e.Column.Name
-                Case "Pdf"
+                Case "Bericht"
                     Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New List(Of Integer) From {rechnungsNummer})
                     reportForm.ShowDialog()
-                Case "Xml"
+                Case "XML"
                     Dim fileDialog = New SaveFileDialog
                     fileDialog.Title = "Bitte XRechnung Speicherort auswählen."
                     fileDialog.Filter = "XRechnung|*.xml"
@@ -135,7 +211,7 @@ Public Class RechnungsUebersicht
                     End Using
 
                     MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                Case "Hybrid"
+                Case "PDF"
                     Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New List(Of Integer) From {rechnungsNummer})
                     reportForm.SavePdf()
                 Case "Validator"

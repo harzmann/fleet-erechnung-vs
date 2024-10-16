@@ -26,21 +26,27 @@ Partial Class RechnungsUebersicht
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(RechnungsUebersicht))
-        Dim TableViewDefinition2 As Telerik.WinControls.UI.TableViewDefinition = New Telerik.WinControls.UI.TableViewDefinition()
+        Dim TableViewDefinition1 As Telerik.WinControls.UI.TableViewDefinition = New Telerik.WinControls.UI.TableViewDefinition()
         Me.PanelMenu = New System.Windows.Forms.Panel()
         Me.GroupBoxBerichte = New System.Windows.Forms.GroupBox()
-        Me.Button2 = New System.Windows.Forms.Button()
-        Me.Button1 = New System.Windows.Forms.Button()
+        Me.Button2 = New Telerik.WinControls.UI.RadButton()
+        Me.Button1 = New Telerik.WinControls.UI.RadButton()
         Me.GroupBoxRechnungsart = New System.Windows.Forms.GroupBox()
-        Me.ManuelleRechnungButton = New System.Windows.Forms.RadioButton()
-        Me.TankabrechnungButton = New System.Windows.Forms.RadioButton()
-        Me.WerkstattRechnungButton = New System.Windows.Forms.RadioButton()
+        Me.ManuelleRechnungButton = New Telerik.WinControls.UI.RadToggleButton()
+        Me.TankabrechnungButton = New Telerik.WinControls.UI.RadToggleButton()
+        Me.WerkstattRechnungButton = New Telerik.WinControls.UI.RadToggleButton()
         Me.PanelDatagrid = New System.Windows.Forms.Panel()
         Me.DataGridView1 = New Telerik.WinControls.UI.RadGridView()
         Me.ImageListIcons32 = New System.Windows.Forms.ImageList(Me.components)
+        Me.CrystalTheme1 = New Telerik.WinControls.Themes.CrystalTheme()
         Me.PanelMenu.SuspendLayout()
         Me.GroupBoxBerichte.SuspendLayout()
+        CType(Me.Button2, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.Button1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBoxRechnungsart.SuspendLayout()
+        CType(Me.ManuelleRechnungButton, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.TankabrechnungButton, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.WerkstattRechnungButton, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.PanelDatagrid.SuspendLayout()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.DataGridView1.MasterTemplate, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -54,7 +60,7 @@ Partial Class RechnungsUebersicht
         Me.PanelMenu.Location = New System.Drawing.Point(0, 0)
         Me.PanelMenu.Margin = New System.Windows.Forms.Padding(2)
         Me.PanelMenu.Name = "PanelMenu"
-        Me.PanelMenu.Size = New System.Drawing.Size(1262, 118)
+        Me.PanelMenu.Size = New System.Drawing.Size(1010, 94)
         Me.PanelMenu.TabIndex = 13
         '
         'GroupBoxBerichte
@@ -62,34 +68,35 @@ Partial Class RechnungsUebersicht
         Me.GroupBoxBerichte.Controls.Add(Me.Button2)
         Me.GroupBoxBerichte.Controls.Add(Me.Button1)
         Me.GroupBoxBerichte.Dock = System.Windows.Forms.DockStyle.Left
-        Me.GroupBoxBerichte.Location = New System.Drawing.Point(260, 0)
+        Me.GroupBoxBerichte.Location = New System.Drawing.Point(257, 0)
         Me.GroupBoxBerichte.Margin = New System.Windows.Forms.Padding(2)
         Me.GroupBoxBerichte.Name = "GroupBoxBerichte"
         Me.GroupBoxBerichte.Padding = New System.Windows.Forms.Padding(2)
-        Me.GroupBoxBerichte.Size = New System.Drawing.Size(239, 118)
+        Me.GroupBoxBerichte.Size = New System.Drawing.Size(186, 94)
         Me.GroupBoxBerichte.TabIndex = 12
         Me.GroupBoxBerichte.TabStop = False
         Me.GroupBoxBerichte.Text = "Berichte"
         '
         'Button2
         '
-        Me.Button2.Location = New System.Drawing.Point(5, 21)
+        Me.Button2.Location = New System.Drawing.Point(4, 17)
         Me.Button2.Margin = New System.Windows.Forms.Padding(2)
         Me.Button2.Name = "Button2"
-        Me.Button2.Size = New System.Drawing.Size(220, 26)
+        Me.Button2.Size = New System.Drawing.Size(178, 21)
         Me.Button2.TabIndex = 11
         Me.Button2.Text = "Alle Rechnungen anzeigen"
-        Me.Button2.UseVisualStyleBackColor = True
+        Me.Button2.ThemeName = "Crystal"
         '
         'Button1
         '
-        Me.Button1.Location = New System.Drawing.Point(5, 54)
+        Me.Button1.Location = New System.Drawing.Point(4, 43)
         Me.Button1.Margin = New System.Windows.Forms.Padding(2)
         Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(220, 26)
+        Me.Button1.Size = New System.Drawing.Size(178, 44)
         Me.Button1.TabIndex = 10
         Me.Button1.Text = "Ausgewählte Rechnungen anzeigen"
-        Me.Button1.UseVisualStyleBackColor = True
+        Me.Button1.TextWrap = True
+        Me.Button1.ThemeName = "Crystal"
         '
         'GroupBoxRechnungsart
         '
@@ -101,64 +108,61 @@ Partial Class RechnungsUebersicht
         Me.GroupBoxRechnungsart.Margin = New System.Windows.Forms.Padding(2)
         Me.GroupBoxRechnungsart.Name = "GroupBoxRechnungsart"
         Me.GroupBoxRechnungsart.Padding = New System.Windows.Forms.Padding(2)
-        Me.GroupBoxRechnungsart.Size = New System.Drawing.Size(260, 118)
+        Me.GroupBoxRechnungsart.Size = New System.Drawing.Size(257, 94)
         Me.GroupBoxRechnungsart.TabIndex = 11
         Me.GroupBoxRechnungsart.TabStop = False
         Me.GroupBoxRechnungsart.Text = "Rechnungsart"
         '
         'ManuelleRechnungButton
         '
-        Me.ManuelleRechnungButton.Appearance = System.Windows.Forms.Appearance.Button
         Me.ManuelleRechnungButton.Image = CType(resources.GetObject("ManuelleRechnungButton.Image"), System.Drawing.Image)
-        Me.ManuelleRechnungButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter
-        Me.ManuelleRechnungButton.Location = New System.Drawing.Point(168, 21)
+        Me.ManuelleRechnungButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
+        Me.ManuelleRechnungButton.Location = New System.Drawing.Point(172, 17)
         Me.ManuelleRechnungButton.Margin = New System.Windows.Forms.Padding(2)
         Me.ManuelleRechnungButton.Name = "ManuelleRechnungButton"
-        Me.ManuelleRechnungButton.Size = New System.Drawing.Size(80, 80)
+        Me.ManuelleRechnungButton.Padding = New System.Windows.Forms.Padding(5)
+        Me.ManuelleRechnungButton.Size = New System.Drawing.Size(80, 70)
         Me.ManuelleRechnungButton.TabIndex = 9
-        Me.ManuelleRechnungButton.TabStop = True
         Me.ManuelleRechnungButton.Text = "MR"
-        Me.ManuelleRechnungButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter
-        Me.ManuelleRechnungButton.UseVisualStyleBackColor = True
+        Me.ManuelleRechnungButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
+        Me.ManuelleRechnungButton.ThemeName = "Crystal"
         '
         'TankabrechnungButton
         '
-        Me.TankabrechnungButton.Appearance = System.Windows.Forms.Appearance.Button
         Me.TankabrechnungButton.Image = CType(resources.GetObject("TankabrechnungButton.Image"), System.Drawing.Image)
-        Me.TankabrechnungButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter
-        Me.TankabrechnungButton.Location = New System.Drawing.Point(86, 21)
+        Me.TankabrechnungButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
+        Me.TankabrechnungButton.Location = New System.Drawing.Point(88, 17)
         Me.TankabrechnungButton.Margin = New System.Windows.Forms.Padding(2)
         Me.TankabrechnungButton.Name = "TankabrechnungButton"
-        Me.TankabrechnungButton.Size = New System.Drawing.Size(80, 80)
+        Me.TankabrechnungButton.Padding = New System.Windows.Forms.Padding(5)
+        Me.TankabrechnungButton.Size = New System.Drawing.Size(80, 70)
         Me.TankabrechnungButton.TabIndex = 8
-        Me.TankabrechnungButton.TabStop = True
         Me.TankabrechnungButton.Text = "Tankstelle"
-        Me.TankabrechnungButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter
-        Me.TankabrechnungButton.UseVisualStyleBackColor = True
+        Me.TankabrechnungButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
+        Me.TankabrechnungButton.ThemeName = "Crystal"
         '
         'WerkstattRechnungButton
         '
-        Me.WerkstattRechnungButton.Appearance = System.Windows.Forms.Appearance.Button
         Me.WerkstattRechnungButton.Image = CType(resources.GetObject("WerkstattRechnungButton.Image"), System.Drawing.Image)
-        Me.WerkstattRechnungButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter
-        Me.WerkstattRechnungButton.Location = New System.Drawing.Point(5, 21)
+        Me.WerkstattRechnungButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
+        Me.WerkstattRechnungButton.Location = New System.Drawing.Point(4, 17)
         Me.WerkstattRechnungButton.Margin = New System.Windows.Forms.Padding(2)
         Me.WerkstattRechnungButton.Name = "WerkstattRechnungButton"
-        Me.WerkstattRechnungButton.Size = New System.Drawing.Size(80, 80)
+        Me.WerkstattRechnungButton.Padding = New System.Windows.Forms.Padding(5)
+        Me.WerkstattRechnungButton.Size = New System.Drawing.Size(80, 70)
         Me.WerkstattRechnungButton.TabIndex = 7
-        Me.WerkstattRechnungButton.TabStop = True
         Me.WerkstattRechnungButton.Text = "Werkstatt"
-        Me.WerkstattRechnungButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter
-        Me.WerkstattRechnungButton.UseVisualStyleBackColor = True
+        Me.WerkstattRechnungButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
+        Me.WerkstattRechnungButton.ThemeName = "Crystal"
         '
         'PanelDatagrid
         '
         Me.PanelDatagrid.Controls.Add(Me.DataGridView1)
         Me.PanelDatagrid.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.PanelDatagrid.Location = New System.Drawing.Point(0, 118)
+        Me.PanelDatagrid.Location = New System.Drawing.Point(0, 94)
         Me.PanelDatagrid.Margin = New System.Windows.Forms.Padding(2)
         Me.PanelDatagrid.Name = "PanelDatagrid"
-        Me.PanelDatagrid.Size = New System.Drawing.Size(1262, 603)
+        Me.PanelDatagrid.Size = New System.Drawing.Size(1010, 483)
         Me.PanelDatagrid.TabIndex = 14
         '
         'DataGridView1
@@ -166,7 +170,7 @@ Partial Class RechnungsUebersicht
         Me.DataGridView1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.DataGridView1.EnableGestures = False
         Me.DataGridView1.Location = New System.Drawing.Point(0, 0)
-        Me.DataGridView1.Margin = New System.Windows.Forms.Padding(0)
+        Me.DataGridView1.Margin = New System.Windows.Forms.Padding(12)
         '
         '
         '
@@ -178,10 +182,11 @@ Partial Class RechnungsUebersicht
         Me.DataGridView1.MasterTemplate.ClipboardPasteMode = Telerik.WinControls.UI.GridViewClipboardPasteMode.Disable
         Me.DataGridView1.MasterTemplate.EnableFiltering = True
         Me.DataGridView1.MasterTemplate.ShowGroupedColumns = True
-        Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition2
+        Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition1
         Me.DataGridView1.Name = "DataGridView1"
-        Me.DataGridView1.Size = New System.Drawing.Size(1262, 603)
+        Me.DataGridView1.Size = New System.Drawing.Size(1010, 483)
         Me.DataGridView1.TabIndex = 13
+        Me.DataGridView1.ThemeName = "Crystal"
         '
         'ImageListIcons32
         '
@@ -198,9 +203,9 @@ Partial Class RechnungsUebersicht
         '
         'RechnungsUebersicht
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(120.0!, 120.0!)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
-        Me.ClientSize = New System.Drawing.Size(1262, 721)
+        Me.ClientSize = New System.Drawing.Size(1010, 577)
         Me.Controls.Add(Me.PanelDatagrid)
         Me.Controls.Add(Me.PanelMenu)
         Me.Margin = New System.Windows.Forms.Padding(2)
@@ -208,7 +213,12 @@ Partial Class RechnungsUebersicht
         Me.Text = "FLEET XRechnung"
         Me.PanelMenu.ResumeLayout(False)
         Me.GroupBoxBerichte.ResumeLayout(False)
+        CType(Me.Button2, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.Button1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.GroupBoxRechnungsart.ResumeLayout(False)
+        CType(Me.ManuelleRechnungButton, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.TankabrechnungButton, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.WerkstattRechnungButton, System.ComponentModel.ISupportInitialize).EndInit()
         Me.PanelDatagrid.ResumeLayout(False)
         CType(Me.DataGridView1.MasterTemplate, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).EndInit()
@@ -217,13 +227,14 @@ Partial Class RechnungsUebersicht
     End Sub
     Friend WithEvents PanelMenu As Windows.Forms.Panel
     Friend WithEvents GroupBoxRechnungsart As Windows.Forms.GroupBox
-    Friend WithEvents ManuelleRechnungButton As Windows.Forms.RadioButton
-    Friend WithEvents TankabrechnungButton As Windows.Forms.RadioButton
-    Friend WithEvents WerkstattRechnungButton As Windows.Forms.RadioButton
+    Friend WithEvents ManuelleRechnungButton As Telerik.WinControls.UI.RadToggleButton
+    Friend WithEvents TankabrechnungButton As Telerik.WinControls.UI.RadToggleButton
+    Friend WithEvents WerkstattRechnungButton As Telerik.WinControls.UI.RadToggleButton
     Friend WithEvents GroupBoxBerichte As Windows.Forms.GroupBox
-    Friend WithEvents Button2 As Windows.Forms.Button
-    Friend WithEvents Button1 As Windows.Forms.Button
+    Friend WithEvents Button2 As Telerik.WinControls.UI.RadButton
+    Friend WithEvents Button1 As Telerik.WinControls.UI.RadButton
     Friend WithEvents PanelDatagrid As Windows.Forms.Panel
     Public WithEvents DataGridView1 As RadGridView
     Friend WithEvents ImageListIcons32 As Windows.Forms.ImageList
+    Friend WithEvents CrystalTheme1 As Telerik.WinControls.Themes.CrystalTheme
 End Class
