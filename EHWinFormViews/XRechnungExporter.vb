@@ -92,9 +92,9 @@ Public Class XRechnungExporter
             End Try
 
             Dim skontoDays = 0
-            Decimal.TryParse(GetDataFromColumn(items, "SkontoTage"), skontoDays)
+            Decimal.TryParse(GetDataFromColumn(items, "SkontoTage"), (skontoDays))
             Dim skontoRate = 0
-            Decimal.TryParse(GetDataFromColumn(items, "SkontoProzent"), skontoRate)
+            Decimal.TryParse(GetDataFromColumn(items, "SkontoProzent"), (skontoRate))
 
             If skontoDays > 0 AndAlso skontoRate > 0 Then
                 xRechnung.AddTradePaymentTerms($"#SKONTO#TAGE={skontoDays}#PROZENT={skontoRate:F2}#", dueDate)
@@ -118,7 +118,7 @@ Public Class XRechnungExporter
             xRechnung.ReferenceOrderNo = formattedInvoiceNumber
             xRechnung.OrderNo = formattedInvoiceNumber
             Dim deliveryDate = xRechnung.InvoiceDate
-            Date.TryParse(GetDataFromColumn(items, "Lieferdatum"), deliveryDate)
+            Date.TryParse(GetDataFromColumn(items, "Lieferdatum"), CDate(deliveryDate))
             xRechnung.ActualDeliveryDate = deliveryDate
 
             'add line items
@@ -338,7 +338,7 @@ Public Class XRechnungExporter
         Return billTypeText
     End Function
 
-    Private Function GetDataFromColumn(data As Dictionary(Of String, String), column As String, Optional defaultValue As String = "")
+    Private Function GetDataFromColumn(data As Dictionary(Of String, String), column As String, Optional defaultValue As String = "") As String
         Dim value = defaultValue
         If Not data.TryGetValue(column, value) AndAlso Not String.IsNullOrWhiteSpace(defaultValue) Then
             _logger.Warn($"Column {column} does not exist, using default value {defaultValue}")
@@ -373,8 +373,8 @@ Public Class XRechnungExporter
     Private Function GetItemsFromQuery(sql As String) As List(Of Dictionary(Of String, String))
         Dim table = _dataConnection.FillDataTable(sql)
         If table.Rows.Count = 0 Then Return New List(Of Dictionary(Of String, String))
-        Return table.Rows.OfType(Of DataRow).Select(
-            Function(row) table.Columns.OfType(Of DataColumn).ToDictionary(Function(column) column.ColumnName.Replace(" ", ""), Function(column) row(column.ColumnName).ToString())).ToList
+        Return table.Rows.OfType(Of Data.DataRow).Select(
+            Function(row) table.Columns.OfType(Of Data.DataColumn).ToDictionary(Function(column) column.ColumnName.Replace(" ", ""), Function(column) row(column.ColumnName).ToString())).ToList
     End Function
 
     Private Function GetSellerParameter(rechnungsArt As RechnungsArt) As Dictionary(Of String, String)
@@ -384,7 +384,7 @@ Public Class XRechnungExporter
             _logger.Error($"Could not fetch seller parameters from DB ({sql})")
             Return New Dictionary(Of String, String)
         End If
-        Return dataTable.Columns.OfType(Of DataColumn).ToDictionary(Function(column) column.ColumnName, Function(column) dataTable.Rows.OfType(Of DataRow)().First()(column.ColumnName).ToString)
+        Return dataTable.Columns.OfType(Of Data.DataColumn).ToDictionary(Function(column) column.ColumnName, Function(column) dataTable.Rows.OfType(Of Data.DataRow)().First()(column.ColumnName).ToString)
     End Function
 
     Private Function GetAdditionalSellerParameter(rechnungsArt As RechnungsArt) As Dictionary(Of String, String)
@@ -394,7 +394,7 @@ Public Class XRechnungExporter
             _logger.Error($"Could not fetch additional seller parameters from DB ({sql})")
             Return New Dictionary(Of String, String)
         End If
-        Return dataTable.Columns.OfType(Of DataColumn).ToDictionary(Function(column) column.ColumnName, Function(column) dataTable.Rows.OfType(Of DataRow)().First()(column.ColumnName).ToString)
+        Return dataTable.Columns.OfType(Of Data.DataColumn).ToDictionary(Function(column) column.ColumnName, Function(column) dataTable.Rows.OfType(Of Data.DataRow)().First()(column.ColumnName).ToString)
     End Function
 
     Private Function GetBuyerData(kundenNr As String) As Dictionary(Of String, String)
@@ -404,7 +404,7 @@ Public Class XRechnungExporter
             _logger.Error($"Could not fetch customer parameters from DB ({sql})")
             Return New Dictionary(Of String, String)
         End If
-        Return dataTable.Columns.OfType(Of DataColumn).ToDictionary(Function(column) column.ColumnName, Function(column) dataTable.Rows.OfType(Of DataRow)().First()(column.ColumnName).ToString)
+        Return dataTable.Columns.OfType(Of Data.DataColumn).ToDictionary(Function(column) column.ColumnName, Function(column) dataTable.Rows.OfType(Of Data.DataRow)().First()(column.ColumnName).ToString)
     End Function
 
     Private Function GetSellerParameterSql(rechnungsArt As RechnungsArt) As String

@@ -343,20 +343,20 @@ Partial Class RechnungsUebersicht
         Me.ResumeLayout(False)
 
     End Sub
-    Friend WithEvents PanelMenu As Windows.Forms.Panel
-    Friend WithEvents GroupBoxRechnungsart As Windows.Forms.GroupBox
+    Friend WithEvents PanelMenu As System.Windows.Forms.Panel
+    Friend WithEvents GroupBoxRechnungsart As System.Windows.Forms.GroupBox
     Friend WithEvents ManuelleRechnungButton As Telerik.WinControls.UI.RadToggleButton
     Friend WithEvents TankabrechnungButton As Telerik.WinControls.UI.RadToggleButton
     Friend WithEvents WerkstattRechnungButton As Telerik.WinControls.UI.RadToggleButton
-    Friend WithEvents GroupBoxBerichte As Windows.Forms.GroupBox
+    Friend WithEvents GroupBoxBerichte As System.Windows.Forms.GroupBox
     Friend WithEvents Button2 As Telerik.WinControls.UI.RadButton
     Friend WithEvents Button1 As Telerik.WinControls.UI.RadButton
-    Friend WithEvents PanelDatagrid As Windows.Forms.Panel
+    Friend WithEvents PanelDatagrid As System.Windows.Forms.Panel
     Public WithEvents DataGridView1 As RadGridView
     Friend WithEvents CrystalTheme1 As Telerik.WinControls.Themes.CrystalTheme
-    Friend WithEvents GroupBox1 As Windows.Forms.GroupBox
-    Friend WithEvents GroupBox3 As Windows.Forms.GroupBox
-    Friend WithEvents GroupBox2 As Windows.Forms.GroupBox
+    Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
+    Friend WithEvents GroupBox3 As System.Windows.Forms.GroupBox
+    Friend WithEvents GroupBox2 As System.Windows.Forms.GroupBox
     Friend WithEvents SelectedPdfExportButton As RadButton
     Friend WithEvents AllXmlExportButton As RadButton
     Friend WithEvents AllPdfExportButton As RadButton
