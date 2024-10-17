@@ -76,9 +76,4 @@
 	    <LastGenOutput>Resources.Designer.vb</LastGenOutput>
 	  </EmbeddedResource>
 	</ItemGroup>
-	<ItemGroup>
-	  <None Update="license.key">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	</ItemGroup>
 </Project>

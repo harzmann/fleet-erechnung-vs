@@ -33,7 +33,15 @@ Public Class ReportForm
     End Property
 
     Shared Sub New()
-        StiLicense.LoadFromFile(Path.Combine(Path.GetDirectoryName(GetType(ReportForm).Assembly.Location), "license.key"))
+        'StiLicense.LoadFromFile(Path.Combine(Path.GetDirectoryName(GetType(ReportForm).Assembly.Location), "license.key"))
+        Stimulsoft.Base.StiLicense.Key = "6vJhGtLLLz2GNviWmUTrhSqnOItdDwjBylQzQcAOiHk3LB9R6pWAk1QqUjOkeHv6OOlD/P9VbyZIvUMUf5DgXWtfTp" +
+            "h4Mq1GsBBQJeFHAQDJ1Ji+ynEb8F5xLdDG8MOLdqZq+K3QgObIxz/RbC8Oh5REXsrIKWsaR6OK2DgwEnxih9DTLIPb" +
+            "+4wJCQFDY0bmb/fK14QgER+UHcTMKXYdxq/cRgZl7dOXtotRW0+K5K5mFnB33yWjmKvjvarO6+qe2J3k68rivqZy49" +
+            "c8KLZkzw/26buHe4W40ewCeS4xwVLzud5b9cSKiScLlJdTF2+xfAVItCN8HrEIEVmNAzHZOhrivhdshYKMznBAfjPO" +
+            "UETumlFsx32hbXe8riCArJt1ax25A4Fx0A01tEAgmdKbqA3YYqOWck5aGHEmNkiTbwtxMNnlOtbS8I4ywC/hDGrbC4" +
+            "4d/N/g/tB1VskRzsP+kbw3kn7DKdW6VuIqWAyCSnoe6vuEdCQCf23Mn89ZojrXF8wsN667aB2wyB8Zefvp4U089UT/" +
+            "GlUrouhDXQcYHkwy+OC98JRW2gr+fze2N4t0mexeemkdqpW5g13tiREz9y+IBfFwHlekZo1OzcWYB92+qs5es415FX" +
+            "PXko8hYTHuZ1UxHi/TjQPRvKXgYbhdsqRM/npxed7pftyRS9KuGUhUG8aACWyceTGRCGnZTjLq"
     End Sub
 
     Public Sub New(dbConnection As General.Database, billType As RechnungsArt, rechnungsNummern As List(Of Integer))
