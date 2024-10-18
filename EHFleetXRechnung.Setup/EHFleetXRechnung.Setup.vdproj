@@ -675,6 +675,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
             }
         }
     }
@@ -2941,15 +2949,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Fleet XRechnung"
-        "ProductCode" = "8:{6BC240BA-483B-4494-9886-5E36BF34B2CC}"
-        "PackageCode" = "8:{C3AF95E9-30D9-454D-BA19-EBB13564D416}"
+        "ProductCode" = "8:{4077C6DC-4712-4823-8ADE-045E82F70E4F}"
+        "PackageCode" = "8:{25514704-041A-4221-A205-4375136C27F5}"
         "UpgradeCode" = "8:{3021B662-8FC1-4CA9-BF36-09CF6EBB31D8}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
-        "RemovePreviousVersions" = "11:TRUE"
+        "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.0"
+        "ProductVersion" = "8:1.0.1"
         "Manufacturer" = "8:eh-systemhaus e.K."
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -3463,7 +3471,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_5F5A0AA7A20C4F71AD826DEB09FDB14A"
             {
-            "SourcePath" = "8:..\\EHWinFormViews.App\\obj\\x86\\Debug\\net8.0-windows\\apphost.exe"
+            "SourcePath" = "8:..\\EHWinFormViews.App\\obj\\Debug\\net8.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_43F05BB54726457493F59F5D4DD8F8D0"
