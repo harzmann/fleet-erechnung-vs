@@ -3,6 +3,8 @@
     <RootNamespace>EHFleetXRechnung.Viewer</RootNamespace>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
+    <ForceDesignerDPIUnaware>true</ForceDesignerDPIUnaware>
+    <ApplicationHighDpiMode>DpiUnawareGdiScaled</ApplicationHighDpiMode>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Icons\approval.svg" />
