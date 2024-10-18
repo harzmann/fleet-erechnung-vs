@@ -106,7 +106,7 @@ Public Class ReportForm
 
             AddHandler StiViewerControl1.ProcessExport, AddressOf HandleProcesExport
 
-            StiViewerControl1.Report.Render(showProgress:=False)
+            StiViewerControl1.Report.Render()
         Catch ex As Exception
             _logger.Error($"Exception during {NameOf(ReportForm)} constructor", ex)
             Throw
@@ -231,12 +231,12 @@ Public Class ReportForm
                         service.ExportTo(StiViewerControl1.Report, stream, settings)
                     End Using
                 Next
-                _logger.Debug("Finished exporting bill pdf.")
+                MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
             Catch ex As Exception
                 _logger.Error($"Exception while trying to save report to pdf file", ex)
-                Throw
+                MessageBox.Show("Fehler beim Speichern!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Finally
-
+                _logger.Debug("Finished exporting bill pdf.")
                 _saveSinglePdf = False
             End Try
         End If
