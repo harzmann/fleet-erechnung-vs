@@ -221,6 +221,7 @@ Public Class RechnungsUebersicht
                 Case "PDF"
                     Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New List(Of Integer) From {rechnungsNummer})
                     reportForm.SavePdf()
+                    'MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
                 Case "Validator"
                     Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, rechnungsNummer, "xml")
                     Using fileStream = File.Create(filePath)
@@ -386,6 +387,8 @@ Public Class RechnungsUebersicht
                     _logger.Error($"Error saving bill xml file to {filePath}", ex)
                 End Try
             Next
+
+            MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
         Catch ex As Exception
             _logger.Error("Exception while saving bill xml files", ex)
             MessageBox.Show("Speichern fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)

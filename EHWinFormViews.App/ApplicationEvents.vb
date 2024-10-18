@@ -37,7 +37,7 @@ Namespace My
         End Function
 
         Private Sub ConfigureLogging()
-            Dim libraryConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EHFleetXRechnung.Viewer.dll.config")
+            Dim libraryConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logger.config")
             Dim logConfigFile = New FileInfo(libraryConfigPath)
 
             If logConfigFile.Exists Then
