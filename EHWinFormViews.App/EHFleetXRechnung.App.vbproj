@@ -8,6 +8,7 @@
     <ImportedNamespaces>System.Drawing=False,System.Windows.Forms=False,Microsoft.VisualBasic=True,System=True,System.Collections=True,System.Collections.Generic=True,System.Data=True,System.Diagnostics=True,System.Linq=True,System.Xml.Linq=True,System.Threading.Tasks=True,EHFleetXRechnung.App=True</ImportedNamespaces>
     <ForceDesignerDPIUnaware>true</ForceDesignerDPIUnaware>
     <ApplicationHighDpiMode>DpiUnawareGdiScaled</ApplicationHighDpiMode>
+    <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
   <ItemGroup>
     <Import Include="System.Drawing" />
