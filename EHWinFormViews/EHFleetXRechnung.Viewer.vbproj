@@ -6,6 +6,14 @@
 	  <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <RegisterForComInterop>False</RegisterForComInterop>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <RegisterForComInterop>False</RegisterForComInterop>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="Icons\approval.svg" />
     <None Remove="Icons\car-repair.svg" />
