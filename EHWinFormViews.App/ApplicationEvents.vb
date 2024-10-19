@@ -31,7 +31,11 @@ Namespace My
 
         Protected Overrides Function OnStartup(eventArgs As StartupEventArgs) As Boolean
             ConfigureLogging()
-            Dim Form = New RechnungsUebersicht(New General.Database("Provider=MSOLEDBSQL;Data Source=.\SQLEXPRESS;Initial Catalog=EHFleet;Integrated Security=SSPI;"))
+            Dim readValue = My.Computer.Registry.GetValue("HKEY_CURRENT_USER\Software\VB and VBA Program Settings\EHFleet Fuhrpark IM System\Allgemein", "workdbcn", Nothing)
+            If readValue Is Nothing Then
+                readValue = "Provider=MSOLEDBSQL;Data Source=.\SQLEXPRESS;Initial Catalog=EHFleet;Integrated Security=SSPI;"
+            End If
+            Dim Form = New RechnungsUebersicht(New General.Database(readValue.ToString))
             MainForm = Form
             Return MyBase.OnStartup(eventArgs)
         End Function
