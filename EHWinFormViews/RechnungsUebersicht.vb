@@ -4,6 +4,8 @@ Imports System.Windows.Forms
 Imports ehfleet_classlibrary
 Imports EHFleetXRechnung.Viewer.GermanRadGridViewLocalization
 Imports log4net
+Imports log4net.Appender
+Imports log4net.Repository
 Imports Stimulsoft.Report.Export
 Imports Telerik.WinControls
 Imports Telerik.WinControls.UI
@@ -19,6 +21,16 @@ Public Class RechnungsUebersicht
 
     Private _rechnungsArt As RechnungsArt
 
+    Public Property RechnungsArt As RechnungsArt
+        Get
+            Return _rechnungsArt
+        End Get
+        Set(value As RechnungsArt)
+            _rechnungsArt = value
+            UpdateLogConfiguration()
+        End Set
+    End Property
+
     Public Sub New(dbConnection As General.Database)
         _dbConnection = dbConnection
         _logger = LogManager.GetLogger(Me.GetType())
@@ -30,6 +42,7 @@ Public Class RechnungsUebersicht
         InitializeComponent()
         InitializeTelerikControls()
         WerkstattRechnungButton.CheckState = CheckState.Checked
+        RechnungsArt = RechnungsArt.Werkstatt
         AddHandler DataGridView1.CellFormatting, Sub(sender, e)
                                                      If TypeOf e.Column Is GridViewCommandColumn AndAlso e.RowIndex >= 0 Then
                                                          Dim commandCell As GridCommandCellElement = TryCast(e.CellElement, GridCommandCellElement)
@@ -98,47 +111,62 @@ Public Class RechnungsUebersicht
     End Function
 
     Private Sub WerkstattRechnungButton_CheckedChanged(sender As Object, e As EventArgs) Handles WerkstattRechnungButton.CheckStateChanged
-        If _rechnungsArt = RechnungsArt.Werkstatt Then
+        If RechnungsArt = RechnungsArt.Werkstatt Then
             WerkstattRechnungButton.CheckState = CheckState.Checked
             Return
         End If
 
         If WerkstattRechnungButton.CheckState = CheckState.Unchecked Then Return
-        _rechnungsArt = RechnungsArt.Werkstatt
+        RechnungsArt = RechnungsArt.Werkstatt
         TankabrechnungButton.CheckState = CheckState.Unchecked
         ManuelleRechnungButton.CheckState = CheckState.Unchecked
         RefreshGrid()
     End Sub
 
     Private Sub TankabrechnungButton_CheckedChanged(sender As Object, e As EventArgs) Handles TankabrechnungButton.CheckStateChanged
-        If _rechnungsArt = RechnungsArt.Tanken Then
+        If RechnungsArt = RechnungsArt.Tanken Then
             TankabrechnungButton.CheckState = CheckState.Checked
             Return
         End If
 
         If TankabrechnungButton.CheckState = CheckState.Unchecked Then Return
-        _rechnungsArt = RechnungsArt.Tanken
+        RechnungsArt = RechnungsArt.Tanken
         ManuelleRechnungButton.CheckState = CheckState.Unchecked
         WerkstattRechnungButton.CheckState = CheckState.Unchecked
         RefreshGrid()
     End Sub
 
     Private Sub ManuelleRechnungButton_CheckedChanged(sender As Object, e As EventArgs) Handles ManuelleRechnungButton.CheckStateChanged
-        If _rechnungsArt = RechnungsArt.Manuell Then
+        If RechnungsArt = RechnungsArt.Manuell Then
             ManuelleRechnungButton.CheckState = CheckState.Checked
             Return
         End If
 
         If ManuelleRechnungButton.CheckState = CheckState.Unchecked Then Return
-        _rechnungsArt = RechnungsArt.Manuell
+        RechnungsArt = RechnungsArt.Manuell
         TankabrechnungButton.CheckState = CheckState.Unchecked
         WerkstattRechnungButton.CheckState = CheckState.Unchecked
         RefreshGrid()
     End Sub
 
+
+    Private Sub UpdateLogConfiguration()
+        Dim folder = _xmlExporter.GetExportPath(RechnungsArt)
+        Dim repository As ILoggerRepository = LogManager.GetRepository()
+        Dim appenders = repository.GetAppenders()
+        Dim fileAppender As RollingFileAppender = appenders.FirstOrDefault(Function(a) a.GetType() = GetType(RollingFileAppender))
+        If fileAppender Is Nothing Then Return
+
+        Dim currentLogFile = fileAppender.File.Split(".").First()
+        Dim fileName = Path.GetFileName(currentLogFile)
+        Dim newFile = Path.Combine(folder, fileName)
+        fileAppender.File = newFile
+        fileAppender.ActivateOptions()
+    End Sub
+
     Private Function RefreshGrid()
 
-        Dim sql = GetSqlStatement(_rechnungsArt)
+        Dim sql = GetSqlStatement(RechnungsArt)
         Dim dataTable = _dbConnection.FillDataTable(sql)
         Dim dataTableBindingSource = New BindingSource()
 
@@ -203,13 +231,13 @@ Public Class RechnungsUebersicht
         Try
             Select Case e.Column.Name
                 Case "Bericht"
-                    Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New List(Of Integer) From {rechnungsNummer})
+                    Dim reportForm = New ReportForm(_dbConnection, RechnungsArt, New List(Of Integer) From {rechnungsNummer})
                     reportForm.ShowDialog()
                 Case "XML"
-                    Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, rechnungsNummer, "xml")
+                    Dim filePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, rechnungsNummer, "xml")
                     Using fileStream = File.Create(filePath)
                         Try
-                            _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
+                            _xmlExporter.CreateBillXml(fileStream, RechnungsArt, rechnungsNummer)
                         Catch ex As Exception
                             MessageBox.Show("Speichern fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
                             Return
@@ -219,14 +247,14 @@ Public Class RechnungsUebersicht
 
                     MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
                 Case "PDF"
-                    Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, New List(Of Integer) From {rechnungsNummer})
+                    Dim reportForm = New ReportForm(_dbConnection, RechnungsArt, New List(Of Integer) From {rechnungsNummer})
                     reportForm.SavePdf()
                     'MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
                 Case "Validator"
-                    Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, rechnungsNummer, "xml")
+                    Dim filePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, rechnungsNummer, "xml")
                     Using fileStream = File.Create(filePath)
                         Try
-                            _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, rechnungsNummer)
+                            _xmlExporter.CreateBillXml(fileStream, RechnungsArt, rechnungsNummer)
                         Catch ex As Exception
                             MessageBox.Show("Speichern fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
                             Return
@@ -317,7 +345,7 @@ Public Class RechnungsUebersicht
             End Function).ToList
 
         Try
-            Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, rechnungsNummern)
+            Dim reportForm = New ReportForm(_dbConnection, RechnungsArt, rechnungsNummern)
             reportForm.ShowDialog()
         Catch ex As Exception
             _logger.Error($"Failed to create {NameOf(ReportForm)}")
@@ -330,7 +358,7 @@ Public Class RechnungsUebersicht
         Dim dataTable = CType(dataSource.DataSource, DataTable)
 
         Try
-            Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, DataGridView1.SelectedRows.Select(
+            Dim reportForm = New ReportForm(_dbConnection, RechnungsArt, DataGridView1.SelectedRows.Select(
                 Function(rowInfo)
                     Dim dataRow = dataTable.Rows(rowInfo.Index)
                     Return Convert.ToInt32(dataRow.Item(0))
@@ -349,7 +377,7 @@ Public Class RechnungsUebersicht
         Dim dataTable = CType(dataSource.DataSource, DataTable)
 
         Try
-            Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, DataGridView1.SelectedRows.Select(
+            Dim reportForm = New ReportForm(_dbConnection, RechnungsArt, DataGridView1.SelectedRows.Select(
                 Function(rowInfo)
                     Dim dataRow = dataTable.Rows(rowInfo.Index)
                     Return Convert.ToInt32(dataRow.Item(0))
@@ -378,10 +406,10 @@ Public Class RechnungsUebersicht
                 End Function)
 
             For Each bill In bills.Keys
-                Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, bill, "xml")
+                Dim filePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, bill, "xml")
                 Try
                     Using fileStream = File.Create(filePath)
-                        _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, bill)
+                        _xmlExporter.CreateBillXml(fileStream, RechnungsArt, bill)
                     End Using
                 Catch ex As Exception
                     _logger.Error($"Error saving bill xml file to {filePath}", ex)
@@ -407,7 +435,7 @@ Public Class RechnungsUebersicht
             End Function).ToList
 
         Try
-            Dim reportForm = New ReportForm(_dbConnection, _rechnungsArt, rechnungsNummern)
+            Dim reportForm = New ReportForm(_dbConnection, RechnungsArt, rechnungsNummern)
             reportForm.SavePdf()
         Catch ex As Exception
             _logger.Error($"Failed to create {NameOf(ReportForm)}")
@@ -431,10 +459,10 @@ Public Class RechnungsUebersicht
                 End Function)
 
             For Each bill In bills.Keys
-                Dim filePath As String = _xmlExporter.GetExportFilePath(_rechnungsArt, bill, "xml")
+                Dim filePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, bill, "xml")
                 Try
                     Using fileStream = File.Create(filePath)
-                        _xmlExporter.CreateBillXml(fileStream, _rechnungsArt, bill)
+                        _xmlExporter.CreateBillXml(fileStream, RechnungsArt, bill)
                     End Using
                 Catch ex As Exception
                     _logger.Error($"Error saving bill xml file to {filePath}", ex)

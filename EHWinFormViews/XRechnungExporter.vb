@@ -307,7 +307,7 @@ Public Class XRechnungExporter
             Throw New Exception($"Exportpfad nicht definiert!")
         End If
 
-        Return path
+        Return IO.Path.Combine(path, billType.ToString())
     End Function
 
     Public Function GetExportFilePath(billType As RechnungsArt, rechnungsNummer As Integer, extension As String) As String
