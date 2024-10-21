@@ -31,13 +31,17 @@ Namespace My
 
         Protected Overrides Function OnStartup(eventArgs As StartupEventArgs) As Boolean
             ConfigureLogging()
+            Dim Form As RechnungsUebersicht
             Dim readValue = My.Computer.Registry.GetValue("HKEY_CURRENT_USER\Software\VB and VBA Program Settings\EHFleet Fuhrpark IM System\Allgemein", "workdbcn", Nothing)
             If readValue Is Nothing Then
-                readValue = "Provider=MSOLEDBSQL;Data Source=.\SQLEXPRESS;Initial Catalog=EHFleet;Integrated Security=SSPI;"
+                MsgBox("Fleet XRechnung App konnte nicht gestartet werden. Es wurde keine Verbindungszeichenfolge (workdbcn) gefunden. " &
+                       "Bitte stellen Sie sicher, dass eine gültige Fleet Client Installation auf diesem System vorhanden ist.", MsgBoxStyle.Critical, "Fleet XRechnung App")
+            Else
+                Form = New RechnungsUebersicht(New General.Database(readValue.ToString))
+                MainForm = Form
+                Return MyBase.OnStartup(eventArgs)
             End If
-            Dim Form = New RechnungsUebersicht(New General.Database(readValue.ToString))
-            MainForm = Form
-            Return MyBase.OnStartup(eventArgs)
+
         End Function
 
         Private Sub ConfigureLogging()
