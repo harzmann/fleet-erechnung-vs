@@ -159,7 +159,19 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_3FA116FA86BB4A6FA84517BB5DD1A7EC"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_411D26D0866A414FA465521A23886510"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_4131E86199F244CBB7C1A183602F0CC7"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -454,6 +466,12 @@
         "Entry"
         {
         "MsmKey" = "8:_C5E1FD7E7A7C4D679635A09872F49CFB"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_CA3EF640584F4F26B5E01C2089FDCFDF"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -1181,6 +1199,26 @@
             "TargetName" = "8:UBL-ApplicationResponse-2.1.xsd"
             "Tag" = "8:"
             "Folder" = "8:_4B8D849859D5409D813C80DF9330DE21"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_3FA116FA86BB4A6FA84517BB5DD1A7EC"
+            {
+            "SourcePath" = "8:..\\EHWinFormViews.App\\ehfleet.ico"
+            "TargetName" = "8:ehfleet.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_43F05BB54726457493F59F5D4DD8F8D0"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -2175,6 +2213,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_CA3EF640584F4F26B5E01C2089FDCFDF"
+            {
+            "SourcePath" = "8:..\\EHWinFormViews.App\\bin\\Release\\net8.0-windows\\EHFleetXRechnung.App.exe"
+            "TargetName" = "8:EHFleetXRechnung.App.exe"
+            "Tag" = "8:"
+            "Folder" = "8:_43F05BB54726457493F59F5D4DD8F8D0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_CC8B5556AFD748FB9F5020D17DE2B329"
             {
             "SourcePath" = "8:..\\validator\\configuration\\resources\\ubl\\2.1\\xsd\\common\\UBL-CommonAggregateComponents-2.1.xsd"
@@ -2703,7 +2761,7 @@
         {
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_43F05BB54726457493F59F5D4DD8F8D0"
             {
-            "DefaultLocation" = "8:[ProgramFilesFolder]\\EHFleet Fuhrpark IM System"
+            "DefaultLocation" = "8:[ProgramFilesFolder]\\EHFleet Fuhrpark IM System\\XRechnung"
             "Name" = "8:#1925"
             "AlwaysCreate" = "11:FALSE"
             "Condition" = "8:"
@@ -2931,6 +2989,17 @@
             "Property" = "8:ProgramMenuFolder"
                 "Folders"
                 {
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_344C81F2F17E4C0A9995308DFD370E3F"
+                    {
+                    "Name" = "8:FLEETFUHRPARK IM System"
+                    "AlwaysCreate" = "11:TRUE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_E3472A25AFD64EC08FF37358B7B2617A"
+                        "Folders"
+                        {
+                        }
+                    }
                 }
             }
         }
@@ -2950,13 +3019,13 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Fleet XRechnung"
         "ProductCode" = "8:{4077C6DC-4712-4823-8ADE-045E82F70E4F}"
-        "PackageCode" = "8:{25514704-041A-4221-A205-4375136C27F5}"
+        "PackageCode" = "8:{A7235853-9846-4CA0-9CF1-940BBD8D7916}"
         "UpgradeCode" = "8:{3021B662-8FC1-4CA9-BF36-09CF6EBB31D8}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
-        "InstallAllUsers" = "11:FALSE"
+        "InstallAllUsers" = "11:TRUE"
         "ProductVersion" = "8:1.0.1"
         "Manufacturer" = "8:eh-systemhaus e.K."
         "ARPHELPTELEPHONE" = "8:"
@@ -3070,6 +3139,20 @@
         }
         "Shortcut"
         {
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_C6DED1A338BB4D8993433071B6D2AF82"
+            {
+            "Name" = "8:FLEET XRechnung"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_CA3EF640584F4F26B5E01C2089FDCFDF"
+            "Folder" = "8:_344C81F2F17E4C0A9995308DFD370E3F"
+            "WorkingFolder" = "8:_43F05BB54726457493F59F5D4DD8F8D0"
+            "Icon" = "8:_3FA116FA86BB4A6FA84517BB5DD1A7EC"
+            "Feature" = "8:"
+            }
         }
         "UserInterface"
         {
@@ -3469,9 +3552,37 @@
         }
         "ProjectOutput"
         {
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_4131E86199F244CBB7C1A183602F0CC7"
+            {
+            "SourcePath" = "8:..\\EHWinFormViews.App\\obj\\Release\\net8.0-windows\\EHFleetXRechnung.App.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_43F05BB54726457493F59F5D4DD8F8D0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{03CAEACB-2AE4-445C-ADCF-8D4CCB972A0B}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_5F5A0AA7A20C4F71AD826DEB09FDB14A"
             {
-            "SourcePath" = "8:..\\EHWinFormViews.App\\obj\\Debug\\net8.0-windows\\apphost.exe"
+            "SourcePath" = "8:..\\EHWinFormViews.App\\obj\\Release\\net8.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_43F05BB54726457493F59F5D4DD8F8D0"
