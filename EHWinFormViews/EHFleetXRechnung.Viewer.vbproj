@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>EHFleetXRechnung.Viewer</RootNamespace>
-    <TargetFrameworks>net48</TargetFrameworks>
+    <TargetFrameworks>net4.8;net8.0-windows</TargetFrameworks>
     <UseWindowsForms>true</UseWindowsForms>
     <ForceDesignerDPIUnaware>true</ForceDesignerDPIUnaware>
     <ApplicationHighDpiMode>DpiUnawareGdiScaled</ApplicationHighDpiMode>

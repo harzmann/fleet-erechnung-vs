@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-	<Target Name="ILRepackMerge" AfterTargets="AfterBuild" Condition="'$(TargetFramework)' == 'net48' and '$(Configuration)|$(Platform)'=='Release|x86'">
+	<Target Name="ILRepackMerge" AfterTargets="AfterBuild" Condition="'$(TargetFramework)' == 'net4.8' and '$(Configuration)|$(Platform)'=='Release|x86'">
 		<ItemGroup>
 			<MergeAssemblies Include="$(OutDir)\EHFleetXRechnung.Viewer.dll" />
 			<MergeAssemblies Include="$(OutDir)\ehfleet_classlibrary.dll" />
