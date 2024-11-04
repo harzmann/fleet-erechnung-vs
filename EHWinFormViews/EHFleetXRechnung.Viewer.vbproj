@@ -8,6 +8,8 @@
     <Platforms>AnyCPU;x86</Platforms>
     <EnableComHosting>true</EnableComHosting>
     <EnableRegFreeCom>true</EnableRegFreeCom>
+    <NeutralLanguage>de-DE</NeutralLanguage>
+    <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Icons\approval.svg" />
