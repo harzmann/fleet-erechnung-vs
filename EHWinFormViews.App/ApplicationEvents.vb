@@ -1,7 +1,6 @@
 ﻿Imports System.IO
 Imports ehfleet_classlibrary
 Imports EHFleetXRechnung.Viewer
-Imports log4net.Config
 Imports Microsoft.VisualBasic.ApplicationServices
 
 Namespace My
@@ -35,9 +34,15 @@ Namespace My
             If readValue Is Nothing Then
                 readValue = "Provider=MSOLEDBSQL;Data Source=.\SQLEXPRESS;Initial Catalog=EHFleet;Integrated Security=SSPI;"
             End If
-            Dim Form = New RechnungsUebersicht(New General.Database(readValue.ToString))
-            MainForm = Form
-            Return MyBase.OnStartup(eventArgs)
+
+            Try
+                Dim Form = New EHFleetXRechnung.Viewer.RechnungsUebersicht(New General.Database(readValue.ToString))
+                MainForm = Form
+                Return MyBase.OnStartup(eventArgs)
+            Catch ex As Exception
+                MessageBox.Show(ex.Message)
+                Return False
+            End Try
         End Function
 
         Private Sub ConfigureLogging()
@@ -46,7 +51,7 @@ Namespace My
 
             If logConfigFile.Exists Then
                 log4net.GlobalContext.Properties("log4net:HostName") = Environment.MachineName
-                XmlConfigurator.Configure(logConfigFile)
+                log4net.Config.XmlConfigurator.Configure(logConfigFile)
             End If
         End Sub
     End Class

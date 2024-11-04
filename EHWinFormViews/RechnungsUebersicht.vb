@@ -1,11 +1,15 @@
 ﻿Imports System.Data
 Imports System.IO
+Imports System.Reflection
+Imports System.Runtime.Loader
 Imports System.Windows.Forms
 Imports ehfleet_classlibrary
 Imports EHFleetXRechnung.Viewer.GermanRadGridViewLocalization
 Imports log4net
 Imports log4net.Appender
 Imports log4net.Repository
+Imports Microsoft.VisualBasic.CompilerServices
+Imports Stimulsoft.Base
 Imports Stimulsoft.Report.Export
 Imports Telerik.WinControls
 Imports Telerik.WinControls.UI
@@ -31,6 +35,23 @@ Public Class RechnungsUebersicht
         End Set
     End Property
 
+    Shared Sub New()
+    End Sub
+
+    'Private Shared Sub LoadLicensingassembly()
+    '    Dim currentNameSpace = GetType(ReportForm).Namespace
+    '    Dim currentAssembly = GetType(ReportForm).Assembly
+    '    Dim resources = currentAssembly.GetManifestResourceNames.ToHashSet
+    '    Dim name = "Stimulsoft.Base.dll"
+
+    '    If Not resources.Contains(name) Then Return
+
+    '    Using stream = currentAssembly.GetManifestResourceStream(name)
+    '        Dim assemblyContext = AssemblyLoadContext.GetLoadContext(currentAssembly)
+    '        Dim assembly = assemblyContext.LoadFromStream(stream)
+    '    End Using
+    'End Sub
+
     Public Sub New(dbConnection As General.Database)
         _dbConnection = dbConnection
         _logger = LogManager.GetLogger(Me.GetType())
@@ -44,6 +65,11 @@ Public Class RechnungsUebersicht
         WerkstattRechnungButton.CheckState = CheckState.Checked
         RechnungsArt = RechnungsArt.Werkstatt
         AddHandler DataGridView1.CellFormatting, Sub(sender, e)
+                                                     If TypeOf e.Column Is GridViewDecimalColumn AndAlso e.Column.HeaderText = "Summe netto" Then
+                                                         Dim numberColumn As GridViewDecimalColumn = DirectCast(e.Column, GridViewDecimalColumn)
+                                                         numberColumn.FormatString = "{0:n} €"
+                                                     End If
+
                                                      If TypeOf e.Column Is GridViewCommandColumn AndAlso e.RowIndex >= 0 Then
                                                          Dim commandCell As GridCommandCellElement = TryCast(e.CellElement, GridCommandCellElement)
                                                          If commandCell IsNot Nothing AndAlso commandCell.Children.Count > 0 Then
@@ -165,9 +191,13 @@ Public Class RechnungsUebersicht
     End Sub
 
     Private Function RefreshGrid()
-
         Dim sql = GetSqlStatement(RechnungsArt)
         Dim dataTable = _dbConnection.FillDataTable(sql)
+        If dataTable.Rows.Count = 0 OrElse dataTable.Columns.Count = 0 Then
+            _logger.Fatal("Could not read from database")
+            Throw New Exception("Datenbankverbindung konnte nicht aufgebaut werden.")
+        End If
+
         Dim dataTableBindingSource = New BindingSource()
 
         DataGridView1.Columns.Clear()
