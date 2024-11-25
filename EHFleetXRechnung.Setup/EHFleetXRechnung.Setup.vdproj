@@ -697,8 +697,18 @@
                 {
                     "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
                     {
-                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 und x64)"
                     "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.DesktopRuntime.8.0.x64"
+                    {
+                    "Name" = "8:.NET Desktop-Runtime 8.0.10 (x64)"
+                    "ProductCode" = "8:Microsoft.NetCore.DesktopRuntime.8.0.x64"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.DesktopRuntime.8.0.x86"
+                    {
+                    "Name" = "8:.NET Desktop-Runtime 8.0.10 (x86)"
+                    "ProductCode" = "8:Microsoft.NetCore.DesktopRuntime.8.0.x86"
                     }
                 }
             }
@@ -3554,7 +3564,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_4131E86199F244CBB7C1A183602F0CC7"
             {
-            "SourcePath" = "8:..\\EHWinFormViews.App\\obj\\Release\\net8.0-windows\\EHFleetXRechnung.App.dll"
+            "SourcePath" = "8:..\\EHWinFormViews.App\\obj\\Release\\net4.8\\EHFleetXRechnung.App.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_43F05BB54726457493F59F5D4DD8F8D0"
@@ -3582,7 +3592,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_5F5A0AA7A20C4F71AD826DEB09FDB14A"
             {
-            "SourcePath" = "8:..\\EHWinFormViews.App\\obj\\Release\\net8.0-windows\\apphost.exe"
+            "SourcePath" = "8:"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_43F05BB54726457493F59F5D4DD8F8D0"
