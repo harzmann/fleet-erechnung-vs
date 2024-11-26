@@ -321,6 +321,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_7A5F5F66322E45EB9529EC9D6D0D2BB6"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_7BB72798A8FF49C8B1560578D8044403"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -1723,6 +1729,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7A5F5F66322E45EB9529EC9D6D0D2BB6"
+            {
+            "SourcePath" = "8:..\\EHWinFormViews.App\\ehfleet.ico"
+            "TargetName" = "8:ehfleet.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_344C81F2F17E4C0A9995308DFD370E3F"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7BB72798A8FF49C8B1560578D8044403"
             {
             "SourcePath" = "8:..\\validator\\configuration\\resources\\ubl\\2.1\\xsd\\maindoc\\UBL-ProductActivity-2.1.xsd"
@@ -3027,7 +3053,7 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:Fleet XRechnung"
+        "ProductName" = "8:FLEET - XRechnung"
         "ProductCode" = "8:{4077C6DC-4712-4823-8ADE-045E82F70E4F}"
         "PackageCode" = "8:{A7235853-9846-4CA0-9CF1-940BBD8D7916}"
         "UpgradeCode" = "8:{3021B662-8FC1-4CA9-BF36-09CF6EBB31D8}"
@@ -3040,13 +3066,13 @@
         "Manufacturer" = "8:eh-systemhaus e.K."
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
-        "Title" = "8:Fleet XRechnung"
+        "Title" = "8:FLEET - XRechnung"
         "Subject" = "8:"
         "ARPCONTACT" = "8:eh-systemhaus e.K."
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:"
         "ARPURLINFOABOUT" = "8:"
-        "ARPPRODUCTICON" = "8:"
+        "ARPPRODUCTICON" = "8:_7A5F5F66322E45EB9529EC9D6D0D2BB6"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
