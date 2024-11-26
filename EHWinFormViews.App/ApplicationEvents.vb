@@ -13,24 +13,24 @@ Namespace My
     ' **NEW** ApplyApplicationDefaults: Raised when the application queries default values to be set for the application.
 
     ' Example:
-    ' Private Sub MyApplication_ApplyApplicationDefaults(sender As Object, e As ApplyApplicationDefaultsEventArgs) Handles Me.ApplyApplicationDefaults
+    'Private Sub MyApplication_ApplyApplicationDefaults(sender As Object, e As ApplyApplicationDefaultsEventArgs) Handles Me.ApplyApplicationDefaults
     '
     '   ' Setting the application-wide default Font:
     '   e.Font = New Font(FontFamily.GenericSansSerif, 12, FontStyle.Regular)
     '
     '   ' Setting the HighDpiMode for the Application:
-    '   e.HighDpiMode = HighDpiMode.PerMonitorV2
+    'e.HighDpiMode = HighDpiMode.PerMonitorV2
     '
     '   ' If a splash dialog is used, this sets the minimum display time:
     '   e.MinimumSplashScreenDisplayTime = 4000
-    ' End Sub
+    'End Sub
 
     Partial Friend Class MyApplication
 
         Protected Overrides Function OnStartup(eventArgs As StartupEventArgs) As Boolean
 
             ' Log4Net Logdatei
-            ConfigureLogging()
+            'ConfigureLogging()
 
             ' Startobjekt auf StartUp-Form setzen
             MainForm = New StartUp
