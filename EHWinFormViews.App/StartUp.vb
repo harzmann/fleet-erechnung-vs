@@ -6,7 +6,7 @@ Imports log4net.Config
 Public Class StartUp
 
     Private bConfig As Boolean = False
-    Private iStartUpCounter As Integer = 4
+    Private iStartUpCounter As Integer = 14
 
     Private Sub ConfigureLogging()
         Dim libraryConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logger.config")
@@ -25,18 +25,24 @@ Public Class StartUp
         ' Lesen AppDbCnStr aus Registry
         Dim readValue = My.Computer.Registry.GetValue("HKEY_CURRENT_USER\Software\VB and VBA Program Settings\EHFleet Fuhrpark IM System\Allgemein", "workdbcn", Nothing)
 
+        ' Timer stoppen
+        tmrStartUp.Enabled = False
+
         If My.Settings.UseRegDbCnStr = True Then
             ' Start Anwendung mit DB-Verbindung aus Registry
             If readValue Is Nothing Then
                 MsgBox("Fleet XRechnung App konnte nicht gestartet werden. Es wurde keine Verbindungszeichenfolge (workdbcn) in der Registrierung gefunden. " &
                        "Bitte stellen Sie sicher, dass eine gültige Fleet Client Installation auf diesem System vorhanden ist.", MsgBoxStyle.Critical, "Fleet XRechnung App")
             Else
+                ConfigureLogging()
                 Form = New RechnungsUebersicht(New General.Database(readValue.ToString))
                 Form.ShowDialog()
                 Me.Close()
             End If
         Else
             ' Start Anwendung mit DB-Verbindung aus App.config
+            ConfigureLogging()
+            'MsgBox(My.Settings.AppDbCnStr.ToString)
             Form = New RechnungsUebersicht(New General.Database(My.Settings.AppDbCnStr.ToString))
             Form.ShowDialog()
             Me.Close()
@@ -72,6 +78,7 @@ Public Class StartUp
         End If
         If bConfig = True Then
             Me.Height = 250
+            tmrStartUp.Enabled = False
             butConfig.Text = "Speichern"
         Else
             My.Settings.UseRegDbCnStr = chkUseRegDbCnStr.Checked

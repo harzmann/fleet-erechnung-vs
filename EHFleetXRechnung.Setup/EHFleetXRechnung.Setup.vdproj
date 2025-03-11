@@ -321,6 +321,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_7A5F5F66322E45EB9529EC9D6D0D2BB6"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_7BB72798A8FF49C8B1560578D8044403"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -697,8 +703,18 @@
                 {
                     "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
                     {
-                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 und x64)"
                     "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.DesktopRuntime.8.0.x64"
+                    {
+                    "Name" = "8:.NET Desktop-Runtime 8.0.10 (x64)"
+                    "ProductCode" = "8:Microsoft.NetCore.DesktopRuntime.8.0.x64"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.DesktopRuntime.8.0.x86"
+                    {
+                    "Name" = "8:.NET Desktop-Runtime 8.0.10 (x86)"
+                    "ProductCode" = "8:Microsoft.NetCore.DesktopRuntime.8.0.x86"
                     }
                 }
             }
@@ -1699,6 +1715,26 @@
             "TargetName" = "8:UBL-OrderChange-2.1.xsd"
             "Tag" = "8:"
             "Folder" = "8:_4B8D849859D5409D813C80DF9330DE21"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7A5F5F66322E45EB9529EC9D6D0D2BB6"
+            {
+            "SourcePath" = "8:..\\EHWinFormViews.App\\ehfleet.ico"
+            "TargetName" = "8:ehfleet.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_344C81F2F17E4C0A9995308DFD370E3F"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -3017,7 +3053,7 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:Fleet XRechnung"
+        "ProductName" = "8:FLEET - XRechnung"
         "ProductCode" = "8:{4077C6DC-4712-4823-8ADE-045E82F70E4F}"
         "PackageCode" = "8:{A7235853-9846-4CA0-9CF1-940BBD8D7916}"
         "UpgradeCode" = "8:{3021B662-8FC1-4CA9-BF36-09CF6EBB31D8}"
@@ -3030,13 +3066,13 @@
         "Manufacturer" = "8:eh-systemhaus e.K."
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
-        "Title" = "8:Fleet XRechnung"
+        "Title" = "8:FLEET - XRechnung"
         "Subject" = "8:"
         "ARPCONTACT" = "8:eh-systemhaus e.K."
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:"
         "ARPURLINFOABOUT" = "8:"
-        "ARPPRODUCTICON" = "8:"
+        "ARPPRODUCTICON" = "8:_7A5F5F66322E45EB9529EC9D6D0D2BB6"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
@@ -3554,7 +3590,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_4131E86199F244CBB7C1A183602F0CC7"
             {
-            "SourcePath" = "8:..\\EHWinFormViews.App\\obj\\Release\\net8.0-windows\\EHFleetXRechnung.App.dll"
+            "SourcePath" = "8:..\\EHWinFormViews.App\\obj\\Release\\net4.8\\EHFleetXRechnung.App.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_43F05BB54726457493F59F5D4DD8F8D0"
@@ -3582,7 +3618,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_5F5A0AA7A20C4F71AD826DEB09FDB14A"
             {
-            "SourcePath" = "8:..\\EHWinFormViews.App\\obj\\Release\\net8.0-windows\\apphost.exe"
+            "SourcePath" = "8:"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_43F05BB54726457493F59F5D4DD8F8D0"

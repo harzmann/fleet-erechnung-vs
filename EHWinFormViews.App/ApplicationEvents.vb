@@ -1,10 +1,6 @@
 ﻿Imports System.IO
-Imports System.Web.UI.WebControls
-Imports ehfleet_classlibrary
-Imports EHFleetXRechnung.Viewer
-Imports log4net
+Imports log4net.Config
 Imports Microsoft.VisualBasic.ApplicationServices
-Imports Telerik.WinControls.Export
 
 Namespace My
     ' The following events are available for MyApplication:
@@ -17,59 +13,50 @@ Namespace My
     ' **NEW** ApplyApplicationDefaults: Raised when the application queries default values to be set for the application.
 
     ' Example:
-    ' Private Sub MyApplication_ApplyApplicationDefaults(sender As Object, e As ApplyApplicationDefaultsEventArgs) Handles Me.ApplyApplicationDefaults
+    'Private Sub MyApplication_ApplyApplicationDefaults(sender As Object, e As ApplyApplicationDefaultsEventArgs) Handles Me.ApplyApplicationDefaults
     '
     '   ' Setting the application-wide default Font:
     '   e.Font = New Font(FontFamily.GenericSansSerif, 12, FontStyle.Regular)
     '
     '   ' Setting the HighDpiMode for the Application:
-    '   e.HighDpiMode = HighDpiMode.PerMonitorV2
+    'e.HighDpiMode = HighDpiMode.PerMonitorV2
     '
     '   ' If a splash dialog is used, this sets the minimum display time:
     '   e.MinimumSplashScreenDisplayTime = 4000
-    ' End Sub
+    'End Sub
 
     Partial Friend Class MyApplication
 
         Protected Overrides Function OnStartup(eventArgs As StartupEventArgs) As Boolean
 
             ' Log4Net Logdatei
-            Dim logger As ILog = ConfigureLogging()
-            'Dim readValue = My.Computer.Registry.GetValue("HKEY_CURRENT_USER\Software\VB and VBA Program Settings\EHFleet Fuhrpark IM System\Allgemein", "workdbcn", Nothing)
-            'If readValue Is Nothing Then
-            '    readValue = "Provider=MSOLEDBSQL;Data Source=.\SQLEXPRESS;Initial Catalog=EHFleet;Integrated Security=SSPI;"
-            'End If
+            'ConfigureLogging()
 
-            'Try
-            '    ' Startobjekt auf StartUp-Form setzen
-            '    Dim Form = New EHFleetXRechnung.Viewer.RechnungsUebersicht(New General.Database(readValue.ToString))
-            '    MainForm = Form
-            '    Return MyBase.OnStartup(eventArgs)
-            'Catch ex As Exception
-            '    MessageBox.Show(ex.Message)
-            '    Return False
-            'End Try
+            ' Startobjekt auf StartUp-Form setzen
+            MainForm = New StartUp
+            Return MyBase.OnStartup(eventArgs)
 
             ' Direkter Aufruf Viewer-Klasse
-            Dim Form As RechnungsUebersicht
-            Dim connectionString = My.Computer.Registry.GetValue("HKEY_CURRENT_USER\Software\VB and VBA Program Settings\EHFleet Fuhrpark IM System\Allgemein", "workdbcn", Nothing)?.ToString
-            If Not My.Settings.UseRegDbCnStr Then
-                connectionString = My.Settings.AppDbCnStr
-            End If
+            'Dim Form As RechnungsUebersicht
+            'Dim readValue = My.Computer.Registry.GetValue("HKEY_CURRENT_USER\Software\VB and VBA Program Settings\EHFleet Fuhrpark IM System\Allgemein", "workdbcn", Nothing)
+            'If My.Settings.UseRegDbCnStr = True Then
+            '    If readValue Is Nothing Then
+            '        MsgBox("Fleet XRechnung App konnte nicht gestartet werden. Es wurde keine Verbindungszeichenfolge (workdbcn) in der Registrierung gefunden. " &
+            '               "Bitte stellen Sie sicher, dass eine gültige Fleet Client Installation auf diesem System vorhanden ist.", MsgBoxStyle.Critical, "Fleet XRechnung App")
+            '    Else
+            '        Form = New RechnungsUebersicht(New General.Database(readValue.ToString))
+            '        MainForm = Form
+            '        Return MyBase.OnStartup(eventArgs)
+            '    End If
+            'Else
+            '    Form = New RechnungsUebersicht(New General.Database(My.Settings.AppDbCnStr.ToString))
+            '    MainForm = Form
+            '    Return MyBase.OnStartup(eventArgs)
+            'End If
 
-            If String.IsNullOrWhiteSpace(connectionString) Then
-                MsgBox("Fleet XRechnung App konnte nicht gestartet werden. Es wurde keine Verbindungszeichenfolge (workdbcn) in der Registrierung gefunden. " &
-                           "Bitte stellen Sie sicher, dass eine gültige Fleet Client Installation auf diesem System vorhanden ist.", MsgBoxStyle.Critical, "Fleet XRechnung App")
-                Return False
-            End If
-
-            logger.Debug($"Using the following DB ConnectionString {connectionString}")
-            Form = New RechnungsUebersicht(New General.Database(connectionString))
-            MainForm = Form
-            Return MyBase.OnStartup(eventArgs)
         End Function
 
-        Private Function ConfigureLogging() As ILog
+        Private Sub ConfigureLogging()
 
             ' Log4Net Logger konfigurieren
             Dim libraryConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logger.config")
@@ -77,11 +64,8 @@ Namespace My
 
             If logConfigFile.Exists Then
                 log4net.GlobalContext.Properties("log4net:HostName") = Environment.MachineName
-                log4net.GlobalContext.Properties("log4net:Login") = "unknown"
-                log4net.Config.XmlConfigurator.Configure(logConfigFile)
+                XmlConfigurator.Configure(logConfigFile)
             End If
-
-            Return LogManager.GetLogger(GetType(Application))
-        End Function
+        End Sub
     End Class
 End Namespace
