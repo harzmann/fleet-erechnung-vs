@@ -19,7 +19,7 @@ Public Class ReportForm
 
     Private ReadOnly _xmlExporter As XRechnungExporter
 
-    Private ReadOnly _logger As ILog
+    Private Shared ReadOnly _logger As ILog
 
     Private ReadOnly _rechnungsNummern As List(Of Integer)
 
@@ -35,13 +35,6 @@ Public Class ReportForm
             _dataConnection = value
         End Set
     End Property
-
-    Shared Sub New()
-        'StiLicense.LoadFromFile(Path.Combine(Path.GetDirectoryName(GetType(ReportForm).Assembly.Location), "license.key"))
-
-    End Sub
-
-
 
     Private Shared Sub InstallLicense(key As String)
         Try
@@ -59,20 +52,24 @@ Public Class ReportForm
 
     End Sub
 
+    Shared Sub New()
+        _logger = LogManager.GetLogger(GetType(ReportForm))
+        'StiLicense.LoadFromFile(Path.Combine(Path.GetDirectoryName(GetType(ReportForm).Assembly.Location), "license.key"))
+    End Sub
+
     Public Sub New(dbConnection As General.Database, billType As RechnungsArt, rechnungsNummern As List(Of Integer))
         _dataConnection = dbConnection
-        _logger = LogManager.GetLogger(Me.GetType())
         _logger.Debug($"Instantiating {NameOf(ReportForm)}")
         _xmlExporter = New XRechnungExporter(dbConnection)
         _rechnungsNummern = rechnungsNummern
         _billType = billType
 
-        InstallLicense("6vJhGtLLLz2GNviWmUTrhSqnOItdDwjBylQzQcAOiHk3LB9R6pWAk1QqUjOkeHv6OOlD/P9VbyZIvUMUf5DgXWtfTph4Mq1GsBBQJeFHAQDJ1Ji+ynEb8F5xLdDG8MOLdqZq+K3QgObIxz/RbC8Oh5REXsrIKWsaR6OK2DgwEnxih9DTLIPb+4wJCQFDY0bmb/fK14QgER+UHcTMKXYdxq/cRgZl7dOXtotRW0+K5K5mFnB33yWjmKvjvarO6+qe2J3k68rivqZy49c8KLZkzw/26buHe4W40ewCeS4xwVLzud5b9cSKiScLlJdTF2+xfAVItCN8HrEIEVmNAzHZOhrivhdshYKMznBAfjPOUETumlFsx32hbXe8riCArJt1ax25A4Fx0A01tEAgmdKbqA3YYqOWck5aGHEmNkiTbwtxMNnlOtbS8I4ywC/hDGrbC44d/N/g/tB1VskRzsP+kbw3kn7DKdW6VuIqWAyCSnoe6vuEdCQCf23Mn89ZojrXF8wsN667aB2wyB8Zefvp4U089UT/GlUrouhDXQcYHkwy+OC98JRW2gr+fze2N4t0mexeemkdqpW5g13tiREz9y+IBfFwHlekZo1OzcWYB92+qs5es415FXPXko8hYTHuZ1UxHi/TjQPRvKXgYbhdsqRM/npxed7pftyRS9KuGUhUG8aACWyceTGRCGnZTjLq")
-
-        ' This call is required by the designer.
-        InitializeComponent()
-
         Try
+            InstallLicense("6vJhGtLLLz2GNviWmUTrhSqnOItdDwjBylQzQcAOiHk3LB9R6pWAk1QqUjOkeHv6OOlD/P9VbyZIvUMUf5DgXWtfTph4Mq1GsBBQJeFHAQDJ1Ji+ynEb8F5xLdDG8MOLdqZq+K3QgObIxz/RbC8Oh5REXsrIKWsaR6OK2DgwEnxih9DTLIPb+4wJCQFDY0bmb/fK14QgER+UHcTMKXYdxq/cRgZl7dOXtotRW0+K5K5mFnB33yWjmKvjvarO6+qe2J3k68rivqZy49c8KLZkzw/26buHe4W40ewCeS4xwVLzud5b9cSKiScLlJdTF2+xfAVItCN8HrEIEVmNAzHZOhrivhdshYKMznBAfjPOUETumlFsx32hbXe8riCArJt1ax25A4Fx0A01tEAgmdKbqA3YYqOWck5aGHEmNkiTbwtxMNnlOtbS8I4ywC/hDGrbC44d/N/g/tB1VskRzsP+kbw3kn7DKdW6VuIqWAyCSnoe6vuEdCQCf23Mn89ZojrXF8wsN667aB2wyB8Zefvp4U089UT/GlUrouhDXQcYHkwy+OC98JRW2gr+fze2N4t0mexeemkdqpW5g13tiREz9y+IBfFwHlekZo1OzcWYB92+qs5es415FXPXko8hYTHuZ1UxHi/TjQPRvKXgYbhdsqRM/npxed7pftyRS9KuGUhUG8aACWyceTGRCGnZTjLq")
+
+            ' This call is required by the designer.
+            InitializeComponent()
+
             Dim reportParameterId = GetReportParameterId(billType)
             Dim dataTable = DataConnection.FillDataTable($"SELECT [Text], [Aktiviert] FROM [EHFleet].[dbo].[Parameter] where ParameterNr = {reportParameterId}")
             Dim reportPath = String.Empty
@@ -130,6 +127,8 @@ Public Class ReportForm
         Finally
             _logger.Debug($"Leaving {NameOf(ReportForm)} constructor")
         End Try
+
+        _logger.Debug($"Leaving {NameOf(ReportForm)} constructor")
     End Sub
 
     Public Sub SavePdf()

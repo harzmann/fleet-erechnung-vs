@@ -21,7 +21,7 @@ Public Class RechnungsUebersicht
 
     Private ReadOnly _xmlExporter As XRechnungExporter
 
-    Private ReadOnly _logger As ILog
+    Private Shared ReadOnly _logger As ILog
 
     Private _rechnungsArt As RechnungsArt
 
@@ -31,12 +31,9 @@ Public Class RechnungsUebersicht
         End Get
         Set(value As RechnungsArt)
             _rechnungsArt = value
-            UpdateLogConfiguration()
+            'UpdateLogConfiguration()
         End Set
     End Property
-
-    Shared Sub New()
-    End Sub
 
     'Private Shared Sub LoadLicensingassembly()
     '    Dim currentNameSpace = GetType(ReportForm).Namespace
@@ -52,46 +49,53 @@ Public Class RechnungsUebersicht
     '    End Using
     'End Sub
 
+    Shared Sub New()
+        _logger = LogManager.GetLogger(GetType(RechnungsUebersicht))
+    End Sub
+
     Public Sub New(dbConnection As General.Database)
         _dbConnection = dbConnection
-        _logger = LogManager.GetLogger(Me.GetType())
-        _logger.Debug($"Instantiating {NameOf(RechnungsUebersicht)}")
-        _xmlExporter = New XRechnungExporter(dbConnection)
-        RadGridLocalizationProvider.CurrentProvider = New GermanRadGridLocalizationProvider
-        ' This call is required by the designer.
+        Try
+            _logger.Debug($"Instantiating {NameOf(RechnungsUebersicht)}")
+            _xmlExporter = New XRechnungExporter(dbConnection)
+            RadGridLocalizationProvider.CurrentProvider = New GermanRadGridLocalizationProvider
+            ' This call is required by the designer.
 
-        InitializeComponent()
-        InitializeTelerikControls()
-        WerkstattRechnungButton.CheckState = CheckState.Checked
-        RechnungsArt = RechnungsArt.Werkstatt
-        AddHandler DataGridView1.CellFormatting, Sub(sender, e)
-                                                     If TypeOf e.Column Is GridViewDecimalColumn AndAlso e.Column.HeaderText = "Summe netto" Then
-                                                         Dim numberColumn As GridViewDecimalColumn = DirectCast(e.Column, GridViewDecimalColumn)
-                                                         numberColumn.FormatString = "{0:n} €"
-                                                     End If
+            InitializeComponent()
+            InitializeTelerikControls()
+            WerkstattRechnungButton.CheckState = CheckState.Checked
+            RechnungsArt = RechnungsArt.Werkstatt
+            AddHandler DataGridView1.CellFormatting, Sub(sender, e)
+                                                         If TypeOf e.Column Is GridViewDecimalColumn AndAlso e.Column.HeaderText = "Summe netto" Then
+                                                             Dim numberColumn As GridViewDecimalColumn = DirectCast(e.Column, GridViewDecimalColumn)
+                                                             numberColumn.FormatString = "{0:n} €"
+                                                         End If
 
-                                                     If TypeOf e.Column Is GridViewCommandColumn AndAlso e.RowIndex >= 0 Then
-                                                         Dim commandCell As GridCommandCellElement = TryCast(e.CellElement, GridCommandCellElement)
-                                                         If commandCell IsNot Nothing AndAlso commandCell.Children.Count > 0 Then
-                                                             Dim buttonElement As RadButtonElement = TryCast(commandCell.Children(0), RadButtonElement)
-                                                             If buttonElement IsNot Nothing Then
-                                                                 commandCell.FitToSizeMode = RadFitToSizeMode.FitToParentBounds
-                                                                 commandCell.AutoSize = True
-                                                                 commandCell.TextAlignment = System.Drawing.ContentAlignment.MiddleCenter
-                                                                 commandCell.Alignment = System.Drawing.ContentAlignment.MiddleCenter
-                                                                 buttonElement.AutoSize = True
-                                                                 buttonElement.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
-                                                                 buttonElement.Alignment = System.Drawing.ContentAlignment.MiddleCenter
-                                                                 buttonElement.SvgImage = GetSvgImage(e.Column.Name, New System.Drawing.Size(30, 30))
+                                                         If TypeOf e.Column Is GridViewCommandColumn AndAlso e.RowIndex >= 0 Then
+                                                             Dim commandCell As GridCommandCellElement = TryCast(e.CellElement, GridCommandCellElement)
+                                                             If commandCell IsNot Nothing AndAlso commandCell.Children.Count > 0 Then
+                                                                 Dim buttonElement As RadButtonElement = TryCast(commandCell.Children(0), RadButtonElement)
+                                                                 If buttonElement IsNot Nothing Then
+                                                                     commandCell.FitToSizeMode = RadFitToSizeMode.FitToParentBounds
+                                                                     commandCell.AutoSize = True
+                                                                     commandCell.TextAlignment = System.Drawing.ContentAlignment.MiddleCenter
+                                                                     commandCell.Alignment = System.Drawing.ContentAlignment.MiddleCenter
+                                                                     buttonElement.AutoSize = True
+                                                                     buttonElement.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
+                                                                     buttonElement.Alignment = System.Drawing.ContentAlignment.MiddleCenter
+                                                                     buttonElement.SvgImage = GetSvgImage(e.Column.Name, New System.Drawing.Size(30, 30))
+                                                                 End If
                                                              End If
                                                          End If
-                                                     End If
-                                                 End Sub
+                                                     End Sub
 
-        DataGridView1.SelectionMode = GridViewSelectionMode.FullRowSelect
-        DataGridView1.MultiSelect = True
-        DataGridView1.VirtualMode = False
-        RefreshGrid()
+            DataGridView1.SelectionMode = GridViewSelectionMode.FullRowSelect
+            DataGridView1.MultiSelect = True
+            DataGridView1.VirtualMode = False
+            RefreshGrid()
+        Catch ex As Exception
+            _logger.Error($"Error while creating {NameOf(RechnungsUebersicht)}", ex)
+        End Try
 
         _logger.Debug($"Leaving {NameOf(RechnungsUebersicht)} constructor")
     End Sub
@@ -257,10 +261,10 @@ Public Class RechnungsUebersicht
         Dim dataTable = CType(dataSource.DataSource, DataTable)
         Dim row = dataTable.Rows(e.RowIndex)
         Dim rechnungsNummer = Convert.ToInt32(row.Item(0))
-
         Try
             Select Case e.Column.Name
                 Case "Bericht"
+                    _logger.Debug("Opening Report Form")
                     Dim reportForm = New ReportForm(_dbConnection, RechnungsArt, New List(Of Integer) From {rechnungsNummer})
                     reportForm.ShowDialog()
                 Case "XML"

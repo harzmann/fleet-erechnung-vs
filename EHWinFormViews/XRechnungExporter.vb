@@ -10,15 +10,17 @@ Imports Stimulsoft.Database
 Public Class XRechnungExporter
     Private ReadOnly _dataConnection As General.Database
 
-    Private ReadOnly _logger As ILog
+    Private Shared ReadOnly _logger As ILog
 
     Private ReadOnly _exportPaths As Dictionary(Of RechnungsArt, String) = New Dictionary(Of RechnungsArt, String)
 
+    Shared Sub New()
+        _logger = LogManager.GetLogger(GetType(XRechnungExporter))
+    End Sub
+
     Public Sub New(dataConnection As General.Database)
         _dataConnection = dataConnection
-        _logger = LogManager.GetLogger(Me.GetType())
         _logger.Debug($"Instantiating {NameOf(XRechnungExporter)}")
-        _logger.Debug($"Leaving {NameOf(XRechnungExporter)} constructor")
 
         _exportPaths = [Enum].GetValues(GetType(RechnungsArt)).OfType(Of RechnungsArt).ToDictionary(Function(billType) billType,
                                                                                      Function(billType)
@@ -27,6 +29,8 @@ Public Class XRechnungExporter
                                                                                          sellerData.TryGetValue("Ausgabepfad", path)
                                                                                          Return path
                                                                                      End Function)
+
+        _logger.Debug($"Leaving {NameOf(XRechnungExporter)} constructor")
     End Sub
 
     Public Sub CreateBillXml(xmlStream As Stream, billType As RechnungsArt, rechnungsNummer As Integer)

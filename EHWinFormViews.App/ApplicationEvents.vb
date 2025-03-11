@@ -1,7 +1,10 @@
 ﻿Imports System.IO
+Imports System.Web.UI.WebControls
 Imports ehfleet_classlibrary
 Imports EHFleetXRechnung.Viewer
+Imports log4net
 Imports Microsoft.VisualBasic.ApplicationServices
+Imports Telerik.WinControls.Export
 
 Namespace My
     ' The following events are available for MyApplication:
@@ -31,42 +34,42 @@ Namespace My
         Protected Overrides Function OnStartup(eventArgs As StartupEventArgs) As Boolean
 
             ' Log4Net Logdatei
-            ConfigureLogging()
-            Dim readValue = My.Computer.Registry.GetValue("HKEY_CURRENT_USER\Software\VB and VBA Program Settings\EHFleet Fuhrpark IM System\Allgemein", "workdbcn", Nothing)
-            If readValue Is Nothing Then
-                readValue = "Provider=MSOLEDBSQL;Data Source=.\SQLEXPRESS;Initial Catalog=EHFleet;Integrated Security=SSPI;"
-            End If
-
-            Try
-                ' Startobjekt auf StartUp-Form setzen
-                Dim Form = New EHFleetXRechnung.Viewer.RechnungsUebersicht(New General.Database(readValue.ToString))
-                MainForm = Form
-                Return MyBase.OnStartup(eventArgs)
-            Catch ex As Exception
-                MessageBox.Show(ex.Message)
-                Return False
-            End Try
-
-            ' Direkter Aufruf Viewer-Klasse
-            'Dim Form As RechnungsUebersicht
+            Dim logger As ILog = ConfigureLogging()
             'Dim readValue = My.Computer.Registry.GetValue("HKEY_CURRENT_USER\Software\VB and VBA Program Settings\EHFleet Fuhrpark IM System\Allgemein", "workdbcn", Nothing)
-            'If My.Settings.UseRegDbCnStr = True Then
-            '    If readValue Is Nothing Then
-            '        MsgBox("Fleet XRechnung App konnte nicht gestartet werden. Es wurde keine Verbindungszeichenfolge (workdbcn) in der Registrierung gefunden. " &
-            '               "Bitte stellen Sie sicher, dass eine gültige Fleet Client Installation auf diesem System vorhanden ist.", MsgBoxStyle.Critical, "Fleet XRechnung App")
-            '    Else
-            '        Form = New RechnungsUebersicht(New General.Database(readValue.ToString))
-            '        MainForm = Form
-            '        Return MyBase.OnStartup(eventArgs)
-            '    End If
-            'Else
-            '    Form = New RechnungsUebersicht(New General.Database(My.Settings.AppDbCnStr.ToString))
+            'If readValue Is Nothing Then
+            '    readValue = "Provider=MSOLEDBSQL;Data Source=.\SQLEXPRESS;Initial Catalog=EHFleet;Integrated Security=SSPI;"
+            'End If
+
+            'Try
+            '    ' Startobjekt auf StartUp-Form setzen
+            '    Dim Form = New EHFleetXRechnung.Viewer.RechnungsUebersicht(New General.Database(readValue.ToString))
             '    MainForm = Form
             '    Return MyBase.OnStartup(eventArgs)
-            'End If
+            'Catch ex As Exception
+            '    MessageBox.Show(ex.Message)
+            '    Return False
+            'End Try
+
+            ' Direkter Aufruf Viewer-Klasse
+            Dim Form As RechnungsUebersicht
+            Dim connectionString = My.Computer.Registry.GetValue("HKEY_CURRENT_USER\Software\VB and VBA Program Settings\EHFleet Fuhrpark IM System\Allgemein", "workdbcn", Nothing)?.ToString
+            If Not My.Settings.UseRegDbCnStr Then
+                connectionString = My.Settings.AppDbCnStr
+            End If
+
+            If String.IsNullOrWhiteSpace(connectionString) Then
+                MsgBox("Fleet XRechnung App konnte nicht gestartet werden. Es wurde keine Verbindungszeichenfolge (workdbcn) in der Registrierung gefunden. " &
+                           "Bitte stellen Sie sicher, dass eine gültige Fleet Client Installation auf diesem System vorhanden ist.", MsgBoxStyle.Critical, "Fleet XRechnung App")
+                Return False
+            End If
+
+            logger.Debug($"Using the following DB ConnectionString {connectionString}")
+            Form = New RechnungsUebersicht(New General.Database(connectionString))
+            MainForm = Form
+            Return MyBase.OnStartup(eventArgs)
         End Function
 
-        Private Sub ConfigureLogging()
+        Private Function ConfigureLogging() As ILog
 
             ' Log4Net Logger konfigurieren
             Dim libraryConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logger.config")
@@ -74,8 +77,11 @@ Namespace My
 
             If logConfigFile.Exists Then
                 log4net.GlobalContext.Properties("log4net:HostName") = Environment.MachineName
+                log4net.GlobalContext.Properties("log4net:Login") = "unknown"
                 log4net.Config.XmlConfigurator.Configure(logConfigFile)
             End If
-        End Sub
+
+            Return LogManager.GetLogger(GetType(Application))
+        End Function
     End Class
 End Namespace
