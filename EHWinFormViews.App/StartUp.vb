@@ -36,6 +36,7 @@ Public Class StartUp
             Else
                 ConfigureLogging()
                 Form = New RechnungsUebersicht(New General.Database(readValue.ToString))
+                Me.Hide()
                 Form.ShowDialog()
                 Me.Close()
             End If
@@ -44,6 +45,7 @@ Public Class StartUp
             ConfigureLogging()
             'MsgBox(My.Settings.AppDbCnStr.ToString)
             Form = New RechnungsUebersicht(New General.Database(My.Settings.AppDbCnStr.ToString))
+            Me.Hide()
             Form.ShowDialog()
             Me.Close()
         End If
