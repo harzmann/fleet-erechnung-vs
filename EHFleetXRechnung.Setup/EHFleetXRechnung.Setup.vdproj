@@ -3054,15 +3054,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:FLEET - XRechnung"
-        "ProductCode" = "8:{4077C6DC-4712-4823-8ADE-045E82F70E4F}"
-        "PackageCode" = "8:{A7235853-9846-4CA0-9CF1-940BBD8D7916}"
+        "ProductCode" = "8:{E3D58544-EE28-4A2A-8347-A7F539618434}"
+        "PackageCode" = "8:{7AA69130-858E-4FE2-BD1B-30AF7551CB92}"
         "UpgradeCode" = "8:{3021B662-8FC1-4CA9-BF36-09CF6EBB31D8}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.0.1"
+        "ProductVersion" = "8:1.1.1"
         "Manufacturer" = "8:eh-systemhaus e.K."
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -3208,7 +3208,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_59FEC9D717C74F4B994C6D6CE9CC7A96"
                     {
                     "Sequence" = "3:100"
-                    "DisplayName" = "8:Fertig"
+                    "DisplayName" = "8:Finished"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdFinishedDlg.wid"
@@ -3252,7 +3252,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_630198C64C4D4B50AC10F872ED73C3FC"
                     {
                     "Sequence" = "3:100"
-                    "DisplayName" = "8:Status"
+                    "DisplayName" = "8:Progress"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdAdminProgressDlg.wid"
@@ -3296,7 +3296,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_827FC673693D49C7A01B1918C167B4D7"
                     {
                     "Sequence" = "3:100"
-                    "DisplayName" = "8:Willkommen"
+                    "DisplayName" = "8:Welcome"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdAdminWelcomeDlg.wid"
@@ -3344,7 +3344,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_8F4675E9D8A040A4BE00C118C2D58FB5"
                     {
                     "Sequence" = "3:200"
-                    "DisplayName" = "8:Installationsordner"
+                    "DisplayName" = "8:Installation Folder"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdAdminFolderDlg.wid"
@@ -3366,7 +3366,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_D980B233BB76428AAE53C10F3B608982"
                     {
                     "Sequence" = "3:300"
-                    "DisplayName" = "8:Installation bestätigen"
+                    "DisplayName" = "8:Confirm Installation"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdAdminConfirmDlg.wid"
@@ -3397,7 +3397,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_8644C85E064E41A7AE608DB72F5B139D"
                     {
                     "Sequence" = "3:100"
-                    "DisplayName" = "8:Fertig"
+                    "DisplayName" = "8:Finished"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdAdminFinishedDlg.wid"
@@ -3428,7 +3428,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_2CDC882DBF364746BB6FECF6AEDCB7BD"
                     {
                     "Sequence" = "3:200"
-                    "DisplayName" = "8:Installationsordner"
+                    "DisplayName" = "8:Installation Folder"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdFolderDlg.wid"
@@ -3463,7 +3463,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_87EF5ED8CCBF4D4C9E18E89B1BE8E2C8"
                     {
                     "Sequence" = "3:300"
-                    "DisplayName" = "8:Installation bestätigen"
+                    "DisplayName" = "8:Confirm Installation"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdConfirmDlg.wid"
@@ -3485,7 +3485,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_B3EE7080182C485EAC7A4D258E0C8FD1"
                     {
                     "Sequence" = "3:100"
-                    "DisplayName" = "8:Willkommen"
+                    "DisplayName" = "8:Welcome"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdWelcomeDlg.wid"
@@ -3542,7 +3542,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_C3B6E4DF93C74788A10F76276785954E"
                     {
                     "Sequence" = "3:100"
-                    "DisplayName" = "8:Status"
+                    "DisplayName" = "8:Progress"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdProgressDlg.wid"
@@ -3590,7 +3590,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_4131E86199F244CBB7C1A183602F0CC7"
             {
-            "SourcePath" = "8:..\\EHWinFormViews.App\\obj\\Release\\net4.8\\EHFleetXRechnung.App.exe"
+            "SourcePath" = "8:..\\EHWinFormViews.App\\obj\\x86\\Release\\net8.0-windows\\EHFleetXRechnung.App.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_43F05BB54726457493F59F5D4DD8F8D0"
@@ -3618,7 +3618,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_5F5A0AA7A20C4F71AD826DEB09FDB14A"
             {
-            "SourcePath" = "8:"
+            "SourcePath" = "8:..\\EHWinFormViews.App\\obj\\x86\\Release\\net8.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_43F05BB54726457493F59F5D4DD8F8D0"

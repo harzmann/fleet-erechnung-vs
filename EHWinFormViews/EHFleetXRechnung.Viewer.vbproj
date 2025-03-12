@@ -10,6 +10,7 @@
     <EnableRegFreeCom>true</EnableRegFreeCom>
     <NeutralLanguage>de-DE</NeutralLanguage>
     <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
+    <Version>1.1.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Icons\approval.svg" />

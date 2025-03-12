@@ -12,8 +12,8 @@
     <StartupObject>EHFleetXRechnung.App.My.MyApplication</StartupObject>
     <NeutralLanguage>de-DE</NeutralLanguage>
     <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
-    <FileVersion>1.1.0.0</FileVersion>
-    <Version>1.1.0</Version>
+    <FileVersion>1.1.1.0</FileVersion>
+    <Version>1.1.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Application.Designer.vb" />

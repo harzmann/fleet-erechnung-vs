@@ -5,6 +5,7 @@
 **/.vs
 **/bin
 **/obj
-
+**/Release
+**/Debug
 /EHWinFormViews/EHWinFormViews.vbproj.user
 /EHWinFormViews.App/EHWinFormViews.App.vbproj.user
