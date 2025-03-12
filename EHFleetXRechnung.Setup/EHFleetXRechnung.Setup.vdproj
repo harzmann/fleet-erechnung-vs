@@ -3054,15 +3054,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:FLEET - XRechnung"
-        "ProductCode" = "8:{4077C6DC-4712-4823-8ADE-045E82F70E4F}"
-        "PackageCode" = "8:{A7235853-9846-4CA0-9CF1-940BBD8D7916}"
+        "ProductCode" = "8:{D9CFE385-13F0-4910-A10B-CF4AC5DDFB25}"
+        "PackageCode" = "8:{27A4DB89-62F2-4E30-A842-80545A5EC2FE}"
         "UpgradeCode" = "8:{3021B662-8FC1-4CA9-BF36-09CF6EBB31D8}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
-        "RemovePreviousVersions" = "11:FALSE"
+        "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.0.1"
+        "ProductVersion" = "8:1.1.1"
         "Manufacturer" = "8:eh-systemhaus e.K."
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -3590,7 +3590,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_4131E86199F244CBB7C1A183602F0CC7"
             {
-            "SourcePath" = "8:..\\EHWinFormViews.App\\obj\\Release\\net4.8\\EHFleetXRechnung.App.exe"
+            "SourcePath" = "8:..\\EHWinFormViews.App\\obj\\Debug\\net8.0-windows\\EHFleetXRechnung.App.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_43F05BB54726457493F59F5D4DD8F8D0"
@@ -3618,7 +3618,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_5F5A0AA7A20C4F71AD826DEB09FDB14A"
             {
-            "SourcePath" = "8:"
+            "SourcePath" = "8:..\\EHWinFormViews.App\\obj\\Debug\\net8.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_43F05BB54726457493F59F5D4DD8F8D0"

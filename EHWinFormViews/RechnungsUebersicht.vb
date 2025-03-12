@@ -397,7 +397,7 @@ Public Class RechnungsUebersicht
             reportForm.ShowDialog()
         Catch ex As Exception
             _logger.Error($"Failed to create {NameOf(ReportForm)}")
-            MessageBox.Show("Unbekannter Fehler beim Anzeigen der Rechnung!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            MessageBox.Show("Unbekannter Fehler beim Anzeigen der Rechnung!" & vbCrLf & ex.Message, "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
 
     End Sub

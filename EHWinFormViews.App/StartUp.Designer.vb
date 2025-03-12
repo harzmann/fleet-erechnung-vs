@@ -22,119 +22,119 @@ Partial Class StartUp
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
-        Me.components = New System.ComponentModel.Container()
+        components = New ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(StartUp))
-        Me.butStart = New Telerik.WinControls.UI.RadButton()
-        Me.lblAppDbCnStr = New Telerik.WinControls.UI.RadLabel()
-        Me.txtAppDbCnStr = New Telerik.WinControls.UI.RadTextBox()
-        Me.chkUseRegDbCnStr = New Telerik.WinControls.UI.RadCheckBox()
-        Me.butConfig = New Telerik.WinControls.UI.RadButton()
-        Me.tmrStartUp = New System.Windows.Forms.Timer(Me.components)
-        Me.lblStatus = New Telerik.WinControls.UI.RadLabel()
-        Me.RadPictureBox1 = New Telerik.WinControls.UI.RadPictureBox()
-        CType(Me.butStart, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.lblAppDbCnStr, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.txtAppDbCnStr, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.chkUseRegDbCnStr, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.butConfig, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.lblStatus, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.RadPictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.SuspendLayout()
-        '
-        'butStart
-        '
-        Me.butStart.Location = New System.Drawing.Point(12, 109)
-        Me.butStart.Name = "butStart"
-        Me.butStart.Size = New System.Drawing.Size(110, 24)
-        Me.butStart.TabIndex = 0
-        Me.butStart.Text = "Start (5)"
-        '
-        'lblAppDbCnStr
-        '
-        Me.lblAppDbCnStr.Location = New System.Drawing.Point(15, 169)
-        Me.lblAppDbCnStr.Name = "lblAppDbCnStr"
-        Me.lblAppDbCnStr.Size = New System.Drawing.Size(133, 18)
-        Me.lblAppDbCnStr.TabIndex = 1
-        Me.lblAppDbCnStr.Text = "Verbindungszeichenfolge"
-        '
-        'txtAppDbCnStr
-        '
-        Me.txtAppDbCnStr.Enabled = False
-        Me.txtAppDbCnStr.Location = New System.Drawing.Point(15, 187)
-        Me.txtAppDbCnStr.Name = "txtAppDbCnStr"
-        Me.txtAppDbCnStr.Size = New System.Drawing.Size(265, 20)
-        Me.txtAppDbCnStr.TabIndex = 2
-        '
-        'chkUseRegDbCnStr
-        '
-        Me.chkUseRegDbCnStr.Enabled = False
-        Me.chkUseRegDbCnStr.Location = New System.Drawing.Point(15, 151)
-        Me.chkUseRegDbCnStr.Name = "chkUseRegDbCnStr"
-        Me.chkUseRegDbCnStr.Size = New System.Drawing.Size(241, 18)
-        Me.chkUseRegDbCnStr.TabIndex = 4
-        Me.chkUseRegDbCnStr.Text = "Verwende DB-Verbindung aus Registrierung"
-        '
-        'butConfig
-        '
-        Me.butConfig.Location = New System.Drawing.Point(170, 109)
-        Me.butConfig.Name = "butConfig"
-        Me.butConfig.Size = New System.Drawing.Size(110, 24)
-        Me.butConfig.TabIndex = 5
-        Me.butConfig.Text = "Konfiguration"
-        '
-        'tmrStartUp
-        '
-        Me.tmrStartUp.Interval = 1000
-        '
-        'lblStatus
-        '
-        Me.lblStatus.AutoSize = False
-        Me.lblStatus.Font = New System.Drawing.Font("Segoe UI", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblStatus.Location = New System.Drawing.Point(12, 85)
-        Me.lblStatus.Name = "lblStatus"
-        Me.lblStatus.Size = New System.Drawing.Size(268, 18)
-        Me.lblStatus.TabIndex = 6
-        Me.lblStatus.Text = "Status"
-        Me.lblStatus.TextAlignment = System.Drawing.ContentAlignment.MiddleCenter
-        '
-        'RadPictureBox1
-        '
-        Me.RadPictureBox1.Image = CType(resources.GetObject("RadPictureBox1.Image"), System.Drawing.Image)
-        Me.RadPictureBox1.Location = New System.Drawing.Point(12, 3)
-        Me.RadPictureBox1.Name = "RadPictureBox1"
-        Me.RadPictureBox1.Size = New System.Drawing.Size(268, 76)
-        Me.RadPictureBox1.TabIndex = 7
-        '
-        'StartUp
-        '
-        Me.AutoScaleBaseSize = New System.Drawing.Size(8, 16)
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 16.0!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.BackColor = System.Drawing.Color.White
-        Me.ClientSize = New System.Drawing.Size(292, 144)
-        Me.Controls.Add(Me.RadPictureBox1)
-        Me.Controls.Add(Me.lblStatus)
-        Me.Controls.Add(Me.txtAppDbCnStr)
-        Me.Controls.Add(Me.lblAppDbCnStr)
-        Me.Controls.Add(Me.butConfig)
-        Me.Controls.Add(Me.chkUseRegDbCnStr)
-        Me.Controls.Add(Me.butStart)
-        Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
-        Me.MaximizeBox = False
-        Me.MinimizeBox = False
-        Me.Name = "StartUp"
-        Me.Text = "FLEET XRechnung"
-        CType(Me.butStart, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.lblAppDbCnStr, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.txtAppDbCnStr, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.chkUseRegDbCnStr, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.butConfig, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.lblStatus, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.RadPictureBox1, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me, System.ComponentModel.ISupportInitialize).EndInit()
-        Me.ResumeLayout(False)
-        Me.PerformLayout()
+        butStart = New Telerik.WinControls.UI.RadButton()
+        lblAppDbCnStr = New Telerik.WinControls.UI.RadLabel()
+        txtAppDbCnStr = New Telerik.WinControls.UI.RadTextBox()
+        chkUseRegDbCnStr = New Telerik.WinControls.UI.RadCheckBox()
+        butConfig = New Telerik.WinControls.UI.RadButton()
+        tmrStartUp = New Timer(components)
+        lblStatus = New Telerik.WinControls.UI.RadLabel()
+        RadPictureBox1 = New Telerik.WinControls.UI.RadPictureBox()
+        CType(butStart, ComponentModel.ISupportInitialize).BeginInit()
+        CType(lblAppDbCnStr, ComponentModel.ISupportInitialize).BeginInit()
+        CType(txtAppDbCnStr, ComponentModel.ISupportInitialize).BeginInit()
+        CType(chkUseRegDbCnStr, ComponentModel.ISupportInitialize).BeginInit()
+        CType(butConfig, ComponentModel.ISupportInitialize).BeginInit()
+        CType(lblStatus, ComponentModel.ISupportInitialize).BeginInit()
+        CType(RadPictureBox1, ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me, ComponentModel.ISupportInitialize).BeginInit()
+        SuspendLayout()
+        ' 
+        ' butStart
+        ' 
+        butStart.Location = New Point(12, 109)
+        butStart.Name = "butStart"
+        butStart.Size = New Size(110, 24)
+        butStart.TabIndex = 0
+        butStart.Text = "Start (5)"
+        ' 
+        ' lblAppDbCnStr
+        ' 
+        lblAppDbCnStr.Location = New Point(15, 169)
+        lblAppDbCnStr.Name = "lblAppDbCnStr"
+        lblAppDbCnStr.Size = New Size(133, 18)
+        lblAppDbCnStr.TabIndex = 1
+        lblAppDbCnStr.Text = "Verbindungszeichenfolge"
+        ' 
+        ' txtAppDbCnStr
+        ' 
+        txtAppDbCnStr.Enabled = False
+        txtAppDbCnStr.Location = New Point(15, 187)
+        txtAppDbCnStr.Name = "txtAppDbCnStr"
+        txtAppDbCnStr.Size = New Size(265, 20)
+        txtAppDbCnStr.TabIndex = 2
+        ' 
+        ' chkUseRegDbCnStr
+        ' 
+        chkUseRegDbCnStr.Enabled = False
+        chkUseRegDbCnStr.Location = New Point(15, 151)
+        chkUseRegDbCnStr.Name = "chkUseRegDbCnStr"
+        chkUseRegDbCnStr.Size = New Size(241, 18)
+        chkUseRegDbCnStr.TabIndex = 4
+        chkUseRegDbCnStr.Text = "Verwende DB-Verbindung aus Registrierung"
+        ' 
+        ' butConfig
+        ' 
+        butConfig.Location = New Point(170, 109)
+        butConfig.Name = "butConfig"
+        butConfig.Size = New Size(110, 24)
+        butConfig.TabIndex = 5
+        butConfig.Text = "Konfiguration"
+        ' 
+        ' tmrStartUp
+        ' 
+        tmrStartUp.Interval = 1000
+        ' 
+        ' lblStatus
+        ' 
+        lblStatus.AutoSize = False
+        lblStatus.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        lblStatus.Location = New Point(12, 85)
+        lblStatus.Name = "lblStatus"
+        lblStatus.Size = New Size(268, 18)
+        lblStatus.TabIndex = 6
+        lblStatus.Text = "Status"
+        lblStatus.TextAlignment = ContentAlignment.MiddleCenter
+        ' 
+        ' RadPictureBox1
+        ' 
+        RadPictureBox1.Image = CType(resources.GetObject("RadPictureBox1.Image"), Image)
+        RadPictureBox1.Location = New Point(12, 3)
+        RadPictureBox1.Name = "RadPictureBox1"
+        RadPictureBox1.Size = New Size(268, 76)
+        RadPictureBox1.TabIndex = 7
+        ' 
+        ' StartUp
+        ' 
+        AutoScaleBaseSize = New Size(7, 15)
+        AutoScaleDimensions = New SizeF(7F, 15F)
+        AutoScaleMode = AutoScaleMode.Font
+        BackColor = Color.White
+        ClientSize = New Size(292, 144)
+        Controls.Add(RadPictureBox1)
+        Controls.Add(lblStatus)
+        Controls.Add(txtAppDbCnStr)
+        Controls.Add(lblAppDbCnStr)
+        Controls.Add(butConfig)
+        Controls.Add(chkUseRegDbCnStr)
+        Controls.Add(butStart)
+        Icon = CType(resources.GetObject("$this.Icon"), Icon)
+        MaximizeBox = False
+        MinimizeBox = False
+        Name = "StartUp"
+        Text = " "
+        CType(butStart, ComponentModel.ISupportInitialize).EndInit()
+        CType(lblAppDbCnStr, ComponentModel.ISupportInitialize).EndInit()
+        CType(txtAppDbCnStr, ComponentModel.ISupportInitialize).EndInit()
+        CType(chkUseRegDbCnStr, ComponentModel.ISupportInitialize).EndInit()
+        CType(butConfig, ComponentModel.ISupportInitialize).EndInit()
+        CType(lblStatus, ComponentModel.ISupportInitialize).EndInit()
+        CType(RadPictureBox1, ComponentModel.ISupportInitialize).EndInit()
+        CType(Me, ComponentModel.ISupportInitialize).EndInit()
+        ResumeLayout(False)
+        PerformLayout()
 
     End Sub
 

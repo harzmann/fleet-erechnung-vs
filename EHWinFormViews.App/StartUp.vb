@@ -7,6 +7,7 @@ Public Class StartUp
 
     Private bConfig As Boolean = False
     Private iStartUpCounter As Integer = 14
+    Private dbConnection As General.Database
 
     Private Sub ConfigureLogging()
         Dim libraryConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logger.config")
@@ -28,25 +29,27 @@ Public Class StartUp
         ' Timer stoppen
         tmrStartUp.Enabled = False
 
+        ConfigureLogging()
         If My.Settings.UseRegDbCnStr = True Then
             ' Start Anwendung mit DB-Verbindung aus Registry
             If readValue Is Nothing Then
                 MsgBox("Fleet XRechnung App konnte nicht gestartet werden. Es wurde keine Verbindungszeichenfolge (workdbcn) in der Registrierung gefunden. " &
                        "Bitte stellen Sie sicher, dass eine gültige Fleet Client Installation auf diesem System vorhanden ist.", MsgBoxStyle.Critical, "Fleet XRechnung App")
             Else
-                ConfigureLogging()
-                Form = New RechnungsUebersicht(New General.Database(readValue.ToString))
-                Form.ShowDialog()
-                Me.Close()
+                dbConnection = New General.Database(readValue.ToString)
             End If
         Else
             ' Start Anwendung mit DB-Verbindung aus App.config
-            ConfigureLogging()
-            'MsgBox(My.Settings.AppDbCnStr.ToString)
-            Form = New RechnungsUebersicht(New General.Database(My.Settings.AppDbCnStr.ToString))
-            Form.ShowDialog()
-            Me.Close()
+            dbConnection = New General.Database(My.Settings.AppDbCnStr.ToString)
         End If
+
+        If dbConnection.cn.State = Data.ConnectionState.Open Then
+            Form = New RechnungsUebersicht(dbConnection)
+            Form.ShowDialog()
+        Else
+            MsgBox("Verbindung zur Datenbank konnte nicht geöffnet werden!" & vbCrLf & dbConnection.cn.ConnectionString, MsgBoxStyle.Critical)
+        End If
+        Me.Close()
 
     End Sub
 

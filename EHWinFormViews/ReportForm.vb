@@ -42,7 +42,6 @@ Public Class ReportForm
     End Sub
 
 
-
     Private Shared Sub InstallLicense(key As String)
         Try
             StiLicense.Key = key

@@ -10,6 +10,9 @@
     <EnableRegFreeCom>true</EnableRegFreeCom>
     <NeutralLanguage>de-DE</NeutralLanguage>
     <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
+    <AssemblyVersion>1.1.1.0</AssemblyVersion>
+    <FileVersion>1.1.1.0</FileVersion>
+    <Version>1.1.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Icons\approval.svg" />
@@ -30,17 +33,17 @@
     <EmbeddedResource Include="Icons\trust.svg" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.13.0" />
+    <PackageReference Include="Azure.Identity" Version="1.13.2" />
     <PackageReference Include="ehfleet_classlibrary" Version="1.3.6" />
-    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.34.2">
+    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.40">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="log4net" Version="3.0.1" />
-    <PackageReference Include="Microsoft.AnalysisServices.AdomdClient" Version="19.86.2.1" />
-    <PackageReference Include="Microsoft.Identity.Client" Version="4.65.0" />
+    <PackageReference Include="log4net" Version="3.0.4" />
+    <PackageReference Include="Microsoft.AnalysisServices.AdomdClient" Version="19.90.0" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.69.1" />
     <PackageReference Include="Microsoft.VisualBasic" Version="10.3.0" />
-    <PackageReference Include="Stimulsoft.Reports.Net" Version="2024.4.2">
+    <PackageReference Include="Stimulsoft.Reports.Net" Version="2025.1.6">
     </PackageReference>
     <PackageReference Include="Telerik.UI.for.WinForms.AllControls" Version="2024.3.924" />
   </ItemGroup>
