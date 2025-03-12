@@ -1,18 +1,19 @@
 ﻿Imports System.IO
 Imports ehfleet_classlibrary
 Imports EHFleetXRechnung.Viewer
+Imports log4net
 Imports log4net.Config
 
 Public Class StartUp
 
     Private bConfig As Boolean = False
     Private iStartUpCounter As Integer = 14
-    Private dbConnection As General.Database
+    Private logger As ILog
 
     Private Sub ConfigureLogging()
         Dim libraryConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logger.config")
         Dim logConfigFile = New FileInfo(libraryConfigPath)
-
+        logger = LogManager.GetLogger(GetType(StartUp))
         If logConfigFile.Exists Then
             log4net.GlobalContext.Properties("log4net:HostName") = Environment.MachineName
             XmlConfigurator.Configure(logConfigFile)
@@ -22,6 +23,7 @@ Public Class StartUp
     Private Sub butStart_Click(sender As Object, e As EventArgs) Handles butStart.Click
 
         Dim Form As RechnungsUebersicht
+        Dim dbConnection As General.Database = Nothing
 
         ' Lesen AppDbCnStr aus Registry
         Dim readValue = My.Computer.Registry.GetValue("HKEY_CURRENT_USER\Software\VB and VBA Program Settings\EHFleet Fuhrpark IM System\Allgemein", "workdbcn", Nothing)
@@ -43,12 +45,15 @@ Public Class StartUp
             dbConnection = New General.Database(My.Settings.AppDbCnStr.ToString)
         End If
 
-        If dbConnection.cn.State = Data.ConnectionState.Open Then
+        If dbConnection IsNot Nothing AndAlso dbConnection.cn.State = Data.ConnectionState.Open Then
+            logger.Debug($"Using DB connection string: {dbConnection.cn.ConnectionString}")
             Form = New RechnungsUebersicht(dbConnection)
+            Me.Hide()
             Form.ShowDialog()
         Else
             MsgBox("Verbindung zur Datenbank konnte nicht geöffnet werden!" & vbCrLf & dbConnection.cn.ConnectionString, MsgBoxStyle.Critical)
         End If
+
         Me.Close()
 
     End Sub
