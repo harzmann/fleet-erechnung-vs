@@ -261,11 +261,11 @@ Public Class ReportForm
 
     Private Function GetReportParameterId(rechnungsArt As RechnungsArt) As String
         Select Case rechnungsArt
-            Case RechnungsArt.Werkstatt
+            Case rechnungsArt.Werkstatt
                 Return "210"
-            Case RechnungsArt.Tanken
+            Case rechnungsArt.Tanken
                 Return "1210"
-            Case RechnungsArt.Manuell
+            Case rechnungsArt.Manuell
                 Return "2210"
         End Select
         Return String.Empty
@@ -274,7 +274,7 @@ Public Class ReportForm
     Private Function GetSqlStatements(rechnungsArt As RechnungsArt, rechnungsNummern As List(Of Integer)) As Dictionary(Of String, String)
         Dim inClausePlaceholders As String = String.Join(",", rechnungsNummern.Select(Function(v) $"{v}").ToArray())
         Select Case rechnungsArt
-            Case RechnungsArt.Werkstatt
+            Case rechnungsArt.Werkstatt
                 Return New Dictionary(Of String, String) From
                     {
                         {"abfr_wavkreport", $"select * from abfr_wavkreport where RechnungsNr IN ({inClausePlaceholders})"},
@@ -284,7 +284,7 @@ Public Class ReportForm
                         {"abfr_subReport_Kategorien", $"SELECT * FROM abfr_wavksummekat WHERE RechnungsNr IN ({inClausePlaceholders})"},
                         {"abfr_subReport_Mwst", $"SELECT * FROM abfr_wavkabrmwst WHERE RechnungsNr IN ({inClausePlaceholders})"}
                     }
-            Case RechnungsArt.Tanken
+            Case rechnungsArt.Tanken
                 Return New Dictionary(Of String, String) From
                     {
                         {"abfr_tankreport", $"select * from abfr_tankreport WHERE RechnungsNr IN ({inClausePlaceholders})"},
@@ -293,7 +293,7 @@ Public Class ReportForm
                         {"abfr_subReport_Produktarten", $"SELECT * FROM abfr_tasummeprod WHERE RechnungsNr IN ({inClausePlaceholders})"},
                         {"abfr_subReport_Mwst", $"SELECT * FROM abfr_tankabrmwst WHERE RechnungsNr IN ({inClausePlaceholders})"}
                     }
-            Case RechnungsArt.Manuell
+            Case rechnungsArt.Manuell
                 Return New Dictionary(Of String, String) From
                     {
                         {"abfr_mrvkreport", $"select * from abfr_mrvkreport WHERE RechnungsNr IN ({inClausePlaceholders})"},

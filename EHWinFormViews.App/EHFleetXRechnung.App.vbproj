@@ -23,6 +23,9 @@
     <Import Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Stimulsoft.Reports.Net" Version="2025.1.6" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\EHWinFormViews\EHFleetXRechnung.Viewer.vbproj" />
   </ItemGroup>
   <ItemGroup>
