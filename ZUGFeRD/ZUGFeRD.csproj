@@ -73,6 +73,5 @@ https://github.com/stephanstapel/ZUGFeRD-csharp</Description>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-    <PackageReference Include="Stimulsoft.Reports.Net" Version="2025.1.6" />
   </ItemGroup>
 </Project>
