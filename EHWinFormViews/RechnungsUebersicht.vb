@@ -179,7 +179,6 @@ Public Class RechnungsUebersicht
         RefreshGrid()
     End Sub
 
-
     Private Sub UpdateLogConfiguration()
         Dim folder = _xmlExporter.GetExportPath(RechnungsArt)
         Dim repository As ILoggerRepository = LogManager.GetRepository()
@@ -279,7 +278,12 @@ Public Class RechnungsUebersicht
 
                     End Using
 
-                    MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                    If _xmlExporter.IsSuccess Then
+                        MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                    Else
+                        MessageBox.Show("Speichern fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                    End If
+
                 Case "PDF"
                     Dim reportForm = New ReportForm(_dbConnection, RechnungsArt, New List(Of Integer) From {rechnungsNummer})
                     reportForm.SavePdf()
@@ -450,7 +454,12 @@ Public Class RechnungsUebersicht
                 End Try
             Next
 
-            MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            If _xmlExporter.IsSuccess Then
+                MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Else
+                MessageBox.Show("Speichern fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            End If
+
         Catch ex As Exception
             _logger.Error("Exception while saving bill xml files", ex)
             MessageBox.Show("Speichern fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -497,16 +506,23 @@ Public Class RechnungsUebersicht
                 Try
                     Using fileStream = File.Create(filePath)
                         _xmlExporter.CreateBillXml(fileStream, RechnungsArt, bill)
+                        If _xmlExporter.IsSuccess = False Then
+                            Dim Result As DialogResult
+                            Result = MessageBox.Show("XML Export fehlgeschlagen!" & vbCrLf & "Soll Vorgang abgebrochen werden?", "Fleet Fuhrpark IM System", MessageBoxButtons.YesNo, MessageBoxIcon.Error)
+                            If Result = System.Windows.Forms.DialogResult.Yes Then
+                                Exit For
+                            End If
+                        End If
                     End Using
                 Catch ex As Exception
                     _logger.Error($"Error saving bill xml file to {filePath}", ex)
                 End Try
             Next
 
-            MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            MessageBox.Show("XML Export abgeschlossen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
         Catch ex As Exception
             _logger.Error("Exception while saving bill xml files", ex)
-            MessageBox.Show("Speichern fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            MessageBox.Show("XML Export fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Return
         End Try
     End Sub

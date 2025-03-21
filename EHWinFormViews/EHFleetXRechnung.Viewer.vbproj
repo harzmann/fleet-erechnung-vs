@@ -32,7 +32,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="1.13.2" />
-    <PackageReference Include="ehfleet_classlibrary" Version="1.3.6" />
     <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.40">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -46,6 +45,7 @@
     <PackageReference Include="Telerik.UI.for.WinForms.AllControls" Version="2025.1.211" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ehfleet_classlibrary\ehfleet_classlibrary.vbproj" />
     <ProjectReference Include="..\ZUGFeRD\ZUGFeRD.csproj" />
   </ItemGroup>
   <ItemGroup>

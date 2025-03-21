@@ -112,7 +112,7 @@ Partial Class StartUp
         AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
         BackColor = Color.White
-        ClientSize = New Size(292, 144)
+        ClientSize = New Size(292, 145)
         Controls.Add(RadPictureBox1)
         Controls.Add(lblStatus)
         Controls.Add(txtAppDbCnStr)
