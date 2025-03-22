@@ -14,6 +14,9 @@ Public Class XRechnungExporter
 
     Private ReadOnly _exportPaths As Dictionary(Of RechnungsArt, String) = New Dictionary(Of RechnungsArt, String)
 
+    Public IsSuccess As Boolean = False
+    Public Cancel As Boolean = False
+
     Shared Sub New()
         _logger = LogManager.GetLogger(GetType(XRechnungExporter))
     End Sub
@@ -35,6 +38,7 @@ Public Class XRechnungExporter
 
     Public Sub CreateBillXml(xmlStream As Stream, billType As RechnungsArt, rechnungsNummer As Integer)
         _logger.Debug($"Entering {NameOf(CreateBillXml)}({xmlStream.GetType().Name}, {billType}, {rechnungsNummer})")
+        IsSuccess = False
         Try
             Dim sqls = GetSqlStatements(billType, New List(Of Integer) From {rechnungsNummer})
             Dim items = GetItemsFromQuery(GetSqlStatementForBill(billType, New List(Of Integer) From {rechnungsNummer})).FirstOrDefault
@@ -64,6 +68,11 @@ Public Class XRechnungExporter
             End Select
 
             Dim formattedInvoiceNumber = Sale.Invoicing.FormatInvoiceNumber(_dataConnection, billTypeText, rechnungsNummer)
+
+            ' Validierung der Daten
+            If ValidateBuyerData(buyerData) = False Then
+                Return
+            End If
 
             xRechnung.InvoiceNo = formattedInvoiceNumber
             xRechnung.Currency = CType([Enum].Parse(GetType(CurrencyCodes), GetDataFromColumn(sellerData, "Währung")), CurrencyCodes)
@@ -237,7 +246,9 @@ Public Class XRechnungExporter
 
             Thread.CurrentThread.CurrentCulture = currentCulture
             Thread.CurrentThread.CurrentUICulture = currentUiCulture
+
             'MessageBox.Show("Rechnung wurde erfolgreich gespeichert.")
+            IsSuccess = True
         Catch ex As Exception
             _logger.Error($"Exception during {NameOf(CreateBillXml)}", ex)
             MessageBox.Show("Speichern fehlgschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -245,6 +256,17 @@ Public Class XRechnungExporter
             _logger.Debug($"Leaving {NameOf(CreateBillXml)}")
         End Try
     End Sub
+
+    Public Function ValidateBuyerData(buyerData) As Boolean
+
+        ValidateBuyerData = True
+        If buyerData("LandISO") = "" Then
+            MessageBox.Show("Kennzeichen Land ISO fehlt bei Kunde: " & buyerData("Matchcode"), "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            _logger.Debug($"Empty value for LandISO - Matchcode: " & buyerData("Matchcode"))
+            ValidateBuyerData = False
+        End If
+
+    End Function
 
     Public Sub Validate(file As String)
         _logger.Debug($"Entering {NameOf(Validate)}({file})")

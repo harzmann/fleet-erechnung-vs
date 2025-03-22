@@ -85,7 +85,7 @@ Public Class StartUp
             txtAppDbCnStr.Enabled = bConfig
         End If
         If bConfig = True Then
-            Me.Height = 250
+            Me.Size = New Size(375, 300)
             tmrStartUp.Enabled = False
             butConfig.Text = "Speichern"
         Else
@@ -94,7 +94,7 @@ Public Class StartUp
                 My.Settings.AppDbCnStr = txtAppDbCnStr.Text
             End If
             My.Settings.Save()
-            Me.Height = 175
+            Me.Size = New Size(375, 225)
             butConfig.Text = "Konfigurieren"
         End If
 
@@ -122,6 +122,12 @@ Public Class StartUp
             tmrStartUp.Enabled = False
             butStart_Click(sender, e)
         End If
+
+    End Sub
+
+    Private Sub StartUp_Activated(sender As Object, e As EventArgs) Handles Me.Activated
+
+        Me.Size = New Size(375, 225)
 
     End Sub
 End Class
