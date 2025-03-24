@@ -471,6 +471,8 @@ Public Class XRechnungExporter
             Case rechnungsArt.Manuell
                 Return $"SELECT * FROM abfr_mrvkabrmwst WHERE RechnungsNr IN ({inClausePlaceholders})"
         End Select
+
+        Return ""
     End Function
 
     Private Function GetSqlStatementForBill(rechnungsArt As RechnungsArt, rechnungsNummern As List(Of Integer)) As String
@@ -483,6 +485,8 @@ Public Class XRechnungExporter
             Case RechnungsArt.Manuell
                 Return $"select * from abfr_mrvkreport WHERE RechnungsNr IN ({inClausePlaceholders})"
         End Select
+
+        Return ""
     End Function
 
     Private Function GetSqlStatements(rechnungsArt As RechnungsArt, rechnungsNummern As List(Of Integer)) As List(Of String)
