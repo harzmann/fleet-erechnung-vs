@@ -443,15 +443,28 @@ Public Class RechnungsUebersicht
                     Return Convert.ToDateTime(dataRow.Item(1))
                 End Function)
 
+            Dim exportHelper = New XRechnungExporter(_dbConnection)
+
             For Each bill In bills.Keys
-                Dim filePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, bill, "xml")
-                Try
-                    Using fileStream = File.Create(filePath)
-                        _xmlExporter.CreateBillXml(fileStream, RechnungsArt, bill)
-                    End Using
-                Catch ex As Exception
-                    _logger.Error($"Error saving bill xml file to {filePath}", ex)
-                End Try
+                If Not exportHelper.IsRechnungIssued(bill) Then
+                    Dim filePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, bill, "xml")
+                    Try
+                        Using fileStream = File.Create(filePath)
+                            Dim x = MsgBox("Soll die Rechnung " & bill & " als XRechnung XML festgeschrieben werden?", MsgBoxStyle.YesNo, "Fleet Fuhrpark IM System")
+                            If x = MsgBoxResult.No Then
+                                ' Nur Export, ohne in DB als XRechnung festgeschrieben und signiert
+                                _xmlExporter.CreateBillXml(fileStream, RechnungsArt, bill)
+                            Else
+                                ' Festschreiben als XRechnung in DB und signieren
+                                _xmlExporter.CreateBillXml(fileStream, RechnungsArt, bill, True)
+                            End If
+                        End Using
+                    Catch ex As Exception
+                        _logger.Error($"Error saving bill xml file to {filePath}", ex)
+                    End Try
+                Else
+                    ' TODO: Export aus DB
+                End If
             Next
 
             If _xmlExporter.IsSuccess Then
@@ -525,5 +538,41 @@ Public Class RechnungsUebersicht
             MessageBox.Show("XML Export fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Return
         End Try
+    End Sub
+
+    Private Sub SelectedXmlEmailButton_Click(sender As Object, args As EventArgs) Handles SelectedXmlEmailButton.Click
+        Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
+        Dim dataTable = CType(dataSource.DataSource, DataTable)
+
+        Try
+            For Each rowInfo In DataGridView1.SelectedRows
+                Dim dataRow = dataTable.Rows(rowInfo.Index)
+                Dim rechnungsNummer = Convert.ToInt32(dataRow.Item(0))
+                Dim empfaengerEmail = Convert.ToString(dataRow.Item("EmailRechnung"))
+                Dim emailSender = New XRechnungEmail(_dbConnection)
+                Dim success = emailSender.SendXRechnungXml(RechnungsArt, rechnungsNummer, empfaengerEmail)
+                If success Then
+                    MessageBox.Show($"E-Mail für Rechnung {rechnungsNummer} erfolgreich versendet!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                Else
+                    MessageBox.Show($"E-Mail für Rechnung {rechnungsNummer} konnte nicht versendet werden!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                End If
+            Next
+        Catch ex As Exception
+            MessageBox.Show("Fehler beim Versand der E-Mail: " & ex.Message, "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+
+    Private Sub SteuersaetzeButton_Click(sender As Object, e As EventArgs) Handles SteuersaetzeButton.Click
+
+        Dim steuersaetzeForm = New SteuersaetzeGridForm(_dbConnection)
+        steuersaetzeForm.ShowDialog()
+
+    End Sub
+
+    Private Sub VerkaeuferButton_Click(sender As Object, e As EventArgs) Handles VerkaeuferButton.Click
+
+        Dim verkauferForm = New ParameterEditorForm(_dbConnection)
+        verkauferForm.ShowDialog()
+
     End Sub
 End Class

@@ -81,8 +81,11 @@ Public Class StartUp
         ' Konfigurieren und Abspeichern
         bConfig = Not bConfig
         chkUseRegDbCnStr.Enabled = bConfig
+        chkUseRegDbCnStr.Visible = bConfig
         If chkUseRegDbCnStr.Checked = False Then
             txtAppDbCnStr.Enabled = bConfig
+            txtAppDbCnStr.Visible = bConfig
+            lblAppDbCnStr.Visible = bConfig
         End If
         If bConfig = True Then
             Me.Size = New Size(375, 300)

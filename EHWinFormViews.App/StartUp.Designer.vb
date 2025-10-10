@@ -57,6 +57,7 @@ Partial Class StartUp
         lblAppDbCnStr.Size = New Size(133, 18)
         lblAppDbCnStr.TabIndex = 1
         lblAppDbCnStr.Text = "Verbindungszeichenfolge"
+        lblAppDbCnStr.Visible = False
         ' 
         ' txtAppDbCnStr
         ' 
@@ -65,6 +66,7 @@ Partial Class StartUp
         txtAppDbCnStr.Name = "txtAppDbCnStr"
         txtAppDbCnStr.Size = New Size(265, 20)
         txtAppDbCnStr.TabIndex = 2
+        txtAppDbCnStr.Visible = False
         ' 
         ' chkUseRegDbCnStr
         ' 
@@ -74,6 +76,7 @@ Partial Class StartUp
         chkUseRegDbCnStr.Size = New Size(241, 18)
         chkUseRegDbCnStr.TabIndex = 4
         chkUseRegDbCnStr.Text = "Verwende DB-Verbindung aus Registrierung"
+        chkUseRegDbCnStr.Visible = False
         ' 
         ' butConfig
         ' 
@@ -111,8 +114,10 @@ Partial Class StartUp
         AutoScaleBaseSize = New Size(7, 15)
         AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
+        AutoSize = True
+        AutoSizeMode = AutoSizeMode.GrowAndShrink
         BackColor = Color.White
-        ClientSize = New Size(292, 145)
+        ClientSize = New Size(292, 265)
         Controls.Add(RadPictureBox1)
         Controls.Add(lblStatus)
         Controls.Add(txtAppDbCnStr)
@@ -124,7 +129,7 @@ Partial Class StartUp
         MaximizeBox = False
         MinimizeBox = False
         Name = "StartUp"
-        Text = " "
+        Text = "FLEET XRechnung"
         CType(butStart, ComponentModel.ISupportInitialize).EndInit()
         CType(lblAppDbCnStr, ComponentModel.ISupportInitialize).EndInit()
         CType(txtAppDbCnStr, ComponentModel.ISupportInitialize).EndInit()

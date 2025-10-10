@@ -11,6 +11,7 @@
     <NeutralLanguage>de-DE</NeutralLanguage>
     <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
     <Version>1.1.3</Version>
+    <ImportedNamespaces>Microsoft.VisualBasic=True,System=True,System.Collections=True,System.Collections.Generic=True,System.Data=True,System.Diagnostics=True,System.Linq=True,System.Xml.Linq=True,System.Threading.Tasks=True,EHFleetXRechnung.Viewer=True</ImportedNamespaces>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Icons\approval.svg" />
@@ -32,6 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="1.13.2" />
+    <PackageReference Include="ehfleet_classlibrary" Version="1.3.8" />
     <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.40">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -43,16 +45,21 @@
     <PackageReference Include="Stimulsoft.Reports.Net" Version="2025.1.6">
     </PackageReference>
     <PackageReference Include="Telerik.UI.for.WinForms.AllControls" Version="2025.1.211" />
+    <PackageReference Include="ZUGFeRD-csharp" Version="17.4.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ehfleet_classlibrary\ehfleet_classlibrary.vbproj" />
-    <ProjectReference Include="..\ZUGFeRD\ZUGFeRD.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="My Project\Resources.Designer.vb">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="My Project\Settings.Designer.vb">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -66,5 +73,18 @@
     <None Update="logger.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="My Project\Settings.settings">
+      <CustomToolNamespace>My</CustomToolNamespace>
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.vb</LastGenOutput>
+    </None>
   </ItemGroup>
+  <ItemGroup>
+    <!-- Alle Dateien im Verzeichnis "validator" rekursiv -->
+    <Content Include="validator\**\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+
 </Project>
