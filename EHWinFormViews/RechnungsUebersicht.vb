@@ -1,16 +1,11 @@
 ﻿Imports System.Data
 Imports System.IO
-Imports System.Reflection
-Imports System.Runtime.Loader
 Imports System.Windows.Forms
 Imports ehfleet_classlibrary
 Imports EHFleetXRechnung.Viewer.GermanRadGridViewLocalization
 Imports log4net
 Imports log4net.Appender
 Imports log4net.Repository
-Imports Microsoft.VisualBasic.CompilerServices
-Imports Stimulsoft.Base
-Imports Stimulsoft.Report.Export
 Imports Telerik.WinControls
 Imports Telerik.WinControls.UI
 Imports Telerik.WinControls.UI.Localization
@@ -193,7 +188,7 @@ Public Class RechnungsUebersicht
         fileAppender.ActivateOptions()
     End Sub
 
-    Private Function RefreshGrid()
+    Private Sub RefreshGrid()
         Dim sql = GetSqlStatement(RechnungsArt)
         Dim dataTable = _dbConnection.FillDataTable(sql)
         If dataTable.Rows.Count = 0 OrElse dataTable.Columns.Count = 0 Then
@@ -250,7 +245,7 @@ Public Class RechnungsUebersicht
         buttonColumn.ImageAlignment = System.Drawing.ContentAlignment.MiddleCenter
         buttonColumn.Width = 80
         DataGridView1.Columns.Add(buttonColumn)
-    End Function
+    End Sub
 
     Private Sub DataGridView1_CellClick(sender As Object, e As GridViewCellEventArgs) Handles DataGridView1.CellClick
         ' Check if the click is on a button column

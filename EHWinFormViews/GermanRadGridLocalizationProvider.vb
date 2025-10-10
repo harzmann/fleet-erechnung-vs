@@ -325,6 +325,8 @@ Namespace GermanRadGridViewLocalization
                 Case Else
                     Return MyBase.GetLocalizedString(id)
             End Select
+
+            Return MyBase.GetLocalizedString(id)
         End Function
     End Class
 End Namespace
