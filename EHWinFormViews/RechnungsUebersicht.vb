@@ -570,4 +570,11 @@ Public Class RechnungsUebersicht
         verkauferForm.ShowDialog()
 
     End Sub
+
+    Private Sub MengeneinheitenButton_Click(sender As Object, e As EventArgs) Handles MengeneinheitenButton.Click
+
+        Dim mengeneinheitenForm = New MengeneinheitenGridForm(_dbConnection)
+        mengeneinheitenForm.ShowDialog()
+
+    End Sub
 End Class

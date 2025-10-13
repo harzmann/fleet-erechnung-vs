@@ -4,6 +4,9 @@
     <_LastSelectedProfileId>C:\Users\harzmann.EH-SYSTEMHAUS\source\repos\ehfleet_vb6guidll\EHWinFormViews\My Project\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Update="MengeneinheitenGridForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="ParameterEditorForm.vb">
       <SubType>Form</SubType>
     </Compile>

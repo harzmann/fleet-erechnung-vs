@@ -18,6 +18,28 @@ Public Class XRechnungExporter
     Public IsSuccess As Boolean = False
     Public Cancel As Boolean = False
 
+    Public Structure MeasurementCode
+        Public UnitCode As QuantityCodes
+        Public Quantity As Decimal           ' umgerechnete Menge
+        Public UnitPrice As Decimal          ' umgerechneter Einzelpreis (je neuer Einheit)
+        Public ConversionFactor As Decimal   ' verwendeter Umrechnungsfaktor
+        Public OriginalUnitPrice As Decimal  ' übergebener Originalpreis (Info)
+
+        Public Sub New(unitCode As QuantityCodes,
+                   quantity As Decimal,
+                   unitPrice As Decimal,
+                   factor As Decimal,
+                   Optional originalUnitPrice As Decimal = 0D)
+            Me.UnitCode = unitCode
+            Me.Quantity = quantity
+            Me.UnitPrice = unitPrice
+            Me.ConversionFactor = If(factor = 0D, 1D, factor)
+            Me.OriginalUnitPrice = originalUnitPrice
+        End Sub
+    End Structure
+
+
+
     Shared Sub New()
         _logger = LogManager.GetLogger(GetType(XRechnungExporter))
     End Sub
@@ -105,10 +127,10 @@ Public Class XRechnungExporter
                             TryAddLine(xRechnung, lineItemData, "FahrerNr", "FahrerName", "PersonalMEH", sumNetLines, taxGroups)
                             ' Manueller Artikel
                             TryAddLine(xRechnung, lineItemData, "freieArtikelNr", "freieArtikelbez", "freieArtikeleinheit", sumNetLines, taxGroups)
+                        Case RechnungsArt.Tanken
+                            ' Tankbuchungen
+                            TryAddLine(xRechnung, lineItemData, "Matchcode", "Artikelbez", "ArtikelMEH", sumNetLines, taxGroups)
 
-                        Case Else
-                            ' ggf. weitere Rechnungstypen
-                            TryAddLine(xRechnung, lineItemData, "ArtikelNr", "Artikelbez", "ArtikelMEH", sumNetLines, taxGroups)
                     End Select
                 Next
             Next
@@ -299,10 +321,11 @@ Public Class XRechnungExporter
         If String.IsNullOrWhiteSpace(name) Then Exit Sub
 
         Dim desc As String = GetSafe(line, descKey)
-        Dim unitCode As QuantityCodes = GetMeasurementCode(GetSafe(line, unitKey))
+        Dim mc As MeasurementCode = GetMeasurementCode(GetSafe(line, unitKey), SafeDec(line, "Menge"),SafeDec(line, "EPreis"))
+        'Dim unitCode As QuantityCodes = GetMeasurementCode(GetSafe(line, unitKey))
 
-        Dim qty As Decimal = SafeDec(line, "Menge")
-        Dim unitNet As Decimal = SafeDec(line, "EPreis")
+        'Dim qty As Decimal = SafeDec(line, "Menge")
+        'Dim unitNet As Decimal = SafeDec(line, "EPreis")
         Dim lineNet As Decimal = SafeDec(line, "Gesamtpreis")
 
         Dim cat As TaxCategoryCodes = ParseTaxCategoryCode(GetSafe(line, "ERechnung_BT151"))
@@ -312,10 +335,10 @@ Public Class XRechnungExporter
         Dim li = x.AddTradeLineItem(
             name:=name,
             description:=desc,
-            unitCode:=unitCode,
+            unitCode:=mc.UnitCode,
             unitQuantity:=1D,
-            billedQuantity:=qty,
-            netUnitPrice:=unitNet,
+            billedQuantity:=mc.Quantity,
+            netUnitPrice:=mc.UnitPrice,
             lineTotalAmount:=lineNet,
             taxType:=TaxTypes.VAT,
             categoryCode:=cat,
@@ -333,7 +356,7 @@ Public Class XRechnungExporter
         ' li.TaxExemptionReasonCode = If(String.IsNullOrWhiteSpace(exCode), Nothing, exCode)
 
         ' Positionsrabatt explizit ausweisen, falls Basis > Zeilennetto
-        AddLineAllowanceIfAny(li, qty, unitNet, lineNet, GetSafe(line, "Rabatt"))
+        AddLineAllowanceIfAny(li, mc.Quantity, mc.UnitPrice, lineNet, GetSafe(line, "Rabatt"))
 
         ' Aggregation
         sumNetLines += lineNet
@@ -459,6 +482,31 @@ Public Class XRechnungExporter
     ' Utilities (robust gegen Dictionary(Of String, String)/Object)
     ' =======================
 
+    ' Sicherer Integer-Getter mit Fallback
+    Private Function D(obj As Object) As Decimal
+        If obj Is Nothing OrElse IsDBNull(obj) Then Return 0D
+        Dim s = Convert.ToString(obj, Globalization.CultureInfo.InvariantCulture)
+        Dim v As Decimal
+        If Decimal.TryParse(s, Globalization.NumberStyles.Any, Globalization.CultureInfo.InvariantCulture, v) Then
+            Return v
+        End If
+        Return 0D
+    End Function
+
+    ' Sicherer String-Getter mit Fallback
+    Private Function S(obj As Object, Optional fallback As String = "") As String
+        If obj Is Nothing OrElse IsDBNull(obj) Then Return fallback
+        Dim val = Convert.ToString(obj)
+        If String.IsNullOrWhiteSpace(val) Then Return fallback
+        Return val
+    End Function
+
+    ' Einfache SQL-Escaping-Funktion - verhindert SQL-Fehler bei Quotes
+    Private Function SqlEsc(ByVal s As String) As String
+        If s Is Nothing Then Return ""
+        Return s.Replace("'", "''")
+    End Function
+
     Private Function ToObjectDict(input As Object) As IDictionary(Of String, Object)
         If input Is Nothing Then
             Return New Dictionary(Of String, Object)(StringComparer.OrdinalIgnoreCase)
@@ -516,10 +564,12 @@ Public Class XRechnungExporter
         Return Date.Today
     End Function
 
+    ' Runden auf 2 Dezimalstellen (MidpointRounding.AwayFromZero)
     Private Function Round2(v As Decimal) As Decimal
         Return Math.Round(v, 2, MidpointRounding.AwayFromZero)
     End Function
 
+    ' Prozentformat aus "raw" parsen (z.B. "0.19", "19", "19.00", "0,19", "19,00", "0.19123", "0,19123", "0.19%", "19%")
     Private Function FormatPctFromRaw(raw As String) As String
         If String.IsNullOrWhiteSpace(raw) Then Return ""
         Dim v As Decimal
@@ -532,6 +582,39 @@ Public Class XRechnungExporter
         Return v.ToString("0.##", CultureInfo.InvariantCulture)
     End Function
 
+    ' QuantityCodes-Enum aus String parsen (inkl. Aliasse)
+    Private Function ToQuantityCode(code As String) As QuantityCodes
+        If String.IsNullOrWhiteSpace(code) Then Return QuantityCodes.C62
+
+        ' Normalisieren (Leerzeichen/Trennzeichen raus, Großschreibung)
+        Dim c As String = code.Trim().ToUpperInvariant() _
+                          .Replace(" ", "") _
+                          .Replace("-", "") _
+                          .Replace(".", "") _
+                          .Replace("/", "")
+
+        ' Häufige Aliasse/Schreibweisen
+        Select Case c
+            Case "L", "LT", "LTR", "LITER" : Return QuantityCodes.LTR
+            Case "H", "HR", "HUR" : Return QuantityCodes.HUR
+            Case "KG", "KGM" : Return QuantityCodes.KGM
+            Case "KWH", "KW_H" : Return QuantityCodes.KWH
+            Case "PC", "PCS", "PCE", "STK", "ST", "STUECK", "STÜCK"
+                Return QuantityCodes.C62
+        End Select
+
+        ' Nur Namen zulassen (nicht numerische Strings):
+        ' Ist der (normalisierte) Name in der Enum definiert?
+        If [Enum].IsDefined(GetType(QuantityCodes), c) Then
+            ' Sicheres Parse (ohne Try/Catch und ohne numerische Interpretation)
+            Return DirectCast([Enum].Parse(GetType(QuantityCodes), c, ignoreCase:=True), QuantityCodes)
+        End If
+
+        ' Fallback, wenn unbekannt
+        Return QuantityCodes.C62
+    End Function
+
+    ' Stream in Byte-Array konvertieren
     Private Function StreamToBytes(s As Stream) As Byte()
         If TypeOf s Is MemoryStream Then
             Return DirectCast(s, MemoryStream).ToArray()
@@ -540,722 +623,6 @@ Public Class XRechnungExporter
         If s.CanSeek Then s.Position = 0
         s.CopyTo(ms)
         Return ms.ToArray()
-    End Function
-
-    ' --- alter Versionen / können später gelöscht werden! ---
-
-    Public Function CreateBillXml_V2(xmlStream As Stream,
-                              billType As RechnungsArt,
-                              rechnungsNummer As Integer,
-                              Optional storeXmlAndUpdate As Boolean = False) As Boolean
-
-        _logger.Debug($"Entering {NameOf(CreateBillXml)}({xmlStream.GetType().Name}, {billType}, {rechnungsNummer}, storeXmlAndUpdate={storeXmlAndUpdate})")
-        IsSuccess = False
-
-        Try
-            ' Daten aus der Datenbank holen
-            Dim sqls = GetSqlStatements(billType, New List(Of Integer) From {rechnungsNummer})
-            Dim items = GetItemsFromQuery(GetSqlStatementForBill(billType, New List(Of Integer) From {rechnungsNummer})).FirstOrDefault
-            If items Is Nothing Then
-                _logger.Warn($"No data found for Bill {billType}-{rechnungsNummer}")
-                Return False
-            End If
-            Dim vatData = GetItemsFromQuery(GetSqlStatementForVat(billType, New List(Of Integer) From {rechnungsNummer}))
-            Dim sellerData = GetSellerParameter(billType)
-            Dim additionalSellerData = GetAdditionalSellerParameter(billType)
-            Dim buyerData = GetBuyerData(GetDataFromColumn(items, "KundenNr"))
-
-            ' Validierung des Rechnungsempfängers
-            If ValidateBuyerData(buyerData) = False Then
-                _logger.Warn($"Validation for Buyer failed - Matchcode: " & buyerData("Matchcode"))
-                Return False
-            End If
-
-            ' Neues InvoiceDescriptor-Objekt erstellen
-            Dim xRechnung = New InvoiceDescriptor()
-            Dim billTypeText = String.Empty
-            Dim orderNo = String.Empty
-            Dim formattedInvoiceNumber = Sale.Invoicing.FormatInvoiceNumber(_dataConnection, billTypeText, rechnungsNummer)
-            Dim referenceColumn = ""
-            Select Case billType
-                Case RechnungsArt.Werkstatt
-                    referenceColumn = "WABez"
-                    billTypeText = "WA"
-                    If Integer.Parse(items("WAID")) > 0 Then
-                        orderNo = "Werkstattauftrag: " & items("WAID").ToString
-                    Else
-                        orderNo = formattedInvoiceNumber
-                    End If
-                Case RechnungsArt.Tanken
-                    referenceColumn = "Anmerkungen"
-                    billTypeText = "TA"
-                    orderNo = formattedInvoiceNumber
-                Case RechnungsArt.Manuell
-                    referenceColumn = "Anmerkungen"
-                    billTypeText = "MR"
-                    orderNo = formattedInvoiceNumber
-            End Select
-
-            ' Rechnung Kopfdaten befüllen 
-            _logger.Debug("Filling invoice header data")
-            xRechnung.InvoiceNo = formattedInvoiceNumber
-            xRechnung.InvoiceDate = Date.Parse(GetDataFromColumn(items, "Rechnungsdatum"))
-            xRechnung.Currency = CurrencyCodes.EUR
-            xRechnung.OrderNo = orderNo
-            xRechnung.ActualDeliveryDate = Date.Parse(GetDataFromColumn(items, "Lieferdatum"))
-
-            ' Verkäuferdaten
-            _logger.Debug("Filling seller data")
-            xRechnung.SetSeller(
-            name:=GetDataFromColumn(sellerData, "Firma"),
-            postcode:=GetDataFromColumn(sellerData, "PLZ"),
-            city:=GetDataFromColumn(sellerData, "Ort"),
-            street:=GetDataFromColumn(sellerData, "Straße"),
-            country:=CountryCodes.DE,
-            id:=buyerData("LieferantenNr"))
-            xRechnung.AddSellerTaxRegistration(GetDataFromColumn(sellerData, "Steuernummer"), TaxRegistrationSchemeID.VA)
-            xRechnung.SetSellerElectronicAddress(
-            address:=GetDataFromColumn(additionalSellerData, "Modul1"),
-            electronicAddressSchemeID:=ElectronicAddressSchemeIdentifiers.EM)
-
-            ' Rechnungsempfängerdaten
-            _logger.Debug("Filling buyer data")
-            xRechnung.SetBuyer(
-            name:=GetDataFromColumn(items, "Firma"),
-            postcode:=GetDataFromColumn(items, "Postleitzahl"),
-            city:=GetDataFromColumn(items, "Ort"),
-            street:=GetDataFromColumn(items, "Rechnungsadresse"),
-            country:=CType([Enum].Parse(GetType(CountryCodes), buyerData("LandISO")), CountryCodes),
-            id:=GetDataFromColumn(items, "KundenNr"),
-            countrySubdivisonName:=GetDataFromColumn(items, "FirmaOderAbteilung"))
-            xRechnung.AddBuyerTaxRegistration(
-            no:=GetDataFromColumn(items, "UStIdNr"),
-            schemeID:=TaxRegistrationSchemeID.VA)
-            xRechnung.SetBuyerElectronicAddress(
-            address:=buyerData("EmailRechnung"),
-            electronicAddressSchemeID:=ElectronicAddressSchemeIdentifiers.EM)
-            xRechnung.PaymentReference = formattedInvoiceNumber
-
-            ' Zahlungsbedingungen netto
-            _logger.Debug("Filling payment terms")
-            Dim dueDateNetto = ""
-            Dim daysToDueDate = 0
-            Try
-                Dim billDate = Date.Parse(GetDataFromColumn(items, "Rechnungsdatum"))
-                daysToDueDate = Integer.Parse(GetDataFromColumn(items, "NettoTage"))
-                dueDateNetto = billDate.AddDays(daysToDueDate)
-            Catch ex As Exception
-                dueDateNetto = GetDataFromColumn(items, "Rechnungsdatum")
-            End Try
-            xRechnung.AddTradePaymentTerms(
-            description:=$"Zahlbar innerhalb {GetDataFromColumn(items, "NettoTage")} Tagen netto bis {dueDateNetto:dd.MM.yyyy}",
-            dueDate:=dueDateNetto)
-
-            ' Zahlungsbedingungen Skonto
-            _logger.Debug("Filling payment terms for Skonto")
-            Dim dueDateSkonto = ""
-            Dim skontoDays = 0
-            Dim skontoPercent = 0D
-            Try
-                Dim billDate = Date.Parse(GetDataFromColumn(items, "Rechnungsdatum"))
-                skontoDays = Integer.Parse(GetDataFromColumn(items, "SkontoTage"))
-                skontoPercent = Decimal.Parse(GetDataFromColumn(items, "SkontoProzent"))
-                dueDateSkonto = billDate.AddDays(skontoDays)
-            Catch ex As Exception
-                dueDateSkonto = GetDataFromColumn(items, "Rechnungsdatum")
-            End Try
-            If skontoDays > 0 AndAlso skontoPercent > 0D Then
-                xRechnung.AddTradePaymentTerms(
-                description:=$"{skontoPercent:0.##}% Skonto innerhalb {skontoDays} Tagen bis {dueDateSkonto:dd.MM.yyyy}",
-                dueDate:=dueDateSkonto,
-                paymentTermsType:=PaymentTermsType.Skonto,
-                dueDays:=skontoDays,
-                percentage:=skontoPercent)
-            End If
-
-            ' Zahlungsinformationen
-            _logger.Debug("Filling payment information")
-            xRechnung.SetPaymentMeans(PaymentMeansTypeCodes.CreditTransfer)
-            xRechnung.AddCreditorFinancialAccount(
-            iban:=GetDataFromColumn(additionalSellerData, "Modul2"),
-            bic:=GetDataFromColumn(additionalSellerData, "Modul3"),
-            bankName:=GetDataFromColumn(additionalSellerData, "Modul4"))
-
-            ' ===== Aggregations-Helper für Steuer/Summen =====
-            Dim sumNetLines As Decimal = 0D
-            Dim taxGroups As New Dictionary(Of String, (Basis As Decimal, Percent As Decimal, Category As TaxCategoryCodes))(StringComparer.OrdinalIgnoreCase)
-
-            'add line items
-            _logger.Debug("Filling line items")
-            For Each query In sqls
-                Dim rows = GetItemsFromQuery(query)
-                If Not rows.Any() Then Continue For
-
-                For Each lineItemData In rows
-                    If Not lineItemData.Any() Then Continue For
-
-                    Select Case billType
-                    ' Werkstattrechnung
-                        Case RechnungsArt.Werkstatt
-
-                            ' Stamm-Artikel
-                            If Not String.IsNullOrWhiteSpace(lineItemData("ArtikelNr")) Then
-                                _logger.Debug($"Adding line item for Artikel: {lineItemData("ArtikelNr")}")
-                                ' Position für Artikel hinzufügen
-                                Dim cat As TaxCategoryCodes = ParseTaxCategoryCode(lineItemData("ERechnung_BT151"))
-                                Dim vatPct As Decimal = Decimal.Parse(lineItemData("MwStProzent"))
-                                Dim netLine As Decimal = Decimal.Parse(lineItemData("Gesamtpreis"))
-
-                                Dim lineItem = xRechnung.AddTradeLineItem(name:=lineItemData("ArtikelNr"),
-                                                                        description:=lineItemData("Artikelbez"),
-                                                                        unitCode:=GetMeasurementCode(lineItemData("ArtikelMEH")),
-                                                                        unitQuantity:=1D,
-                                                                        billedQuantity:=Decimal.Parse(lineItemData("Menge")),
-                                                                        netUnitPrice:=Decimal.Parse(lineItemData("EPreis")),
-                                                                        lineTotalAmount:=netLine,
-                                                                        taxType:=TaxTypes.VAT,
-                                                                        categoryCode:=cat,
-                                                                        taxPercent:=vatPct)
-
-                                ' BT-120/BT-121 aus Daten übernehmen (oder Default ermitteln)
-                                Dim exReasonText As String = If(lineItemData.ContainsKey("ERechnung_BT120"), (lineItemData("ERechnung_BT120") & "").Trim(), "")
-                                Dim exReasonCode As String = If(lineItemData.ContainsKey("ERechnung_BT121"), (lineItemData("ERechnung_BT121") & "").Trim(), "")
-
-                                If String.IsNullOrWhiteSpace(exReasonText) OrElse String.IsNullOrWhiteSpace(exReasonCode) Then
-                                    ' Falls Pflicht-Kategorien ohne Angaben: sinnvollen Default setzen
-                                    ' K = Intra-Community supply, AE = Reverse charge, G = Export outside EU, O = Not subject to VAT
-                                    Select Case cat
-                                        Case TaxCategoryCodes.K
-                                            If String.IsNullOrWhiteSpace(exReasonText) Then exReasonText = "Intra-Community supply"
-                                            If String.IsNullOrWhiteSpace(exReasonCode) Then exReasonCode = "VATEX-EU-IC"
-                                        Case TaxCategoryCodes.AE
-                                            If String.IsNullOrWhiteSpace(exReasonText) Then exReasonText = "Reverse charge"
-                                            If String.IsNullOrWhiteSpace(exReasonCode) Then exReasonCode = "VATEX-EU-AE"
-                                        Case TaxCategoryCodes.G
-                                            If String.IsNullOrWhiteSpace(exReasonText) Then exReasonText = "Export outside the EU"
-                                            If String.IsNullOrWhiteSpace(exReasonCode) Then exReasonCode = "VATEX-EU-G"
-                                        Case TaxCategoryCodes.O
-                                            If String.IsNullOrWhiteSpace(exReasonText) Then exReasonText = "Not subject to VAT"
-                                            If String.IsNullOrWhiteSpace(exReasonCode) Then exReasonCode = "VATEX-EU-O"
-                                    End Select
-                                End If
-
-                                ' Am Zeilenobjekt hinterlegen (wird in aktuellen Lib-Versionen unterstützt)
-                                lineItem.TaxExemptionReason = If(String.IsNullOrWhiteSpace(exReasonText), Nothing, exReasonText)
-                                lineItem.TaxExemptionReasonCode = If(String.IsNullOrWhiteSpace(exReasonCode), Nothing, exReasonCode)
-
-                                ' Positionsrabatt als Allowance ausweisen
-                                Dim qty As Decimal = Decimal.Parse(lineItemData("Menge"))
-                                ' Nettopreis pro Einheit, unrabattiert
-                                Dim unitPrice As Decimal = Decimal.Parse(lineItemData("EPreis"))
-                                ' Gesamtpreis bereits rabattiert
-                                Dim lineTotalNet As Decimal = Decimal.Parse(lineItemData("Gesamtpreis"))
-                                Dim baseAmount As Decimal = Math.Round(unitPrice * qty, 2, MidpointRounding.AwayFromZero)
-                                Dim allowanceAmount As Decimal = Math.Max(0D, baseAmount - lineTotalNet)
-
-                                If allowanceAmount > 0D Then
-                                    ' Wichtig: Rabatt ist Allowance (Ermäßigung), KEIN Charge!
-                                    ' Grund angeben (BT-139) – z.B. „Positionsrabatt 5 %“
-                                    Dim rabattProzentText As String = ""
-                                    If lineItemData.ContainsKey("Rabatt") Then
-                                        Dim rp As Decimal
-                                        If Decimal.TryParse(lineItemData("Rabatt"), rp) AndAlso rp > 0D Then
-                                            rabattProzentText = $" {rp:0.##}%"
-                                        End If
-                                    End If
-
-                                    lineItem.AddSpecifiedTradeAllowance(
-                                        currency:=CurrencyCodes.EUR,
-                                        basisAmount:=baseAmount,
-                                        actualAmount:=allowanceAmount,
-                                        chargePercentage:=If(baseAmount > 0D, allowanceAmount / baseAmount * 100D, CType(Nothing, Decimal?)),
-                                        reason:=$"Positionsrabatt{rabattProzentText}"
-                                    )
-                                End If
-
-                                ' Aggregation
-                                sumNetLines += netLine
-                                Dim key = $"{cat}-{vatPct:0.####}"
-                                If taxGroups.ContainsKey(key) Then
-                                    Dim tg = taxGroups(key)
-                                    tg.Basis += netLine
-                                    taxGroups(key) = tg
-                                Else
-                                    taxGroups(key) = (netLine, vatPct, cat)
-                                End If
-                            End If
-
-                            ' Personal
-                            If Not String.IsNullOrWhiteSpace(lineItemData("FahrerNr")) Then
-                                _logger.Debug($"Adding line item for Personal: {lineItemData("FahrerNr")}")
-                                Dim cat As TaxCategoryCodes = ParseTaxCategoryCode(lineItemData("ERechnung_BT151"))
-                                Dim vatPct As Decimal = Decimal.Parse(lineItemData("MwStProzent"))
-                                Dim netLine As Decimal = Decimal.Parse(lineItemData("Gesamtpreis"))
-
-                                Dim lineItem = xRechnung.AddTradeLineItem(name:=lineItemData("FahrerNr"),
-                                                                        description:=lineItemData("FahrerName"),
-                                                                        unitCode:=GetMeasurementCode(lineItemData("PersonalMEH")),
-                                                                        unitQuantity:=1D,
-                                                                        billedQuantity:=Decimal.Parse(lineItemData("Menge")),
-                                                                        netUnitPrice:=Decimal.Parse(lineItemData("EPreis")),
-                                                                        lineTotalAmount:=netLine,
-                                                                        taxType:=TaxTypes.VAT,
-                                                                        categoryCode:=cat,
-                                                                        taxPercent:=vatPct)
-
-                                ' Aggregation
-                                sumNetLines += netLine
-                                Dim key = $"{cat}-{vatPct:0.####}"
-                                If taxGroups.ContainsKey(key) Then
-                                    Dim tg = taxGroups(key)
-                                    tg.Basis += netLine
-                                    taxGroups(key) = tg
-                                Else
-                                    taxGroups(key) = (netLine, vatPct, cat)
-                                End If
-                            End If
-
-                            ' Manueller Artikel
-                            If Not String.IsNullOrWhiteSpace(lineItemData("freieArtikelNr")) Then
-                                _logger.Debug($"Adding line item for manueller Artikel: {lineItemData("freieArtikelNr")}")
-                                Dim cat As TaxCategoryCodes = ParseTaxCategoryCode(lineItemData("ERechnung_BT151"))
-                                Dim vatPct As Decimal = Decimal.Parse(lineItemData("MwStProzent"))
-                                Dim netLine As Decimal = Decimal.Parse(lineItemData("Gesamtpreis"))
-
-                                Dim lineItem = xRechnung.AddTradeLineItem(name:=lineItemData("freieArtikelNr"),
-                                                                        description:=lineItemData("freieArtikelbez"),
-                                                                        unitCode:=GetMeasurementCode(lineItemData("freieArtikeleinheit")),
-                                                                        unitQuantity:=1D,
-                                                                        billedQuantity:=Decimal.Parse(lineItemData("Menge")),
-                                                                        netUnitPrice:=Decimal.Parse(lineItemData("EPreis")),
-                                                                        lineTotalAmount:=netLine,
-                                                                        taxType:=TaxTypes.VAT,
-                                                                        categoryCode:=cat,
-                                                                        taxPercent:=vatPct)
-
-                                ' Aggregation
-                                sumNetLines += netLine
-                                Dim key = $"{cat}-{vatPct:0.####}"
-                                If taxGroups.ContainsKey(key) Then
-                                    Dim tg = taxGroups(key)
-                                    tg.Basis += netLine
-                                    taxGroups(key) = tg
-                                Else
-                                    taxGroups(key) = (netLine, vatPct, cat)
-                                End If
-                            End If
-                    End Select
-
-                Next
-            Next
-
-            ' ================================
-            ' Steueraufschlüsselung, gruppiert nach TaxCategoryCode und TaxPercent
-            ' ================================
-            Dim totalVAT As Decimal = 0D
-            For Each tg In taxGroups.Values
-                Dim basis As Decimal = Math.Round(tg.Basis, 2, MidpointRounding.AwayFromZero)
-                Dim taxAmt As Decimal = Math.Round(basis * tg.Percent / 100D, 2, MidpointRounding.AwayFromZero)
-
-                ' Für 0%-Gruppen (z. B. Kategorie Z) bleibt taxAmt = 0
-                xRechnung.AddApplicableTradeTax(
-                basisAmount:=basis,
-                percent:=tg.Percent,
-                taxAmount:=taxAmt,
-                typeCode:=TaxTypes.VAT,
-                categoryCode:=tg.Category
-            )
-
-                totalVAT += taxAmt
-            Next
-
-            ' ================================
-            ' Summen berechnen und setzen
-            ' ================================
-            Dim sumNetRounded As Decimal = Math.Round(sumNetLines, 2, MidpointRounding.AwayFromZero)
-            Dim grandTotal As Decimal = Math.Round(sumNetRounded + totalVAT, 2, MidpointRounding.AwayFromZero)
-
-            xRechnung.SetTotals(
-            lineTotalAmount:=sumNetRounded,   ' Σ BT-131 (Positionsnetto)
-            allowanceTotalAmount:=0D,         ' Belegebene: keine Rabatte hier gesetzt
-            taxBasisAmount:=sumNetRounded,    ' BT-116
-            taxTotalAmount:=totalVAT,         ' BT-117
-            grandTotalAmount:=grandTotal,     ' BT-112
-            totalPrepaidAmount:=0D,
-            duePayableAmount:=grandTotal,
-            roundingAmount:=0D
-        )
-
-            ' Rechnung als XML speichern
-            xRechnung.Save(xmlStream, ZUGFeRDVersion.Version23, Profile.XRechnung, ZUGFeRDFormats.UBL)
-
-            ' Falls gewünscht, XML direkt in DB speichern und Status aktualisieren
-            If storeXmlAndUpdate Then
-
-                ' Stream in Byte-Array konvertieren
-                Dim xmlBytes As Byte()
-                If TypeOf xmlStream Is MemoryStream Then
-                    xmlBytes = DirectCast(xmlStream, MemoryStream).ToArray()
-                Else
-                    ' Falls anderer Stream-Typ, in MemoryStream kopieren
-                    Dim ms As New MemoryStream()
-                    xmlStream.Position = 0
-                    xmlStream.CopyTo(ms)
-                    xmlBytes = ms.ToArray()
-                End If
-
-                ' Format und Profil wie beim Save-Aufruf
-                Dim format As String = ZUGFeRDFormats.UBL.ToString
-                Dim profil As String = Profile.XRechnung.ToString
-
-                ' Validierung vor dem Speichern
-                Dim tempFile As String = Path.GetTempFileName()
-                Try
-                    File.WriteAllBytes(tempFile, xmlBytes)
-                    Dim isValid As Boolean = Validate(tempFile, silent:=True)
-                    File.Delete(tempFile)
-                    If Not isValid Then
-                        _logger.Warn("XML-Validierung fehlgeschlagen, Speicherung wird abgebrochen.")
-                        Return False
-                    End If
-                Catch ex As Exception
-                    _logger.Error("Fehler bei der temporären XML-Validierung: " & ex.Message)
-                    If File.Exists(tempFile) Then
-                        Try
-                            File.Delete(tempFile)
-                        Catch
-                        End Try
-                    End If
-                    Return False
-                End Try
-
-                ' XML speichern und Status aktualisieren
-                StoreXmlAndUpdateStatus(xmlBytes, rechnungsNummer, format, profil)
-
-            End If
-
-            IsSuccess = True
-            Return True
-
-        Catch ex As Exception
-            _logger.Error($"Exception during {NameOf(CreateBillXml)}", ex)
-            MessageBox.Show("Speichern fehlgschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
-            Return False
-        Finally
-            _logger.Debug($"Leaving {NameOf(CreateBillXml)}")
-        End Try
-
-    End Function
-
-    Public Function CreateBillXml_V1(xmlStream As Stream, billType As RechnungsArt, rechnungsNummer As Integer, Optional storeXmlAndUpdate As Boolean = False) As Boolean
-        _logger.Debug($"Entering {NameOf(CreateBillXml)}({xmlStream.GetType().Name}, {billType}, {rechnungsNummer}, storeXmlAndUpdate={storeXmlAndUpdate})")
-        IsSuccess = False
-        Try
-            Dim sqls = GetSqlStatements(billType, New List(Of Integer) From {rechnungsNummer})
-            Dim items = GetItemsFromQuery(GetSqlStatementForBill(billType, New List(Of Integer) From {rechnungsNummer})).FirstOrDefault
-            If items Is Nothing Then
-                _logger.Warn($"No data found for Bill {billType}-{rechnungsNummer}")
-                Return False
-            End If
-
-            Dim vatData = GetItemsFromQuery(GetSqlStatementForVat(billType, New List(Of Integer) From {rechnungsNummer}))
-            Dim sellerData = GetSellerParameter(billType)
-            Dim additionalSellerData = GetAdditionalSellerParameter(billType)
-            Dim buyerData = GetBuyerData(GetDataFromColumn(items, "KundenNr"))
-            Dim xRechnung = New InvoiceDescriptor()
-
-            Dim billTypeText = String.Empty
-            Dim referenceColumn = ""
-            Select Case billType
-                Case RechnungsArt.Werkstatt
-                    referenceColumn = "WABez"
-                    billTypeText = "WA"
-                Case RechnungsArt.Tanken
-                    referenceColumn = "Anmerkungen"
-                    billTypeText = "TA"
-                Case RechnungsArt.Manuell
-                    referenceColumn = "Anmerkungen"
-                    billTypeText = "MR"
-            End Select
-
-            Dim formattedInvoiceNumber = Sale.Invoicing.FormatInvoiceNumber(_dataConnection, billTypeText, rechnungsNummer)
-
-            ' Validierung der Daten
-            If ValidateBuyerData(buyerData) = False Then
-                Return False
-            End If
-
-            xRechnung.InvoiceNo = formattedInvoiceNumber
-            xRechnung.Currency = CType([Enum].Parse(GetType(CurrencyCodes), GetDataFromColumn(sellerData, "Währung")), CurrencyCodes)
-            Dim countryCode = CType([Enum].Parse(GetType(CountryCodes), buyerData("LandISO")), CountryCodes)
-            xRechnung.SetBuyer(GetDataFromColumn(items, "Firma"), GetDataFromColumn(items, "Postleitzahl"), GetDataFromColumn(items, "Ort"), GetDataFromColumn(items, "Rechnungsadresse"), countryCode, GetDataFromColumn(items, "KundenNr"))
-            xRechnung.AddBuyerTaxRegistration(GetDataFromColumn(items, "UStIdNr"), TaxRegistrationSchemeID.VA)
-            xRechnung.Buyer.CountrySubdivisionName = GetDataFromColumn(items, "FirmaOderAbteilung")
-            xRechnung.Buyer.ID.ID = GetDataFromColumn(items, "KundenNr")
-            xRechnung.Buyer.ID.SchemeID = GlobalIDSchemeIdentifiers.CompanyNumber
-            Dim leitwegId = buyerData("LeitwegeID")
-            If String.IsNullOrWhiteSpace(leitwegId) Then
-                xRechnung.SetBuyerElectronicAddress(buyerData("EmailRechnung"), ElectronicAddressSchemeIdentifiers.EM)
-            Else
-                xRechnung.SetBuyerElectronicAddress(buyerData("LeitwegeID"), ElectronicAddressSchemeIdentifiers.LeitwegID)
-            End If
-
-            xRechnung.SetBuyerContact(GetDataFromColumn(items, "Kontakt"), GetDataFromColumn(items, "Firma"), GetDataFromColumn(items, "EmailAdresse"), GetDataFromColumn(items, "Telefonnummer"))
-
-            xRechnung.PaymentReference = formattedInvoiceNumber 'items(referenceColumn)
-            xRechnung.InvoiceDate = Date.Parse(GetDataFromColumn(items, "Rechnungsdatum"))
-
-            Dim dueDate = ""
-            Dim daysToDueDate = 0
-            Try
-                Dim billDate = Date.Parse(GetDataFromColumn(items, "Rechnungsdatum"))
-                daysToDueDate = Integer.Parse(GetDataFromColumn(items, "NettoTage"))
-                dueDate = billDate.AddDays(daysToDueDate)
-            Catch ex As Exception
-                dueDate = GetDataFromColumn(items, "Rechnungsdatum")
-            End Try
-
-            Dim skontoDays = 0
-            Decimal.TryParse(GetDataFromColumn(items, "SkontoTage"), (skontoDays))
-            Dim skontoRate = 0
-            Decimal.TryParse(GetDataFromColumn(items, "SkontoProzent"), (skontoRate))
-
-            If skontoDays > 0 AndAlso skontoRate > 0 Then
-                xRechnung.AddTradePaymentTerms($"#SKONTO#TAGE={skontoDays}#PROZENT={skontoRate:F2}#", dueDate)
-            Else
-                xRechnung.AddTradePaymentTerms($"Zahlung fällig in {daysToDueDate} Tagen")
-            End If
-
-            xRechnung.SetPaymentMeans(PaymentMeansTypeCodes.CreditTransfer)
-            xRechnung.AddCreditorFinancialAccount(GetDataFromColumn(additionalSellerData, "Modul2"), GetDataFromColumn(additionalSellerData, "Modul3"), Nothing, Nothing, GetDataFromColumn(additionalSellerData, "Modul4"), GetDataFromColumn(additionalSellerData, "Modul4"))
-
-            xRechnung.SetSeller(GetDataFromColumn(sellerData, "Firma"), GetDataFromColumn(sellerData, "PLZ"), GetDataFromColumn(sellerData, "Ort"), GetDataFromColumn(sellerData, "Straße"), CountryCodes.DE, buyerData("LieferantenNr"))
-            xRechnung.Seller.ID.ID = buyerData("LieferantenNr")
-            xRechnung.Seller.ID.SchemeID = GlobalIDSchemeIdentifiers.CompanyNumber
-            xRechnung.AddSellerTaxRegistration(GetDataFromColumn(sellerData, "Steuernummer"), TaxRegistrationSchemeID.FC)
-            xRechnung.SetSellerContact(GetDataFromColumn(sellerData, "Name"), GetDataFromColumn(sellerData, "Firma"), GetDataFromColumn(additionalSellerData, "Modul1"), GetDataFromColumn(sellerData, "Telefon"), GetDataFromColumn(sellerData, "Telefax"))
-            xRechnung.SetSellerElectronicAddress(GetDataFromColumn(additionalSellerData, "Modul1"), ElectronicAddressSchemeIdentifiers.EM)
-
-            'Dim poReference As String = String.Empty
-            'items.TryGetValue("WAID", poReference)
-            'If String.IsNullOrWhiteSpace(poReference) Then items.TryGetValue("KostenstelleKunde", poReference)
-            xRechnung.ReferenceOrderNo = formattedInvoiceNumber
-            xRechnung.OrderNo = formattedInvoiceNumber
-            Dim deliveryDate = xRechnung.InvoiceDate
-            Date.TryParse(GetDataFromColumn(items, "Lieferdatum"), CDate(deliveryDate))
-            xRechnung.ActualDeliveryDate = deliveryDate
-
-            'add line items
-            For Each query In sqls
-                Dim rows = GetItemsFromQuery(query)
-                If Not rows.Any() Then Continue For
-
-                For Each lineItemData In rows
-                    If Not lineItemData.Any() Then Continue For
-
-                    Select Case billType
-                        Case RechnungsArt.Werkstatt
-                            ' Stamm-Artikel
-                            If Not String.IsNullOrWhiteSpace(lineItemData("ArtikelNr")) Then
-                                Dim lineItem = xRechnung.AddTradeLineItem(lineItemData("ArtikelNr"),
-                                                                            Decimal.Parse(lineItemData("EPreis")),
-                                                                            GetMeasurementCode(lineItemData("ArtikelMEH")),
-                                                                            lineItemData("Artikelbez"),
-                                                                            Nothing,
-                                                                            Nothing,
-                                                                            Decimal.Parse(lineItemData("Menge")),
-                                                                            Decimal.Parse(lineItemData("EPreis")) * Decimal.Parse(lineItemData("Menge")),
-                                                                            TaxTypes.VAT,
-                                                                            ParseTaxCategoryCode(lineItemData("ERechnung_BT151")),
-                                                                            Decimal.Parse(lineItemData("MwStProzent")))
-                            End If
-                            ' Personal
-                            If Not String.IsNullOrWhiteSpace(lineItemData("FahrerNr")) Then
-                                Dim lineItem = xRechnung.AddTradeLineItem(lineItemData("FahrerNr"),
-                                                                            Decimal.Parse(lineItemData("EPreis")),
-                                                                            GetMeasurementCode(lineItemData("PersonalMEH")),
-                                                                            lineItemData("FahrerName"),
-                                                                            Nothing,
-                                                                            Nothing,
-                                                                            Decimal.Parse(lineItemData("Menge")),
-                                                                            Decimal.Parse(lineItemData("EPreis")) * Decimal.Parse(lineItemData("Menge")),
-                                                                            TaxTypes.VAT,
-                                                                            ParseTaxCategoryCode(lineItemData("ERechnung_BT151")),
-                                                                            Decimal.Parse(lineItemData("MwStProzent")))
-                            End If
-                            ' Manueller Artikel
-                            If Not String.IsNullOrWhiteSpace(lineItemData("freieArtikelNr")) Then
-                                Dim lineItem = xRechnung.AddTradeLineItem(lineItemData("freieArtikelNr"),
-                                                                            Decimal.Parse(lineItemData("EPreis")),
-                                                                            GetMeasurementCode(lineItemData("freieArtikelEinheit")),
-                                                                            lineItemData("freieArtikelbez"),
-                                                                            Nothing,
-                                                                            Nothing,
-                                                                            Decimal.Parse(lineItemData("Menge")),
-                                                                            Decimal.Parse(lineItemData("EPreis")) * Decimal.Parse(lineItemData("Menge")),
-                                                                            TaxTypes.VAT,
-                                                                            ParseTaxCategoryCode(lineItemData("ERechnung_BT151")),
-                                                                            Decimal.Parse(lineItemData("MwStProzent")))
-                            End If
-                    End Select
-
-                    'If billType <> RechnungsArt.Tanken Then
-                    '    Dim itemName = lineItemData("Artikelbez")
-                    '    If String.IsNullOrWhiteSpace(itemName) Then itemName = lineItemData("FahrerName")
-                    '    If String.IsNullOrWhiteSpace(itemName) Then itemName = lineItemData("Bemerkung")
-                    '    Dim itemUnit = lineItemData("ArtikelMEH")
-                    '    If String.IsNullOrWhiteSpace(itemUnit) Then itemUnit = lineItemData("PersonalMEH")
-                    '    Dim lineItem = xRechnung.AddTradeLineItem(itemName, Decimal.Parse(lineItemData("EPreis")), GetMeasurementCode(itemUnit),
-                    '                                              lineItemData("Bezeichnung")
-                    '        )
-                    '    lineItem.SellerAssignedID = lineItemData("ArtikelNr")
-                    '    lineItem.BilledQuantity = Decimal.Parse(lineItemData("Menge"))
-                    '    lineItem.UnitQuantity = 1
-
-                    '    lineItem.LineTotalAmount = Decimal.Parse(lineItemData("Gesamtpreis"))
-
-                    '    If Not String.IsNullOrWhiteSpace(lineItemData("Datum")) Then
-                    '        lineItem.BillingPeriodStart = DateTime.Parse(lineItemData("Datum"))
-                    '        lineItem.BillingPeriodEnd = DateTime.Parse(lineItemData("Datum"))
-                    '    End If
-
-                    '    Dim baseAmount = Decimal.Parse(lineItemData("EPreis"))
-                    '    If Not String.IsNullOrWhiteSpace(lineItemData("Rabatt")) Then
-                    '        Dim percentage = Decimal.Parse(lineItemData("Rabatt"))
-                    '        Dim discount = lineItem.BilledQuantity * baseAmount * percentage
-
-                    '        Dim actualAmount = baseAmount - (discount / lineItem.BilledQuantity)
-                    '        lineItem.GrossUnitPrice = baseAmount
-                    '        lineItem.AddTradeAllowanceCharge(True, xRechnung.Currency, Nothing, discount, "Discount")
-                    '        'Else
-                    '        '    lineItem.GrossUnitPrice = baseAmount
-                    '        '   lineItem.NetUnitPrice = baseAmount
-                    '    End If
-
-                    '    lineItem.TaxPercent = Decimal.Parse(lineItemData("MwStProzent"))
-                    '    lineItem.TaxCategoryCode = ParseTaxCategoryCode(lineItemData("ERechnung_BT151"))
-                    '    lineItem.TaxType = TaxTypes.VAT
-                    '    lineItem.Description = lineItemData("ArtikelbezLang")
-                    '    If String.IsNullOrWhiteSpace(lineItem.Description) Then lineItem.Description = lineItemData("FahrerName")
-                    '    If String.IsNullOrWhiteSpace(lineItem.Description) Then lineItem.Description = lineItemData("Bemerkung")
-                    'Else
-                    '    Dim lineItem = xRechnung.AddTradeLineItem(lineItemData("Bezeichnung"))
-                    '    lineItem.SellerAssignedID = lineItemData("SpritID")
-                    '    lineItem.BilledQuantity = Decimal.Parse(lineItemData("Menge"))
-                    '    lineItem.UnitQuantity = 1
-                    '    lineItem.UnitCode = GetMeasurementCode(lineItemData("Mengeneinheit"))
-                    '    lineItem.LineTotalAmount = Decimal.Parse(lineItemData("Gesamtpreis"))
-                    '    lineItem.BillingPeriodStart = DateTime.Parse(lineItemData("Tankdatum"))
-                    '    lineItem.BillingPeriodEnd = DateTime.Parse(lineItemData("Tankdatum"))
-                    '    Dim baseAmount = Decimal.Parse(lineItemData("EPreis"))
-                    '    If Not String.IsNullOrWhiteSpace(lineItemData("Rabatt")) Then
-                    '        Dim percentage = Decimal.Parse(lineItemData("Rabatt"))
-                    '        Dim discount = lineItem.BilledQuantity * baseAmount * percentage
-                    '        Dim actualAmount = lineItem.LineTotalAmount / lineItem.BilledQuantity
-                    '        lineItem.GrossUnitPrice = baseAmount
-                    '        lineItem.NetUnitPrice = actualAmount
-                    '        lineItem.AddTradeAllowanceCharge(True, xRechnung.Currency, Nothing, discount, "Discount")
-                    '    Else
-                    '        lineItem.GrossUnitPrice = baseAmount
-                    '        lineItem.NetUnitPrice = baseAmount
-                    '    End If
-                    '    lineItem.TaxCategoryCode = ParseTaxCategoryCode(lineItemData("ERechnung_BT151"))
-                    '    lineItem.TaxPercent = Decimal.Parse(lineItemData("MwStProzent"))
-                    '    lineItem.TaxType = TaxTypes.VAT
-                    '    lineItem.Description = lineItemData("Bezeichnung")
-                    'End If
-                Next
-            Next
-
-            Dim lineNetSum = Decimal.Parse(xRechnung.TradeLineItems.Sum(Function(item) item.LineTotalAmount))
-            Dim vatAmount As Decimal
-            Dim netSum As Decimal
-            items.TryGetValue("Mehrwertsteuer", vatAmount)
-            items.TryGetValue("Summe", netSum)
-
-            xRechnung.DuePayableAmount = vatAmount + netSum
-            xRechnung.TaxBasisAmount = netSum
-            xRechnung.TaxTotalAmount = vatAmount
-            xRechnung.LineTotalAmount = netSum
-            xRechnung.GrandTotalAmount = netSum + vatAmount
-
-            ' Gruppiere nach TaxCategoryCode und TaxPercent
-            Dim taxGroups = xRechnung.TradeLineItems.
-                GroupBy(Function(item) New With {Key .Category = item.TaxCategoryCode, Key .Percent = item.TaxPercent})
-
-            Dim taxEntries = taxGroups.Select(Function(g)
-                                                  Dim entry = New Tax()
-                                                  entry.CategoryCode = g.Key.Category
-                                                  entry.Percent = g.Key.Percent
-                                                  entry.BasisAmount = Decimal.Parse(g.Sum(Function(item) item.LineTotalAmount))
-                                                  Return entry
-                                              End Function)
-
-            xRechnung.Taxes.AddRange(taxEntries)
-
-            Dim currentCulture = Thread.CurrentThread.CurrentCulture
-            Dim currentUiCulture = Thread.CurrentThread.CurrentUICulture
-
-            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture
-
-            xRechnung.Save(xmlStream, ZUGFeRDVersion.Version23, Profile.XRechnung, ZUGFeRDFormats.UBL)
-
-            ' Falls gewünscht, XML direkt in DB speichern und Status aktualisieren
-            If storeXmlAndUpdate Then
-                ' Stream in Byte-Array konvertieren
-                Dim xmlBytes As Byte()
-                If TypeOf xmlStream Is MemoryStream Then
-                    xmlBytes = DirectCast(xmlStream, MemoryStream).ToArray()
-                Else
-                    ' Falls anderer Stream-Typ, in MemoryStream kopieren
-                    Dim ms As New MemoryStream()
-                    xmlStream.Position = 0
-                    xmlStream.CopyTo(ms)
-                    xmlBytes = ms.ToArray()
-                End If
-
-                ' Format und Profil wie beim Save-Aufruf
-                Dim format As String = ZUGFeRDFormats.UBL.ToString
-                Dim profil As String = Profile.XRechnung.ToString
-
-                ' Validierung vor dem Speichern
-                Dim tempFile As String = Path.GetTempFileName()
-                Try
-                    File.WriteAllBytes(tempFile, xmlBytes)
-                    Dim isValid As Boolean = Validate(tempFile, silent:=True)
-                    File.Delete(tempFile)
-                    If Not isValid Then
-                        _logger.Warn("XML-Validierung fehlgeschlagen, Speicherung wird abgebrochen.")
-                        Return False
-                    End If
-                Catch ex As Exception
-                    _logger.Error("Fehler bei der temporären XML-Validierung: " & ex.Message)
-                    If File.Exists(tempFile) Then
-                        Try
-                            File.Delete(tempFile)
-                        Catch
-                        End Try
-                    End If
-                    Return False
-                End Try
-
-                StoreXmlAndUpdateStatus(xmlBytes, rechnungsNummer, format, profil)
-            End If
-
-            Thread.CurrentThread.CurrentCulture = currentCulture
-            Thread.CurrentThread.CurrentUICulture = currentUiCulture
-
-            'MessageBox.Show("Rechnung wurde erfolgreich gespeichert.")
-            IsSuccess = True
-            Return True
-        Catch ex As Exception
-            _logger.Error($"Exception during {NameOf(CreateBillXml)}", ex)
-            MessageBox.Show("Speichern fehlgschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
-            Return False
-        Finally
-            _logger.Debug($"Leaving {NameOf(CreateBillXml)}")
-        End Try
     End Function
 
     Public Function ValidateBuyerData(buyerData As Dictionary(Of String, String)) As Boolean
@@ -1405,6 +772,7 @@ Public Class XRechnungExporter
         Return filePath
     End Function
 
+    ' --- Formatierten Belegnummer-String holen (z.B. "WA-000123") ---
     Public Function GetFormattedBillNumber(billNumber As Integer, billType As RechnungsArt)
         Return Sale.Invoicing.FormatInvoiceNumber(_dataConnection, GetBillTypeText(billType), billNumber)
     End Function
@@ -1439,11 +807,56 @@ Public Class XRechnungExporter
         files.ForEach(Sub(f) File.Delete(f))
     End Sub
 
-    Private Function GetMeasurementCode(type As String) As QuantityCodes
-        Return QuantityCodes.C62
-        ' TODO Mapping FLEET <-> ZUGFeRD
+    ' --- Mengeneinheit-Code + Umrechnungsfaktor aus DB holen & Menge umrechnen ---
+    Public Function GetMeasurementCode(type As String,
+                                   quantity As Decimal,
+                                   unitPrice As Decimal,
+                                   Optional roundQtyDecimals As Integer = 2,
+                                   Optional unitPriceDecimals As Integer = 2) As MeasurementCode
+        ' Fallbacks
+        Dim unitCodeStr As String = "C62"  ' DB liefert Strings, wir mappen gleich ins Enum
+        Dim factor As Decimal = 1D
+
+        Try
+            Dim sql As String =
+            "SELECT TOP 1 ERechnung_UnitCode, ERechnung_UnitConversion " &
+            "FROM dbo.Mengeneinheit " &
+            "WHERE MengeneinheitK = '" & SqlEsc(type) & "'"
+
+            Dim dt As DataTable = _dataConnection.FillDataTable(sql)
+
+            If dt IsNot Nothing AndAlso dt.Rows.Count > 0 Then
+                Dim r As DataRow = dt.Rows(0)
+                unitCodeStr = S(r("ERechnung_UnitCode"), "C62")
+                factor = D(r("ERechnung_UnitConversion"))
+                If factor = 0D Then factor = 1D
+            End If
+        Catch ex As Exception
+            _logger.Warn($"GetMeasurementCode: Fallback für type={type}: {ex.Message}")
+            unitCodeStr = "C62" : factor = 1D
+        End Try
+
+        ' Menge umrechnen
+        Dim qtyConv As Decimal = quantity * factor
+        If roundQtyDecimals = 2 Then
+            qtyConv = Round2(qtyConv)
+        Else
+            qtyConv = Math.Round(qtyConv, roundQtyDecimals, MidpointRounding.AwayFromZero)
+        End If
+
+        ' Einzelpreis gegenläufig umrechnen (Preis je neuer Einheit)
+        Dim priceConv As Decimal = If(factor = 0D, unitPrice, unitPrice / factor)
+        If unitPriceDecimals = 2 Then
+            priceConv = Round2(priceConv)
+        Else
+            priceConv = Math.Round(priceConv, unitPriceDecimals, MidpointRounding.AwayFromZero)
+        End If
+
+        Dim unitEnum As QuantityCodes = ToQuantityCode(unitCodeStr)
+        Return New MeasurementCode(unitEnum, qtyConv, priceConv, factor, unitPrice)
     End Function
 
+    ' --- Elemente aus SQL-Query holen ---
     Private Function GetItemsFromQuery(sql As String) As List(Of Dictionary(Of String, String))
         Dim table = _dataConnection.FillDataTable(sql)
         If table.Rows.Count = 0 Then Return New List(Of Dictionary(Of String, String))
@@ -1451,6 +864,7 @@ Public Class XRechnungExporter
             Function(row) table.Columns.OfType(Of Data.DataColumn).ToDictionary(Function(column) column.ColumnName.Replace(" ", ""), Function(column) row(column.ColumnName).ToString())).ToList
     End Function
 
+    ' --- Verkäuferdaten holen ---
     Private Function GetSellerParameter(rechnungsArt As RechnungsArt) As Dictionary(Of String, String)
         Dim sql = GetSellerParameterSql(rechnungsArt)
         Dim dataTable = _dataConnection.FillDataTable(sql)
@@ -1461,6 +875,7 @@ Public Class XRechnungExporter
         Return dataTable.Columns.OfType(Of Data.DataColumn).ToDictionary(Function(column) column.ColumnName, Function(column) dataTable.Rows.OfType(Of Data.DataRow)().First()(column.ColumnName).ToString)
     End Function
 
+    ' --- Zusätzliche Verkäuferdaten holen ---
     Private Function GetAdditionalSellerParameter(rechnungsArt As RechnungsArt) As Dictionary(Of String, String)
         Dim sql = GetAdditionalSellerParameterSql(rechnungsArt)
         Dim dataTable = _dataConnection.FillDataTable(sql)
@@ -1469,30 +884,6 @@ Public Class XRechnungExporter
             Return New Dictionary(Of String, String)
         End If
         Return dataTable.Columns.OfType(Of Data.DataColumn).ToDictionary(Function(column) column.ColumnName, Function(column) dataTable.Rows.OfType(Of Data.DataRow)().First()(column.ColumnName).ToString)
-    End Function
-
-    Private Function GetBuyerData(kundenNr As String) As Dictionary(Of String, String)
-        Dim sql = $"select * from Kunden where KundenNr = {kundenNr}"
-        Dim dataTable = _dataConnection.FillDataTable(sql)
-        If dataTable.Rows.Count = 0 Then
-            _logger.Error($"Could not fetch customer parameters from DB ({sql})")
-            Return New Dictionary(Of String, String)
-        End If
-        Return dataTable.Columns.OfType(Of Data.DataColumn).ToDictionary(Function(column) column.ColumnName, Function(column) dataTable.Rows.OfType(Of Data.DataRow)().First()(column.ColumnName).ToString)
-    End Function
-
-    Private Function GetSellerParameterSql(rechnungsArt As RechnungsArt) As String
-        Dim parameterNumber = ""
-        Select Case rechnungsArt
-            Case RechnungsArt.Werkstatt
-                parameterNumber = "1"
-            Case RechnungsArt.Tanken
-                parameterNumber = "11"
-            Case RechnungsArt.Manuell
-                parameterNumber = "21"
-        End Select
-
-        Return $"select * from Parameter where ParameterNr = {parameterNumber}"
     End Function
 
     Private Function GetAdditionalSellerParameterSql(rechnungsArt As RechnungsArt) As String
@@ -1509,6 +900,33 @@ Public Class XRechnungExporter
         Return $"select * from Parameter where ParameterNr = {parameterNumber}"
     End Function
 
+    ' -- Zahlungsreferenz holen ---
+    Private Function GetSellerParameterSql(rechnungsArt As RechnungsArt) As String
+        Dim parameterNumber = ""
+        Select Case rechnungsArt
+            Case RechnungsArt.Werkstatt
+                parameterNumber = "1"
+            Case RechnungsArt.Tanken
+                parameterNumber = "11"
+            Case RechnungsArt.Manuell
+                parameterNumber = "21"
+        End Select
+
+        Return $"select * from Parameter where ParameterNr = {parameterNumber}"
+    End Function
+
+    ' --- Käuferdaten holen ---
+    Private Function GetBuyerData(kundenNr As String) As Dictionary(Of String, String)
+        Dim sql = $"select * from Kunden where KundenNr = {kundenNr}"
+        Dim dataTable = _dataConnection.FillDataTable(sql)
+        If dataTable.Rows.Count = 0 Then
+            _logger.Error($"Could not fetch customer parameters from DB ({sql})")
+            Return New Dictionary(Of String, String)
+        End If
+        Return dataTable.Columns.OfType(Of Data.DataColumn).ToDictionary(Function(column) column.ColumnName, Function(column) dataTable.Rows.OfType(Of Data.DataRow)().First()(column.ColumnName).ToString)
+    End Function
+
+    ' --- SQL-Statements für Rechnungskopf, Details, Steuerdaten ---
     Private Function GetSqlStatementForVat(rechnungsArt As RechnungsArt, rechnungsNummern As List(Of Integer)) As String
         Dim inClausePlaceholders As String = String.Join(",", rechnungsNummern.Select(Function(v) $"{v}").ToArray())
         Select Case rechnungsArt

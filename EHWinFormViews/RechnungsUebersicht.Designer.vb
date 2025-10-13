@@ -25,9 +25,10 @@ Partial Class RechnungsUebersicht
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(RechnungsUebersicht))
-        Dim TableViewDefinition2 As Telerik.WinControls.UI.TableViewDefinition = New Telerik.WinControls.UI.TableViewDefinition()
+        Dim TableViewDefinition1 As Telerik.WinControls.UI.TableViewDefinition = New Telerik.WinControls.UI.TableViewDefinition()
         Me.PanelMenu = New System.Windows.Forms.Panel()
         Me.GroupBox7 = New System.Windows.Forms.GroupBox()
+        Me.VerkaeuferButton = New Telerik.WinControls.UI.RadButton()
         Me.SteuersaetzeButton = New Telerik.WinControls.UI.RadButton()
         Me.GroupBox4 = New System.Windows.Forms.GroupBox()
         Me.GroupBox5 = New System.Windows.Forms.GroupBox()
@@ -53,9 +54,10 @@ Partial Class RechnungsUebersicht
         Me.PanelDatagrid = New System.Windows.Forms.Panel()
         Me.DataGridView1 = New Telerik.WinControls.UI.RadGridView()
         Me.CrystalTheme1 = New Telerik.WinControls.Themes.CrystalTheme()
-        Me.VerkaeuferButton = New Telerik.WinControls.UI.RadButton()
+        Me.MengeneinheitenButton = New Telerik.WinControls.UI.RadButton()
         Me.PanelMenu.SuspendLayout()
         Me.GroupBox7.SuspendLayout()
+        CType(Me.VerkaeuferButton, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.SteuersaetzeButton, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox4.SuspendLayout()
         Me.GroupBox5.SuspendLayout()
@@ -81,7 +83,7 @@ Partial Class RechnungsUebersicht
         Me.PanelDatagrid.SuspendLayout()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.DataGridView1.MasterTemplate, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.VerkaeuferButton, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.MengeneinheitenButton, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'PanelMenu
@@ -100,6 +102,7 @@ Partial Class RechnungsUebersicht
         '
         'GroupBox7
         '
+        Me.GroupBox7.Controls.Add(Me.MengeneinheitenButton)
         Me.GroupBox7.Controls.Add(Me.VerkaeuferButton)
         Me.GroupBox7.Controls.Add(Me.SteuersaetzeButton)
         Me.GroupBox7.Dock = System.Windows.Forms.DockStyle.Left
@@ -113,6 +116,20 @@ Partial Class RechnungsUebersicht
         Me.GroupBox7.TabStop = False
         Me.GroupBox7.Text = "Stammdaten"
         '
+        'VerkaeuferButton
+        '
+        Me.VerkaeuferButton.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.VerkaeuferButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
+        Me.VerkaeuferButton.Location = New System.Drawing.Point(4, 17)
+        Me.VerkaeuferButton.Margin = New System.Windows.Forms.Padding(2)
+        Me.VerkaeuferButton.Name = "VerkaeuferButton"
+        Me.VerkaeuferButton.Padding = New System.Windows.Forms.Padding(2)
+        Me.VerkaeuferButton.Size = New System.Drawing.Size(107, 21)
+        Me.VerkaeuferButton.TabIndex = 14
+        Me.VerkaeuferButton.Text = "Verkäufer"
+        Me.VerkaeuferButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
+        Me.VerkaeuferButton.ThemeName = "Crystal"
+        '
         'SteuersaetzeButton
         '
         Me.SteuersaetzeButton.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
@@ -121,7 +138,7 @@ Partial Class RechnungsUebersicht
         Me.SteuersaetzeButton.Margin = New System.Windows.Forms.Padding(2)
         Me.SteuersaetzeButton.Name = "SteuersaetzeButton"
         Me.SteuersaetzeButton.Padding = New System.Windows.Forms.Padding(2)
-        Me.SteuersaetzeButton.Size = New System.Drawing.Size(97, 21)
+        Me.SteuersaetzeButton.Size = New System.Drawing.Size(107, 21)
         Me.SteuersaetzeButton.TabIndex = 13
         Me.SteuersaetzeButton.Text = "Steuersätze"
         Me.SteuersaetzeButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
@@ -456,25 +473,25 @@ Partial Class RechnungsUebersicht
         Me.DataGridView1.MasterTemplate.ClipboardPasteMode = Telerik.WinControls.UI.GridViewClipboardPasteMode.Disable
         Me.DataGridView1.MasterTemplate.EnableFiltering = True
         Me.DataGridView1.MasterTemplate.ShowGroupedColumns = True
-        Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition2
+        Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition1
         Me.DataGridView1.Name = "DataGridView1"
         Me.DataGridView1.Size = New System.Drawing.Size(1365, 483)
         Me.DataGridView1.TabIndex = 13
         Me.DataGridView1.ThemeName = "Crystal"
         '
-        'VerkaeuferButton
+        'MengeneinheitenButton
         '
-        Me.VerkaeuferButton.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.VerkaeuferButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
-        Me.VerkaeuferButton.Location = New System.Drawing.Point(4, 17)
-        Me.VerkaeuferButton.Margin = New System.Windows.Forms.Padding(2)
-        Me.VerkaeuferButton.Name = "VerkaeuferButton"
-        Me.VerkaeuferButton.Padding = New System.Windows.Forms.Padding(2)
-        Me.VerkaeuferButton.Size = New System.Drawing.Size(97, 21)
-        Me.VerkaeuferButton.TabIndex = 14
-        Me.VerkaeuferButton.Text = "Verkäufer"
-        Me.VerkaeuferButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
-        Me.VerkaeuferButton.ThemeName = "Crystal"
+        Me.MengeneinheitenButton.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.MengeneinheitenButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
+        Me.MengeneinheitenButton.Location = New System.Drawing.Point(4, 67)
+        Me.MengeneinheitenButton.Margin = New System.Windows.Forms.Padding(2)
+        Me.MengeneinheitenButton.Name = "MengeneinheitenButton"
+        Me.MengeneinheitenButton.Padding = New System.Windows.Forms.Padding(2)
+        Me.MengeneinheitenButton.Size = New System.Drawing.Size(107, 21)
+        Me.MengeneinheitenButton.TabIndex = 15
+        Me.MengeneinheitenButton.Text = "Mengeneinheiten"
+        Me.MengeneinheitenButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
+        Me.MengeneinheitenButton.ThemeName = "Crystal"
         '
         'RechnungsUebersicht
         '
@@ -491,6 +508,7 @@ Partial Class RechnungsUebersicht
         Me.WindowState = System.Windows.Forms.FormWindowState.Maximized
         Me.PanelMenu.ResumeLayout(False)
         Me.GroupBox7.ResumeLayout(False)
+        CType(Me.VerkaeuferButton, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.SteuersaetzeButton, System.ComponentModel.ISupportInitialize).EndInit()
         Me.GroupBox4.ResumeLayout(False)
         Me.GroupBox5.ResumeLayout(False)
@@ -516,7 +534,7 @@ Partial Class RechnungsUebersicht
         Me.PanelDatagrid.ResumeLayout(False)
         CType(Me.DataGridView1.MasterTemplate, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.VerkaeuferButton, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.MengeneinheitenButton, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -548,4 +566,5 @@ Partial Class RechnungsUebersicht
     Friend WithEvents GroupBox7 As System.Windows.Forms.GroupBox
     Friend WithEvents SteuersaetzeButton As RadButton
     Friend WithEvents VerkaeuferButton As RadButton
+    Friend WithEvents MengeneinheitenButton As RadButton
 End Class
