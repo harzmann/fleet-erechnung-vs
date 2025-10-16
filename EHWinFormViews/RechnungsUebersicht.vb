@@ -293,8 +293,9 @@ Public Class RechnungsUebersicht
                             Return
                         End Try
                     End Using
-
-                    _xmlExporter.Validate(filePath)
+                    If _xmlExporter.IsSuccess Then
+                        _xmlExporter.Validate(filePath)
+                    End If
             End Select
         Catch ex As Exception
             MessageBox.Show(ex.Message, "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -319,11 +320,10 @@ Public Class RechnungsUebersicht
                         {"EmailRechnung", "'EmailRechnung'"},
                         {"Summe", "'Summe netto'"},
                         {"Exportiert", "X"},
-                        {"Gebucht", "B"},
-                        {"Storno", "S"}
+                        {"Gebucht", "B"}
                     }
 
-                Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_wavkliste]"
+                Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_wavkliste] where Storno=0"
             Case RechnungsArt.Tanken
                 Dim columnMapping As New Dictionary(Of String, String) From
                     {
@@ -338,11 +338,10 @@ Public Class RechnungsUebersicht
                         {"EmailRechnung", "'EmailRechnung'"},
                         {"Summe", "'Summe netto'"},
                         {"Exportiert", "X"},
-                        {"Gebucht", "B"},
-                        {"Storno", "S"}
+                        {"Gebucht", "B"}
                     }
 
-                Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_tavkliste]"
+                Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_tavkliste] where Storno=0"
             Case RechnungsArt.Manuell
                 Dim columnMapping As New Dictionary(Of String, String) From
                     {
@@ -357,11 +356,10 @@ Public Class RechnungsUebersicht
                         {"EmailRechnung", "'EmailRechnung'"},
                         {"Summe", "'Summe netto'"},
                         {"Exportiert", "X"},
-                        {"Gebucht", "B"},
-                        {"Storno", "S"}
+                        {"Gebucht", "B"}
                     }
 
-                Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_mrvkliste]"
+                Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_mrvkliste] where Storno=0"
         End Select
 
         Return String.Empty
@@ -577,4 +575,5 @@ Public Class RechnungsUebersicht
         mengeneinheitenForm.ShowDialog()
 
     End Sub
+
 End Class

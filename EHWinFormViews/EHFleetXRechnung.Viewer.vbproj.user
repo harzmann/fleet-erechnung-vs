@@ -21,6 +21,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Update="ParameterEditorForm.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Update="RechnungsUebersicht.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>

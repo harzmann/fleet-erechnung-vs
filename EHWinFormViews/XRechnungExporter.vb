@@ -38,8 +38,6 @@ Public Class XRechnungExporter
         End Sub
     End Structure
 
-
-
     Shared Sub New()
         _logger = LogManager.GetLogger(GetType(XRechnungExporter))
     End Sub
@@ -129,7 +127,7 @@ Public Class XRechnungExporter
                             TryAddLine(xRechnung, lineItemData, "freieArtikelNr", "freieArtikelbez", "freieArtikeleinheit", sumNetLines, taxGroups)
                         Case RechnungsArt.Tanken
                             ' Tankbuchungen
-                            TryAddLine(xRechnung, lineItemData, "Matchcode", "Artikelbez", "ArtikelMEH", sumNetLines, taxGroups)
+                            TryAddLine(xRechnung, lineItemData, "Bezeichnung", "SpritID", "Mengeneinheit", sumNetLines, taxGroups)
 
                     End Select
                 Next
@@ -256,16 +254,31 @@ Public Class XRechnungExporter
             countrySubdivisonName:=GetDataFromColumn(items, "FirmaOderAbteilung")
         )
 
+        ' Umsatzste-ID (BT-15 / BT-48)
         x.AddBuyerTaxRegistration(no:=GetDataFromColumn(items, "UStIdNr"), schemeID:=TaxRegistrationSchemeID.VA)
+
+        ' E-Mail für die Rechnung (BT-14)
         x.SetBuyerElectronicAddress(address:=GetSafe(buyer, "EmailRechnung"), electronicAddressSchemeID:=ElectronicAddressSchemeIdentifiers.EM)
+
+        ' Zahlungsreferenz (BT-83)
         x.PaymentReference = paymentRef
 
-        ' Buyer Reference (BT-10) bestimmen 
+        ' Buyer Reference (BT-10)
         Dim buyerRef As String = GetSafe(buyer, "LeitwegeID")
-        If buyerRef = "" Then
-            buyerRef = paymentRef
-        End If
+        If buyerRef = "" Then buyerRef = paymentRef
         x.ReferenceOrderNo = buyerRef
+
+        ' Deliver-to Country (BT-80) über ShipTo setzen
+        Try
+            Dim shipTo As New Party()
+            shipTo.Postcode = GetDataFromColumn(items, "Postleitzahl")
+            shipTo.City = GetDataFromColumn(items, "Ort")
+            shipTo.Street = GetDataFromColumn(items, "Rechnungsadresse")
+            shipTo.Country = country
+            x.ShipTo = shipTo
+        Catch ex As Exception
+            _logger.Warn($"ShipTo/BT-80 konnte nicht gesetzt werden: {ex.Message}")
+        End Try
 
     End Sub
 
@@ -320,18 +333,112 @@ Public Class XRechnungExporter
         Dim name As String = GetSafe(line, nameKey)
         If String.IsNullOrWhiteSpace(name) Then Exit Sub
 
+        ' Grundbeschreibung aus Datenquelle
         Dim desc As String = GetSafe(line, descKey)
-        Dim mc As MeasurementCode = GetMeasurementCode(GetSafe(line, unitKey), SafeDec(line, "Menge"),SafeDec(line, "EPreis"))
-        'Dim unitCode As QuantityCodes = GetMeasurementCode(GetSafe(line, unitKey))
 
-        'Dim qty As Decimal = SafeDec(line, "Menge")
-        'Dim unitNet As Decimal = SafeDec(line, "EPreis")
+        ' Kontext-Erkennung
+        Dim isPersonal As Boolean =
+        String.Equals(unitKey, "PersonalMEH", StringComparison.OrdinalIgnoreCase) _
+        OrElse Not String.IsNullOrWhiteSpace(GetSafe(line, "FahrerNr"))
+
+        ' Tanken erkennen über typische Felder aus abfr_tankabrdetail
+        Dim isTanken As Boolean =
+        Not String.IsNullOrWhiteSpace(GetSafe(line, "Tankdatum")) _
+        OrElse Not String.IsNullOrWhiteSpace(GetSafe(line, "Produktart")) _
+        OrElse Not String.IsNullOrWhiteSpace(GetSafe(line, "KFZNr")) _
+        OrElse Not String.IsNullOrWhiteSpace(GetSafe(line, "Kennzeichen")) _
+        OrElse Not String.IsNullOrWhiteSpace(GetSafe(line, "Kilometerstand"))
+
+        ' Metadaten-Block für Description aufbauen
+        Dim metaLines As New List(Of String)
+
+        If isPersonal Then
+            ' Werkstatt/Personal: Datum aus abfr_wavkabrdetail
+            Dim d = GetSafe(line, "Datum")
+            If Not String.IsNullOrWhiteSpace(d) Then
+                Dim dTxt As String = d
+                ' optional versuchen zu formatieren
+                Try
+                    Dim dt As DateTime
+                    If DateTime.TryParse(d, dt) Then
+                        dTxt = dt.ToString("dd.MM.yyyy")
+                    End If
+                Catch
+                End Try
+                metaLines.Add(";Datum: " & dTxt)
+            End If
+        End If
+
+        If isTanken Then
+            ' Tanken: Zusatzinfos aus abfr_tankabrdetail
+            Dim tankdatum = GetSafe(line, "Tankdatum")
+            If Not String.IsNullOrWhiteSpace(tankdatum) Then
+                Try
+                    Dim dt As DateTime
+                    If DateTime.TryParse(tankdatum, dt) Then
+                        tankdatum = dt.ToString("dd.MM.yyyy HH:mm:ss")
+                    End If
+                Catch
+                End Try
+            End If
+
+            Dim km = GetSafe(line, "Kilometerstand")
+            ' Reihenfolge wie gewünscht
+            Dim produktart = GetSafe(line, "Produktart")
+            Dim bez = GetSafe(line, "Bezeichnung")
+            Dim kfzNr = GetSafe(line, "KFZNr")
+            Dim kz = GetSafe(line, "Kennzeichen")
+
+            ' --- Semikolon-getrennte Felder ohne führendes Semikolon ---
+            If Not String.IsNullOrWhiteSpace(produktart) Then metaLines.Add("Produktart: " & produktart)
+            If Not String.IsNullOrWhiteSpace(bez) Then metaLines.Add("Bezeichnung: " & bez)
+            If Not String.IsNullOrWhiteSpace(kfzNr) Then metaLines.Add("KFZ-Nr.: " & kfzNr)
+            If Not String.IsNullOrWhiteSpace(kz) Then metaLines.Add("Kennzeichen: " & kz)
+            If Not String.IsNullOrWhiteSpace(tankdatum) Then metaLines.Add("Tankdatum: " & tankdatum)
+            If Not String.IsNullOrWhiteSpace(km) Then metaLines.Add("Kilometerstand: " & km)
+        End If
+
+        ' Metadaten an Description anhängen (weitere cbc:Description wäre auch möglich)
+        If metaLines.Count > 0 Then
+            Dim metaBlock As String
+            metaBlock = String.Join(";", metaLines)
+            If String.IsNullOrWhiteSpace(desc) Then
+                desc = metaBlock
+            Else
+                desc &= Environment.NewLine & metaBlock
+            End If
+        End If
+
+        ' Mess-/Preis-Umrechnung
+        ' Standard: 2 Nachkommastellen; für Tanken Preis = 4, Menge = 3,
+        Dim qtyDecimals As Integer = 2
+        Dim unitPriceDecimals As Integer = If(isTanken, 4, 2)
+        If isTanken Then
+            qtyDecimals = 3
+        End If
+
+        ' Menge/Preis aus Quelle
+        Dim qtyRaw As Decimal = SafeDec(line, "Menge")
+        Dim unitPriceRaw As Decimal = SafeDec(line, "EPreis")
         Dim lineNet As Decimal = SafeDec(line, "Gesamtpreis")
 
+        ' Unit ermitteln
+        Dim unitKeyValue As String = GetSafe(line, unitKey)
+
+        ' MeasurementCode inkl. umgerechneter Menge & Einzelpreis holen
+        Dim mc As MeasurementCode = GetMeasurementCode(
+            type:=unitKeyValue,
+            quantity:=qtyRaw,
+            unitPrice:=unitPriceRaw,
+            roundQtyDecimals:=qtyDecimals,
+            unitPriceDecimals:=unitPriceDecimals
+        )
+
+        ' Steuer / Kategorie
         Dim cat As TaxCategoryCodes = ParseTaxCategoryCode(GetSafe(line, "ERechnung_BT151"))
         Dim vatPct As Decimal = SafeDec(line, "MwStProzent")
 
-        ' Position hinzufügen (grossUnitPrice optional; manche Validatoren mögen ihn)
+        ' Position hinzufügen
         Dim li = x.AddTradeLineItem(
             name:=name,
             description:=desc,
@@ -345,15 +452,10 @@ Public Class XRechnungExporter
             taxPercent:=vatPct
         )
 
-        ' Exemption Defaults (K/AE/G/O) + 0%-Satz normalisieren
+        ' Exemption normalisieren
         Dim exText As String = GetSafe(line, "ERechnung_BT120").Trim()
         Dim exCode As String = GetSafe(line, "ERechnung_BT121").Trim()
         ApplyExemptionDefaults(cat, vatPct, exText, exCode)
-
-        ' Optional: Wenn deine Lib-Version Eigenschaften am Line-Item erlaubt, hier setzen:
-        ' (aus Kompatibilitätsgründen auskommentiert)
-        ' li.TaxExemptionReason = If(String.IsNullOrWhiteSpace(exText), Nothing, exText)
-        ' li.TaxExemptionReasonCode = If(String.IsNullOrWhiteSpace(exCode), Nothing, exCode)
 
         ' Positionsrabatt explizit ausweisen, falls Basis > Zeilennetto
         AddLineAllowanceIfAny(li, mc.Quantity, mc.UnitPrice, lineNet, GetSafe(line, "Rabatt"))
@@ -361,7 +463,6 @@ Public Class XRechnungExporter
         ' Aggregation
         sumNetLines += lineNet
 
-        ' Key trennt zusätzlich nach VATEX-Code/Text (für saubere 0%-Breakdowns)
         Dim key As String = $"{CInt(cat)}|{vatPct:0.####}|{exCode}|{exText}"
         If taxGroups.ContainsKey(key) Then
             Dim tg = taxGroups(key)
@@ -369,12 +470,12 @@ Public Class XRechnungExporter
             taxGroups(key) = tg
         Else
             taxGroups(key) = New TaxAgg With {
-                .Basis = lineNet,
-                .Percent = vatPct,
-                .Category = cat,
-                .ReasonCode = exCode,
-                .ReasonText = exText
-            }
+            .Basis = lineNet,
+            .Percent = vatPct,
+            .Category = cat,
+            .ReasonCode = exCode,
+            .ReasonText = exText
+        }
         End If
     End Sub
 
@@ -445,19 +546,19 @@ Public Class XRechnungExporter
             Dim pct As Decimal = tg.Percent
             Dim taxAmt As Decimal = Round2(basis * pct / 100D)
 
-            ' Standard-Überladung
+            ' Steuerbefreiung parsen - nullable
+            Dim exCodeNullable As System.Nullable(Of TaxExemptionReasonCodes) = ParseExemptionReasonCodeNullable(tg.ReasonCode)
+
+            ' Steueraufschlüsselung hinzufügen
             x.AddApplicableTradeTax(
                 basisAmount:=basis,
                 percent:=pct,
                 taxAmount:=taxAmt,
                 typeCode:=TaxTypes.VAT,
-                categoryCode:=tg.Category
+                categoryCode:=tg.Category,
+                exemptionReasonCode:=exCodeNullable,
+                exemptionReason:=tg.ReasonText
             )
-
-            ' Hinweis:
-            ' Einige Versionen der Lib unterstützen reason/ReasonCode auf Breakdown-Ebene.
-            ' Falls vorhanden, nutze stattdessen eine Überladung mit reason/ReasonCode
-            ' oder setze Properties am zuletzt hinzugefügten Breakdown-Objekt.
 
             totalVAT += taxAmt
         Next
@@ -476,11 +577,6 @@ Public Class XRechnungExporter
             roundingAmount:=0D
         )
     End Sub
-
-
-    ' =======================
-    ' Utilities (robust gegen Dictionary(Of String, String)/Object)
-    ' =======================
 
     ' Sicherer Integer-Getter mit Fallback
     Private Function D(obj As Object) As Decimal
@@ -507,6 +603,7 @@ Public Class XRechnungExporter
         Return s.Replace("'", "''")
     End Function
 
+    ' Dictionary-Helper: Verschiedene Dictionary-Typen in ein IDictionary(Of String, Object) umwandeln
     Private Function ToObjectDict(input As Object) As IDictionary(Of String, Object)
         If input Is Nothing Then
             Return New Dictionary(Of String, Object)(StringComparer.OrdinalIgnoreCase)
@@ -536,12 +633,14 @@ Public Class XRechnungExporter
         Throw New InvalidCastException("Unsupported dictionary type for ToObjectDict")
     End Function
 
+    ' Sicherer String-Getter für Dictionary-Objekte mit Fallback
     Private Function GetSafe(d As Object, key As String) As String
         Dim dd = ToObjectDict(d)
         If Not dd.ContainsKey(key) OrElse dd(key) Is Nothing Then Return ""
         Return CStr(dd(key))
     End Function
 
+    ' Sicherer Integer-Getter für Dictionary-Objekte mit Fallback
     Private Function SafeInt(d As Object, key As String) As Integer
         Dim s = GetSafe(d, key)
         Dim i As Integer
@@ -549,6 +648,7 @@ Public Class XRechnungExporter
         Return 0
     End Function
 
+    ' Sicherer Decimal-Getter für Dictionary-Objekte mit Fallback
     Private Function SafeDec(d As Object, key As String) As Decimal
         Dim s = GetSafe(d, key)
         Dim v As Decimal
@@ -557,6 +657,7 @@ Public Class XRechnungExporter
         Return 0D
     End Function
 
+    ' Sicherer Date-Getter für Dictionary-Objekte mit Fallback
     Private Function SafeDate(d As Object, key As String) As Date
         Dim s = GetSafe(d, key)
         Dim dt As Date
@@ -625,17 +726,49 @@ Public Class XRechnungExporter
         Return ms.ToArray()
     End Function
 
+    ' Steuerschlüssel-Code parsen (Enum), Default S
+    Private Function ParseTaxCategoryCode(code As String) As TaxCategoryCodes
+        Try
+            Return CType([Enum].Parse(GetType(TaxCategoryCodes), code, True), TaxCategoryCodes)
+        Catch
+            Return TaxCategoryCodes.S
+        End Try
+    End Function
+
+    ' Steuerbefreiungsgrund-Code parsen (Enum), Nullable
+    Private Function ParseExemptionReasonCodeNullable(code As String) As System.Nullable(Of TaxExemptionReasonCodes)
+        If String.IsNullOrWhiteSpace(code) Then Return Nothing
+
+        Dim c As String = code.Trim()
+
+        ' Nur wenn der String exakt einem Enum-Namen entspricht:
+        If [Enum].IsDefined(GetType(TaxExemptionReasonCodes), c) Then
+            Return CType([Enum].Parse(GetType(TaxExemptionReasonCodes), c, True), TaxExemptionReasonCodes)
+        End If
+
+        Return Nothing
+    End Function
+
+    ' --- Validierung der Käuferdaten (LandISO muss gesetzt sein) ---
     Public Function ValidateBuyerData(buyerData As Dictionary(Of String, String)) As Boolean
 
         ValidateBuyerData = True
+        ' LandISO ist Pflichtfeld
         If buyerData("LandISO") = "" Then
             MessageBox.Show("Kennzeichen Land ISO fehlt bei Kunde: " & buyerData("Matchcode"), "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
             _logger.Debug($"Empty value for LandISO - Matchcode: " & buyerData("Matchcode"))
             ValidateBuyerData = False
         End If
+        ' E-Mail für Rechnung ist Pflichtfeld
+        If buyerData("EmailRechnung") = "" Then
+            MessageBox.Show("EMail für Rechnung fehlt bei Kunde: " & buyerData("Matchcode"), "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            _logger.Debug($"Empty value for EmailRechnung - Matchcode: " & buyerData("Matchcode"))
+            ValidateBuyerData = False
+        End If
 
     End Function
 
+    ' --- Validierung der XML-Datei mittels externer Java-Anwendung ---
     Public Function Validate(file As String, Optional silent As Boolean = False) As Boolean
         _logger.Debug($"Entering {NameOf(Validate)}({file}, silent={silent})")
         Dim validationSuccess As Boolean = False
@@ -754,6 +887,7 @@ Public Class XRechnungExporter
         Return validationSuccess
     End Function
 
+    ' --- Exportpfad für Belegart holen ---
     Public Function GetExportPath(billType As RechnungsArt) As String
         Dim path = String.Empty
         If Not _exportPaths.TryGetValue(billType, path) OrElse String.IsNullOrWhiteSpace(path) Then
@@ -763,6 +897,7 @@ Public Class XRechnungExporter
         Return IO.Path.Combine(path, billType.ToString())
     End Function
 
+    ' --- Vollständigen Export-Dateipfad holen (inkl. Dateiname) ---
     Public Function GetExportFilePath(billType As RechnungsArt, rechnungsNummer As Integer, extension As String) As String
         Dim exportPath = GetExportPath(billType)
         Dim formattedBillNumber = GetFormattedBillNumber(rechnungsNummer, billType)
@@ -777,6 +912,7 @@ Public Class XRechnungExporter
         Return Sale.Invoicing.FormatInvoiceNumber(_dataConnection, GetBillTypeText(billType), billNumber)
     End Function
 
+    ' --- Belegart-Text für Belegnummern-Präfix holen (z.B. "WA" für Werkstatt) ---
     Private Function GetBillTypeText(billType As RechnungsArt) As String
         Dim billTypeText = String.Empty
         Dim referenceColumn = ""
@@ -792,6 +928,7 @@ Public Class XRechnungExporter
         Return billTypeText
     End Function
 
+    ' --- Wert aus Dictionary holen mit Fallback + Warnung im Log ---
     Private Function GetDataFromColumn(data As Dictionary(Of String, String), column As String, Optional defaultValue As String = "") As String
         Dim value = defaultValue
         If Not data.TryGetValue(column, value) AndAlso Not String.IsNullOrWhiteSpace(defaultValue) Then
@@ -802,6 +939,7 @@ Public Class XRechnungExporter
         Return value
     End Function
 
+    ' --- Alte HTML-Reports löschen ---
     Private Sub CleanValidationReports(reportFolder As String)
         Dim files = Directory.EnumerateFiles(reportFolder, "*.html").ToList
         files.ForEach(Sub(f) File.Delete(f))
@@ -886,6 +1024,7 @@ Public Class XRechnungExporter
         Return dataTable.Columns.OfType(Of Data.DataColumn).ToDictionary(Function(column) column.ColumnName, Function(column) dataTable.Rows.OfType(Of Data.DataRow)().First()(column.ColumnName).ToString)
     End Function
 
+    ' -- Zusätzliche Verkäuferdaten aus Parameter holen ---
     Private Function GetAdditionalSellerParameterSql(rechnungsArt As RechnungsArt) As String
         Dim parameterNumber = ""
         Select Case rechnungsArt
@@ -941,6 +1080,7 @@ Public Class XRechnungExporter
         Return ""
     End Function
 
+    ' --- SQL-Statement für Rechnungskopf holen ---
     Private Function GetSqlStatementForBill(rechnungsArt As RechnungsArt, rechnungsNummern As List(Of Integer)) As String
         Dim inClausePlaceholders As String = String.Join(",", rechnungsNummern.Select(Function(v) $"{v}").ToArray())
         Select Case rechnungsArt
@@ -955,6 +1095,7 @@ Public Class XRechnungExporter
         Return ""
     End Function
 
+    ' --- SQL-Statements für Rechnungsdetails holen ---
     Private Function GetSqlStatements(rechnungsArt As RechnungsArt, rechnungsNummern As List(Of Integer)) As List(Of String)
         Dim inClausePlaceholders As String = String.Join(",", rechnungsNummern.Select(Function(v) $"{v}").ToArray())
         Select Case rechnungsArt
@@ -1125,13 +1266,5 @@ Public Class XRechnungExporter
         End Try
     End Sub
 
-    ' Add this helper function to parse string to TaxCategoryCodes
-    Private Function ParseTaxCategoryCode(code As String) As TaxCategoryCodes
-        Try
-            Return CType([Enum].Parse(GetType(TaxCategoryCodes), code, True), TaxCategoryCodes)
-        Catch
-            Return TaxCategoryCodes.S
-        End Try
-    End Function
 
 End Class
