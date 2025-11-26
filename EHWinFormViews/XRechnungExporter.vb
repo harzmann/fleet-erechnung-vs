@@ -18,6 +18,9 @@ Public Class XRechnungExporter
     Public IsSuccess As Boolean = False
     Public Cancel As Boolean = False
 
+    ' Add this field to track if the reports folder has been cleaned
+    Private _reportsFolderCleaned As Boolean = False
+
     Public Structure MeasurementCode
         Public UnitCode As QuantityCodes
         Public Quantity As Decimal           ' umgerechnete Menge
@@ -57,6 +60,9 @@ Public Class XRechnungExporter
                         Return path
                     End Function)
 
+        ' Initialize the reports folder cleaned flag
+        _reportsFolderCleaned = False
+
         _logger.Debug($"Leaving {NameOf(XRechnungExporter)} constructor")
 
     End Sub
@@ -69,7 +75,8 @@ Public Class XRechnungExporter
     Public Function CreateBillXml(xmlStream As Stream,
                               billType As RechnungsArt,
                               rechnungsNummer As Integer,
-                              Optional storeXmlAndUpdate As Boolean = False) As Boolean
+                              Optional storeXmlAndUpdate As Boolean = False,
+                              Optional logEntry As ExportLogEntry = Nothing) As Boolean
 
         _logger.Debug($"Entering {NameOf(CreateBillXml)}({xmlStream.GetType().Name}, {billType}, {rechnungsNummer}, storeXmlAndUpdate={storeXmlAndUpdate})")
         IsSuccess = False
@@ -148,7 +155,7 @@ Public Class XRechnungExporter
                 Dim tempFile As String = Path.GetTempFileName()
                 Try
                     File.WriteAllBytes(tempFile, xmlBytes)
-                    Dim isValid As Boolean = Validate(tempFile, silent:=True)
+                    Dim isValid As Boolean = Validate(tempFile, silent:=True, logEntry:=logEntry)
                     File.Delete(tempFile)
                     If Not isValid Then
                         _logger.Warn("XML-Validierung fehlgeschlagen, Speicherung wird abgebrochen.")
@@ -165,7 +172,27 @@ Public Class XRechnungExporter
                 StoreXmlAndUpdateStatus(xmlBytes, rechnungsNummer, format, profil)
             End If
 
+            ' Nach dem Schreiben der Datei, Exportdateipfad setzen
+            If logEntry IsNot Nothing Then
+                Try
+                    Dim filePath As String = ""
+                    If TypeOf xmlStream Is FileStream Then
+                        filePath = CType(xmlStream, FileStream).Name
+                    End If
+                    If String.IsNullOrWhiteSpace(filePath) Then
+                        ' Fallback: Erzeuge den Pfad wie im Aufrufer
+                        filePath = Me.GetExportFilePath(billType, rechnungsNummer, "xml")
+                    End If
+                    logEntry.ExportFilePath = filePath
+                Catch
+                    ' Ignorieren, falls kein Pfad ermittelbar
+                End Try
+            End If
+
             IsSuccess = True
+            If logEntry IsNot Nothing Then
+                logEntry.Status = "Erfolgreich"
+            End If
             Return True
 
         Catch ex As Exception
@@ -175,6 +202,7 @@ Public Class XRechnungExporter
         Finally
             _logger.Debug($"Leaving {NameOf(CreateBillXml)}")
         End Try
+
     End Function
 
 
@@ -769,15 +797,20 @@ Public Class XRechnungExporter
     End Function
 
     ' --- Validierung der XML-Datei mittels externer Java-Anwendung ---
-    Public Function Validate(file As String, Optional silent As Boolean = False) As Boolean
+    Public Function Validate(file As String, Optional silent As Boolean = False, Optional logEntry As ExportLogEntry = Nothing) As Boolean
         _logger.Debug($"Entering {NameOf(Validate)}({file}, silent={silent})")
         Dim validationSuccess As Boolean = False
+        Dim htmlReportPath As String = ""
         Try
             Dim currentFolder = Path.GetDirectoryName(Me.GetType().Assembly.Location)
             Dim validatorFolder = Path.Combine(currentFolder, "validator")
             Dim reportFolder = Path.Combine(currentFolder, "logs", "html")
             Directory.CreateDirectory(reportFolder)
-            CleanValidationReports(reportFolder)
+            ' Only clean the reports folder on the first validation
+            If Not _reportsFolderCleaned Then
+                CleanValidationReports(reportFolder)
+                _reportsFolderCleaned = True
+            End If
 
             Dim configurationFolder = Path.Combine(validatorFolder, "configuration")
             Dim validatorFileName = Path.Combine(validatorFolder, "validator-1.5.2-standalone.jar")
@@ -786,6 +819,10 @@ Public Class XRechnungExporter
 
             If Not IO.File.Exists(validatorFileName) OrElse Not Directory.Exists(configurationFolder) OrElse Not IO.File.Exists(configFile) OrElse Not IO.File.Exists(scenarioFile) Then
                 _logger.Error($"Validator or configuration not found.")
+                If logEntry IsNot Nothing Then
+                    logEntry.Status = "Validator-Konfiguration fehlt"
+                    logEntry.FehlerInfo = "Validator oder Konfiguration nicht gefunden."
+                End If
                 If Not silent Then
                     MessageBox.Show("Validator nicht installiert!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
                 End If
@@ -795,6 +832,10 @@ Public Class XRechnungExporter
             Dim javaFolder = Environment.ExpandEnvironmentVariables("JRE_HOME")
             If String.IsNullOrWhiteSpace(javaFolder) Then
                 _logger.Error("Java JRE not installed")
+                If logEntry IsNot Nothing Then
+                    logEntry.Status = "Java fehlt"
+                    logEntry.FehlerInfo = "Java JRE nicht installiert."
+                End If
                 If Not silent Then
                     MessageBox.Show("Jave JRE nicht installiert!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
                 End If
@@ -843,37 +884,50 @@ Public Class XRechnungExporter
             p.WaitForExit()
             Cursor.Current = Cursors.Default
 
-            ' Warten bis alle Ausgaben gelesen wurden (max. 5 Sekunden je Stream)
             outputWaitHandle.WaitOne(5000)
             errorWaitHandle.WaitOne(5000)
 
             Dim stdOutput As String = stdOutputBuilder.ToString()
             Dim stdError As String = stdErrorBuilder.ToString()
 
-            ' Log process output
-            If Not String.IsNullOrWhiteSpace(stdOutput) Then
-                _logger.Info($"Validator Output: {stdOutput}")
-            End If
-            If Not String.IsNullOrWhiteSpace(stdError) Then
-                _logger.Error($"Validator Error: {stdError}")
+            If logEntry IsNot Nothing Then
+                logEntry.FehlerInfo = ""
+                If Not String.IsNullOrWhiteSpace(stdOutput) Then
+                    _logger.Info($"Validator Output: {stdOutput}")
+                    logEntry.FehlerInfo &= "Validator Output: " & stdOutput & vbCrLf
+                End If
+                If Not String.IsNullOrWhiteSpace(stdError) Then
+                    _logger.Info($"Validator Error: {stdError}")
+                    logEntry.FehlerInfo &= "Validator Error: " & stdError & vbCrLf
+                End If
             End If
 
             If p.ExitCode <> 0 Then
                 validationSuccess = False
+                htmlReportPath = Directory.EnumerateFiles(reportFolder, "*.html").FirstOrDefault()
+                If logEntry IsNot Nothing Then
+                    logEntry.Status = "Validator-Fehler"
+                    logEntry.HtmlValidatorPath = htmlReportPath
+                    If String.IsNullOrWhiteSpace(logEntry.FehlerInfo) Then
+                        logEntry.FehlerInfo = "Validierung ist fehlgeschlagen."
+                    End If
+                End If
                 If Not silent Then
-                    Dim result = MessageBox.Show("Validierung ist fehlgeschlagen.", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
-
-                    Dim reporFile = Directory.EnumerateFiles(reportFolder, "*.html").FirstOrDefault()
-                    If reporFile Is Nothing Then
+                    MessageBox.Show("Validierung ist fehlgeschlagen.", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                    If htmlReportPath Is Nothing Then
                         MessageBox.Show("Es wurde keine Reportdatei gefunden!" & vbCrLf &
                                         "Bitte überprüfen Sie das Logfile für weitere Ausgaben.", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
                         Return False
                     End If
-
-                    Process.Start("explorer.exe", reporFile)
+                    Process.Start("explorer.exe", htmlReportPath)
                 End If
             Else
                 validationSuccess = True
+                htmlReportPath = Directory.EnumerateFiles(reportFolder, "*.html").FirstOrDefault()
+                If logEntry IsNot Nothing Then
+                    logEntry.Status = "Validierung erfolgreich"
+                    logEntry.HtmlValidatorPath = htmlReportPath
+                End If
                 If Not silent Then
                     MessageBox.Show("Validierung erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
                 End If
@@ -881,6 +935,10 @@ Public Class XRechnungExporter
         Catch ex As Exception
             _logger.Error($"Exception during {NameOf(Validate)}", ex)
             validationSuccess = False
+            If logEntry IsNot Nothing Then
+                logEntry.Status = "Validator-Exception"
+                logEntry.FehlerInfo = ex.Message
+            End If
         Finally
             _logger.Debug($"Leaving {NameOf(Validate)}")
         End Try
@@ -941,7 +999,7 @@ Public Class XRechnungExporter
 
     ' --- Alte HTML-Reports löschen ---
     Private Sub CleanValidationReports(reportFolder As String)
-        Dim files = Directory.EnumerateFiles(reportFolder, "*.html").ToList
+        Dim files = Directory.EnumerateFiles(reportFolder, "tmp*.*").ToList
         files.ForEach(Sub(f) File.Delete(f))
     End Sub
 

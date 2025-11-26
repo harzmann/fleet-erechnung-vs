@@ -9,6 +9,7 @@ Imports log4net.Repository
 Imports Telerik.WinControls
 Imports Telerik.WinControls.UI
 Imports Telerik.WinControls.UI.Localization
+Imports System.Diagnostics
 
 Public Class RechnungsUebersicht
 
@@ -262,23 +263,70 @@ Public Class RechnungsUebersicht
                     Dim reportForm = New ReportForm(_dbConnection, RechnungsArt, New List(Of Integer) From {rechnungsNummer})
                     reportForm.ShowDialog()
                 Case "XML"
+                    ' Anpassung: Ablauf wie SelectedXmlExportButton_Clicked, aber nur für die aktuelle Zeile
+                    Dim exportLog As New List(Of ExportLogEntry)
+                    Dim logEntry As New ExportLogEntry With {.RechnungsNummer = rechnungsNummer}
                     Dim filePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, rechnungsNummer, "xml")
-                    Using fileStream = File.Create(filePath)
-                        Try
-                            _xmlExporter.CreateBillXml(fileStream, RechnungsArt, rechnungsNummer)
-                        Catch ex As Exception
-                            MessageBox.Show("Speichern fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
-                            Return
-                        End Try
+                    logEntry.ExportFilePath = filePath ' <--- Exportdateipfad setzen
 
-                    End Using
+                    ' Zusätzliche Rechnungsinformationen aus der aktuellen Zeile holen
+                    Dim kunde As String = ""
+                    Dim rechnungsdatum As String = ""
+                    Dim betrag As String = ""
+                    Try
+                        ' Spaltennamen können je nach RechnungsArt unterschiedlich sein
+                        If dataTable.Columns.Contains("Firma") Then
+                            kunde = Convert.ToString(row("Firma"))
+                        End If
+                        If dataTable.Columns.Contains("RG-Datum") Then
+                            rechnungsdatum = Convert.ToString(row("RG-Datum"))
+                        ElseIf dataTable.Columns.Contains("Rechnungsdatum") Then
+                            rechnungsdatum = Convert.ToString(row("Rechnungsdatum"))
+                        End If
+                        If dataTable.Columns.Contains("Summe netto") Then
+                            betrag = Convert.ToString(row("Summe netto"))
+                        ElseIf dataTable.Columns.Contains("Summe") Then
+                            betrag = Convert.ToString(row("Summe"))
+                        End If
+                        ' Betrag als Währung formatieren
+                        Dim betragDecimal As Decimal
+                        If Decimal.TryParse(betrag, betragDecimal) Then
+                            betrag = String.Format("{0:C}", betragDecimal)
+                        End If
+                    Catch
+                        ' Fallback: keine Info
+                    End Try
 
-                    If _xmlExporter.IsSuccess Then
-                        MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                    Else
-                        MessageBox.Show("Speichern fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
-                    End If
+                    ' Messagebox-Text formatieren (Leerzeile nach erster Zeile, Betrag als Währung)
+                    Dim msgText As String =
+                        $"Soll die Rechnung {rechnungsNummer} als XRechnung XML festgeschrieben werden?" & vbCrLf & vbCrLf &
+                        $"Kunde: {kunde}" & vbCrLf &
+                        $"Rechnungsdatum: {rechnungsdatum}" & vbCrLf &
+                        $"Betrag: {betrag}"
 
+                    Try
+                        Dim exportHelper = New XRechnungExporter(_dbConnection)
+                        If Not exportHelper.IsRechnungIssued(rechnungsNummer) Then
+                            Using fileStream = File.Create(filePath)
+                                Dim x = MsgBox(msgText, MsgBoxStyle.YesNo, "Fleet Fuhrpark IM System")
+                                If x = MsgBoxResult.No Then
+                                    _xmlExporter.CreateBillXml(fileStream, RechnungsArt, rechnungsNummer, False, logEntry)
+                                Else
+                                    _xmlExporter.CreateBillXml(fileStream, RechnungsArt, rechnungsNummer, True, logEntry)
+                                End If
+                            End Using
+                        Else
+                            logEntry.Status = "Bereits festgeschrieben"
+                        End If
+                    Catch ex As Exception
+                        logEntry.Status = "Fehler"
+                        logEntry.FehlerInfo = ex.Message
+                        _logger.Error($"Fehler beim Export der Rechnung {rechnungsNummer} nach {filePath}", ex)
+                    End Try
+                    exportLog.Add(logEntry)
+                    ' Zeige die Log-Ausgabe im Grid-Form
+                    Dim logForm As New ExportLogGridForm(exportLog)
+                    logForm.ShowDialog()
                 Case "PDF"
                     Dim reportForm = New ReportForm(_dbConnection, RechnungsArt, New List(Of Integer) From {rechnungsNummer})
                     reportForm.SavePdf()
@@ -424,6 +472,7 @@ Public Class RechnungsUebersicht
     Private Sub SelectedXmlExportButton_Clicked(sender As Object, args As EventArgs) Handles SelectedXmlExportButton.Click
         Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
         Dim dataTable = CType(dataSource.DataSource, DataTable)
+        Dim exportLog As New List(Of ExportLogEntry)
 
         Try
             Dim bills = DataGridView1.SelectedRows.ToDictionary(
@@ -439,36 +488,37 @@ Public Class RechnungsUebersicht
             Dim exportHelper = New XRechnungExporter(_dbConnection)
 
             For Each bill In bills.Keys
-                If Not exportHelper.IsRechnungIssued(bill) Then
-                    Dim filePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, bill, "xml")
-                    Try
+                Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill}
+                Dim filePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, bill, "xml")
+                logEntry.ExportFilePath = filePath ' <--- Exportdateipfad setzen
+                Try
+                    If Not exportHelper.IsRechnungIssued(bill) Then
                         Using fileStream = File.Create(filePath)
                             Dim x = MsgBox("Soll die Rechnung " & bill & " als XRechnung XML festgeschrieben werden?", MsgBoxStyle.YesNo, "Fleet Fuhrpark IM System")
                             If x = MsgBoxResult.No Then
-                                ' Nur Export, ohne in DB als XRechnung festgeschrieben und signiert
-                                _xmlExporter.CreateBillXml(fileStream, RechnungsArt, bill)
+                                _xmlExporter.CreateBillXml(fileStream, RechnungsArt, bill, False, logEntry)
                             Else
-                                ' Festschreiben als XRechnung in DB und signieren
-                                _xmlExporter.CreateBillXml(fileStream, RechnungsArt, bill, True)
+                                _xmlExporter.CreateBillXml(fileStream, RechnungsArt, bill, True, logEntry)
                             End If
                         End Using
-                    Catch ex As Exception
-                        _logger.Error($"Error saving bill xml file to {filePath}", ex)
-                    End Try
-                Else
-                    ' TODO: Export aus DB
-                End If
+                    Else
+                        logEntry.Status = "Bereits festgeschrieben"
+                    End If
+                Catch ex As Exception
+                    logEntry.Status = "Fehler"
+                    logEntry.FehlerInfo = ex.Message
+                    _logger.Error($"Fehler beim Export der Rechnung {bill} nach {filePath}", ex)
+                End Try
+                exportLog.Add(logEntry)
             Next
 
-            If _xmlExporter.IsSuccess Then
-                MessageBox.Show("Speichern erfolgreich!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
-            Else
-                MessageBox.Show("Speichern fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
-            End If
+            ' Zeige die Log-Ausgabe im Grid-Form
+            Dim logForm As New ExportLogGridForm(exportLog)
+            logForm.ShowDialog()
 
         Catch ex As Exception
             _logger.Error("Exception while saving bill xml files", ex)
-            MessageBox.Show("Speichern fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            MessageBox.Show("Speichern fehlgeschlagen!" & vbCrLf & ex.Message, "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Return
         End Try
     End Sub
@@ -576,4 +626,12 @@ Public Class RechnungsUebersicht
 
     End Sub
 
+End Class
+
+Public Class ExportLogEntry
+    Public Property RechnungsNummer As Integer
+    Public Property Status As String
+    Public Property FehlerInfo As String
+    Public Property HtmlValidatorPath As String
+    Public Property ExportFilePath As String ' <--- NEU: Exportdateipfad
 End Class
