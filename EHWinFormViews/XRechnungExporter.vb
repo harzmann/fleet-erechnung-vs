@@ -169,7 +169,7 @@ Public Class XRechnungExporter
                     Return False
                 End Try
 
-                StoreXmlAndUpdateStatus(xmlBytes, rechnungsNummer, format, profil)
+                StoreXmlAndUpdateStatus(xmlBytes, rechnungsNummer, format, profil, billType)
             End If
 
             ' Nach dem Schreiben der Datei, Exportdateipfad setzen
@@ -1233,26 +1233,64 @@ Public Class XRechnungExporter
     End Function
 
     ''' <summary>
-    ''' Speichert den XML-Inhalt in RechnungBlob.XML_Raw, erstellt eine Signatur in RechnungSignature,
-    ''' und aktualisiert RechnungKopf (Status, ERechnung-Felder).
+    ''' Gibt das Feld XML_Raw aus der passenden Blob-Tabelle für die angegebene Rechnungsnummer und Rechnungsart als Byte-Array zurück.
+    ''' </summary>
+    Public Function GetXmlRawFromBlob(rechnungsNummer As Integer, billType As RechnungsArt) As Byte()
+        Try
+            Dim sql As String = ""
+            Select Case billType
+                Case RechnungsArt.Werkstatt
+                    sql = $"SELECT XML_Raw FROM RechnungBlob WHERE RechnungsNr = {rechnungsNummer}"
+                Case RechnungsArt.Tanken
+                    sql = $"SELECT XML_Raw FROM TankabrechnungBlob WHERE RechnungsNr = {rechnungsNummer}"
+                Case RechnungsArt.Manuell
+                    sql = $"SELECT XML_Raw FROM ManuelleRechnungBlob WHERE RechnungsNr = {rechnungsNummer}"
+                Case Else
+                    _logger.Error($"Unbekannte Rechnungsart in GetXmlRawFromBlob: {billType}")
+                    Return Nothing
+            End Select
+
+            Dim dt = _dataConnection.FillDataTable(sql)
+            If dt.Rows.Count > 0 AndAlso Not IsDBNull(dt.Rows(0)("XML_Raw")) Then
+                ' XML_Raw ist VARBINARY(MAX), daher als Byte-Array zurückgeben
+                Return CType(dt.Rows(0)("XML_Raw"), Byte())
+            End If
+        Catch ex As Exception
+            _logger.Error($"Fehler beim Auslesen von XML_Raw für Rechnung {rechnungsNummer}, Art {billType}: {ex.Message}")
+        End Try
+        Return Nothing
+    End Function
+
+    ''' <summary>
+    ''' Speichert den XML-Inhalt in die jeweils passende Blob-Tabelle, erstellt eine Signatur,
+    ''' und aktualisiert den Kopf je nach Rechnungsart.
     ''' </summary>
     ''' <param name="xmlBytes">XML-Inhalt als Byte-Array</param>
     ''' <param name="rechnungsNummer">Rechnungsnummer</param>
     ''' <param name="format">ERechnung Format (z.B. 'UBL')</param>
     ''' <param name="profil">ERechnung Profil (z.B. 'XRechnung')</param>
-    Public Sub StoreXmlAndUpdateStatus(xmlBytes As Byte(), rechnungsNummer As Integer, format As String, profil As String)
+    ''' <param name="billType">Rechnungsart</param>
+    Public Sub StoreXmlAndUpdateStatus(xmlBytes As Byte(), rechnungsNummer As Integer, format As String, profil As String, billType As RechnungsArt)
         Try
             ' 1. GUID erzeugen
             Dim blobId As Guid = Guid.NewGuid()
             Dim createdAt As DateTime = DateTime.Now
             Dim createdBy As String = Environment.UserName
 
-            ' 2. XML in RechnungBlob speichern (INSERT, nicht UPDATE)
-            ' XML_SHA256 - Blob-Variante = technischer Fingerabdruck des gespeicherten XML (Integritäts- und Dublettenprüfung).
-            Dim sqlBlob = "INSERT INTO RechnungBlob " &
-                "(BlobId, RechnungsNr, Format, EN16931Profil, XML_Raw, CreatedAt, CreatedBy) " &
-                "VALUES (?, ?, ?, ?, ?, ?, ?)"
-            Dim cmdBlob As New OleDb.OleDbCommand(sqlBlob, _dataConnection.cn)
+            ' 2. XML in die passende Blob-Tabelle speichern (INSERT, nicht UPDATE)
+            Dim sqlBlob As String = ""
+            Dim cmdBlob As OleDb.OleDbCommand
+
+            Select Case billType
+                Case RechnungsArt.Werkstatt
+                    sqlBlob = "INSERT INTO RechnungBlob (BlobId, RechnungsNr, Format, EN16931Profil, XML_Raw, CreatedAt, CreatedBy) VALUES (?, ?, ?, ?, ?, ?, ?)"
+                Case RechnungsArt.Tanken
+                    sqlBlob = "INSERT INTO TankabrechnungBlob (BlobId, RechnungsNr, Format, EN16931Profil, XML_Raw, CreatedAt, CreatedBy) VALUES (?, ?, ?, ?, ?, ?, ?)"
+                Case RechnungsArt.Manuell
+                    sqlBlob = "INSERT INTO ManuelleRechnungBlob (BlobId, RechnungsNr, Format, EN16931Profil, XML_Raw, CreatedAt, CreatedBy) VALUES (?, ?, ?, ?, ?, ?, ?)"
+            End Select
+
+            cmdBlob = New OleDb.OleDbCommand(sqlBlob, _dataConnection.cn)
             cmdBlob.Parameters.AddWithValue("@BlobId", blobId.ToString())
             cmdBlob.Parameters.AddWithValue("@RechnungsNr", rechnungsNummer)
             cmdBlob.Parameters.AddWithValue("@Format", format)
@@ -1261,26 +1299,36 @@ Public Class XRechnungExporter
             cmdBlob.Parameters.AddWithValue("@CreatedAt", createdAt)
             cmdBlob.Parameters.AddWithValue("@CreatedBy", createdBy)
             cmdBlob.ExecuteNonQuery()
-            _logger.Info($"E-Rechnung XML für Rechnung {rechnungsNummer} in RechnungBlob gespeichert (BlobId: {blobId})")
+            _logger.Info($"E-Rechnung XML für Rechnung {rechnungsNummer} in Blob gespeichert (BlobId: {blobId}, Art: {billType})")
 
             ' 3. Signatur generieren und speichern (SHA256-Hash)
-            ' XML_SHA256 - Signature-Variante = rechtlich/kryptographischer Fingerabdruck (Beweis, dass die Signatur sich genau auf dieses XML bezieht).
             Dim xmlSha256 As String
+            Dim signatureBytes As Byte()
             Using sha = System.Security.Cryptography.SHA256.Create()
-                xmlSha256 = BitConverter.ToString(sha.ComputeHash(xmlBytes)).Replace("-", "").ToLowerInvariant()
+                Dim hashBytes = sha.ComputeHash(xmlBytes)
+                xmlSha256 = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant()
+                signatureBytes = hashBytes ' SHA256-Hash als Byte-Array für SignatureBytes
             End Using
 
             Dim signatureAlgo As String = "SHA256"
-            Dim signatureBytes As Byte() = New Byte() {} ' Falls keine echte Signatur vorhanden, leer
-            Dim certThumbprint As String = "" ' Falls kein Zertifikat, leer
+            Dim certThumbprint As String = ""
             Dim signedAt As DateTime = DateTime.Now
-            Dim signedBy As String = Environment.UserName ' oder leer, falls nicht verfügbar
+            Dim signedBy As String = Environment.UserName
 
-            Dim sqlSignature = "INSERT INTO RechnungSignature " &
-                "(RechnungNr, BlobId, XML_SHA256, SignatureAlgo, SignatureBytes, CertThumbprint, SignedAt, SignedBy) " &
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-            Dim cmdSignature As New OleDb.OleDbCommand(sqlSignature, _dataConnection.cn)
-            cmdSignature.Parameters.AddWithValue("@RechnungNr", rechnungsNummer)
+            Dim sqlSignature As String = ""
+            Dim cmdSignature As OleDb.OleDbCommand
+
+            Select Case billType
+                Case RechnungsArt.Werkstatt
+                    sqlSignature = "INSERT INTO RechnungSignature (RechnungsNr, BlobId, XML_SHA256, SignatureAlgo, SignatureBytes, CertThumbprint, SignedAt, SignedBy) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+                Case RechnungsArt.Tanken
+                    sqlSignature = "INSERT INTO TankabrechnungSignature (RechnungsNr, BlobId, XML_SHA256, SignatureAlgo, SignatureBytes, CertThumbprint, SignedAt, SignedBy) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+                Case RechnungsArt.Manuell
+                    sqlSignature = "INSERT INTO ManuelleRechnungSignature (RechnungsNr, BlobId, XML_SHA256, SignatureAlgo, SignatureBytes, CertThumbprint, SignedAt, SignedBy) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            End Select
+
+            cmdSignature = New OleDb.OleDbCommand(sqlSignature, _dataConnection.cn)
+            cmdSignature.Parameters.AddWithValue("@RechnungsNr", rechnungsNummer)
             cmdSignature.Parameters.AddWithValue("@BlobId", blobId.ToString())
             cmdSignature.Parameters.AddWithValue("@XML_SHA256", xmlSha256)
             cmdSignature.Parameters.AddWithValue("@SignatureAlgo", signatureAlgo)
@@ -1290,39 +1338,87 @@ Public Class XRechnungExporter
             cmdSignature.Parameters.AddWithValue("@SignedBy", signedBy)
             cmdSignature.ExecuteNonQuery()
 
-            ' 4. RechnungKopf aktualisieren (alle ERechnung-Felder)
-            ' XML parsen: als UTF-8 String speichern, damit TRY_CAST(@XML_Text AS XML) in SQL funktioniert
+            ' 4. Kopf-Tabelle aktualisieren
+            ' Fix: Remove encoding declaration from XML string to avoid encoding switch error
             Dim xmlParsedString As String = System.Text.Encoding.UTF8.GetString(xmlBytes)
+            If xmlParsedString.StartsWith("<?xml") Then
+                ' Remove encoding from XML declaration if present
+                Dim xmlDeclEnd = xmlParsedString.IndexOf("?>")
+                If xmlDeclEnd > 0 Then
+                    Dim xmlDecl = xmlParsedString.Substring(0, xmlDeclEnd + 2)
+                    Dim cleanedDecl = System.Text.RegularExpressions.Regex.Replace(xmlDecl, "encoding\s*=\s*[""'][^""']*[""']", "")
+                    xmlParsedString = cleanedDecl & xmlParsedString.Substring(xmlDeclEnd + 2)
+                End If
+            End If
 
-            Dim sqlKopf = "UPDATE RechnungKopf SET " &
-                          "Status = 'Issued', " &
-                          "Locked = ?, " &
-                          "IssueTimestamp = ?, " &
-                          "ERechnung_Format = ?, " &
-                          "ERechnung_EN16931Profil = ?, " &
-                          "ERechnung_XMLParsed = ?, " &
-                          "ERechnung_Valid = ?, " &
-                          "ERechnung_ValReport = ?, " &
-                          "ERechnung_ReceivedAt = ?, " &
-                          "ERechnung_ReportedAt = ? " &
-                          "WHERE RechnungsNr = ?"
-            Dim cmdKopf As New OleDb.OleDbCommand(sqlKopf, _dataConnection.cn)
+            Dim sqlKopf As String = ""
+            Dim cmdKopf As OleDb.OleDbCommand
+
+            Select Case billType
+                Case RechnungsArt.Werkstatt
+                    sqlKopf = "UPDATE RechnungKopf SET Status = 'Issued', Locked = ?, IssueTimestamp = ?, ERechnung_Format = ?, ERechnung_EN16931Profil = ?, ERechnung_XMLParsed = ?, ERechnung_Valid = ?, ERechnung_ValReport = ?, ERechnung_ReceivedAt = ?, ERechnung_ReportedAt = ? WHERE RechnungsNr = ?"
+                Case RechnungsArt.Tanken
+                    sqlKopf = "UPDATE TankabrechnungKopf SET Status = 'Issued', Locked = ?, IssueTimestamp = ?, ERechnung_Format = ?, ERechnung_EN16931Profil = ?, ERechnung_XMLParsed = ?, ERechnung_Valid = ?, ERechnung_ValReport = ?, ERechnung_ReceivedAt = ?, ERechnung_ReportedAt = ? WHERE RechnungsNr = ?"
+                Case RechnungsArt.Manuell
+                    sqlKopf = "UPDATE ManuelleRechnungKopf SET Status = 'Issued', Locked = ?, IssueTimestamp = ?, ERechnung_Format = ?, ERechnung_EN16931Profil = ?, ERechnung_XMLParsed = ?, ERechnung_Valid = ?, ERechnung_ValReport = ?, ERechnung_ReceivedAt = ?, ERechnung_ReportedAt = ? WHERE RechnungsNr = ?"
+            End Select
+
+            cmdKopf = New OleDb.OleDbCommand(sqlKopf, _dataConnection.cn)
             cmdKopf.Parameters.AddWithValue("@Locked", True)
             cmdKopf.Parameters.AddWithValue("@IssueTimestamp", createdAt)
             cmdKopf.Parameters.AddWithValue("@ERechnung_Format", format)
             cmdKopf.Parameters.AddWithValue("@ERechnung_EN16931Profil", profil)
-            cmdKopf.Parameters.AddWithValue("@ERechnung_XMLParsed", xmlParsedString) ' Geparste XML-Daten als String speichern
+            cmdKopf.Parameters.AddWithValue("@ERechnung_XMLParsed", xmlParsedString)
             cmdKopf.Parameters.AddWithValue("@ERechnung_Valid", DBNull.Value)
             cmdKopf.Parameters.AddWithValue("@ERechnung_ValReport", DBNull.Value)
             cmdKopf.Parameters.AddWithValue("@ERechnung_ReceivedAt", createdAt)
             cmdKopf.Parameters.AddWithValue("@ERechnung_ReportedAt", DBNull.Value)
             cmdKopf.Parameters.AddWithValue("@nr", rechnungsNummer)
             cmdKopf.ExecuteNonQuery()
+
         Catch ex As Exception
             _logger.Error($"Fehler beim Speichern der XML und Aktualisieren des Status für Rechnung {rechnungsNummer}: {ex.Message}")
             MessageBox.Show("Fehler beim Speichern der E-Rechnung!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
     End Sub
 
+    ''' <summary>
+    ''' Exportiert die bereits festgeschriebene Rechnung als Duplikat anhand der in der Datenbank gespeicherten XML-Datei.
+    ''' </summary>
+    ''' <param name="exportStream">Der Ziel-Stream für die XML-Datei</param>
+    ''' <param name="billType">Die Rechnungsart</param>
+    ''' <param name="rechnungsNummer">Die Rechnungsnummer</param>
+    ''' <param name="logEntry">Optionales Log-Objekt</param>
+    Public Sub ExportFinalizedXmlDuplicate(exportStream As Stream, billType As RechnungsArt, rechnungsNummer As Integer, Optional logEntry As ExportLogEntry = Nothing)
+        Try
+            ' Hole die gespeicherte XML als Byte-Array aus der passenden Tabelle
+            Dim xmlBytes As Byte() = GetXmlRawFromBlob(rechnungsNummer, billType)
+            If xmlBytes Is Nothing OrElse xmlBytes.Length = 0 Then
+                Throw New Exception("Keine gespeicherte XML für diese Rechnung gefunden.")
+            End If
+
+            ' Setze ExportFilePath im LogEntry
+            If logEntry IsNot Nothing Then
+                logEntry.ExportFilePath = Me.GetExportFilePath(billType, rechnungsNummer, "xml")
+            End If
+
+            ' Schreibe das XML in den Stream
+            Using writer As New StreamWriter(exportStream)
+                writer.Write(System.Text.Encoding.UTF8.GetString(xmlBytes))
+            End Using
+            If logEntry IsNot Nothing Then
+                logEntry.Status = "Erfolgreich"
+                logEntry.FehlerInfo = "Duplikat exportiert"
+            End If
+            Me.IsSuccess = True
+        Catch ex As Exception
+            If logEntry IsNot Nothing Then
+                logEntry.Status = "Fehler beim Duplikat-Export"
+                logEntry.FehlerInfo = ex.Message
+            End If
+            Me.IsSuccess = False
+            Throw
+        End Try
+    End Sub
 
 End Class

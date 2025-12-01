@@ -299,7 +299,7 @@ Public Class RechnungsUebersicht
 
                     ' Messagebox-Text formatieren (Leerzeile nach erster Zeile, Betrag als Währung)
                     Dim msgText As String =
-                        $"Soll die Rechnung {rechnungsNummer} als XRechnung XML festgeschrieben werden?" & vbCrLf & vbCrLf &
+                        vbCrLf & vbCrLf &
                         $"Kunde: {kunde}" & vbCrLf &
                         $"Rechnungsdatum: {rechnungsdatum}" & vbCrLf &
                         $"Betrag: {betrag}"
@@ -308,7 +308,7 @@ Public Class RechnungsUebersicht
                         Dim exportHelper = New XRechnungExporter(_dbConnection)
                         If Not exportHelper.IsRechnungIssued(rechnungsNummer) Then
                             Using fileStream = File.Create(filePath)
-                                Dim x = MsgBox(msgText, MsgBoxStyle.YesNo, "Fleet Fuhrpark IM System")
+                                Dim x = MsgBox($"Soll die Rechnung {rechnungsNummer} als XRechnung XML festgeschrieben werden?" & msgText, MsgBoxStyle.YesNo, "Fleet Fuhrpark IM System")
                                 If x = MsgBoxResult.No Then
                                     _xmlExporter.CreateBillXml(fileStream, RechnungsArt, rechnungsNummer, False, logEntry)
                                 Else
@@ -316,7 +316,16 @@ Public Class RechnungsUebersicht
                                 End If
                             End Using
                         Else
-                            logEntry.Status = "Bereits festgeschrieben"
+                            ' NEU: Hinweis und Abfrage für Duplikat-Export
+                            Dim dupeMsg As String = $"Rechnung {rechnungsNummer} bereits festgeschrieben. Soll ein Duplikat exportiert werden?" & msgText
+                            Dim dupeResult = MessageBox.Show(dupeMsg, "Fleet Fuhrpark IM System", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                            If dupeResult = DialogResult.Yes Then
+                                Using fileStream = File.Create(filePath)
+                                    _xmlExporter.ExportFinalizedXmlDuplicate(fileStream, RechnungsArt, rechnungsNummer, logEntry)
+                                End Using
+                            Else
+                                logEntry.Status = "Duplikat-Export abgebrochen"
+                            End If
                         End If
                     Catch ex As Exception
                         logEntry.Status = "Fehler"
@@ -490,7 +499,7 @@ Public Class RechnungsUebersicht
             For Each bill In bills.Keys
                 Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill}
                 Dim filePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, bill, "xml")
-                logEntry.ExportFilePath = filePath ' <--- Exportdateipfad setzen
+                logEntry.ExportFilePath = filePath
                 Try
                     If Not exportHelper.IsRechnungIssued(bill) Then
                         Using fileStream = File.Create(filePath)
@@ -502,7 +511,16 @@ Public Class RechnungsUebersicht
                             End If
                         End Using
                     Else
-                        logEntry.Status = "Bereits festgeschrieben"
+                        ' NEU: Hinweis und Abfrage für Duplikat-Export
+                        Dim msgText = "Rechnung " & bill & " bereits festgeschrieben. Soll ein Duplikat exportiert werden?"
+                        Dim dupeResult = MessageBox.Show(msgText, "Fleet Fuhrpark IM System", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                        If dupeResult = DialogResult.Yes Then
+                            Using fileStream = File.Create(filePath)
+                                _xmlExporter.ExportFinalizedXmlDuplicate(fileStream, RechnungsArt, bill, logEntry)
+                            End Using
+                        Else
+                            logEntry.Status = "Duplikat-Export abgebrochen"
+                        End If
                     End If
                 Catch ex As Exception
                     logEntry.Status = "Fehler"
