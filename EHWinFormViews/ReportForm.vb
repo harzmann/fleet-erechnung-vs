@@ -128,10 +128,36 @@ Public Class ReportForm
         _logger.Debug($"Leaving {NameOf(ReportForm)} constructor")
     End Sub
 
-    Public Sub SavePdf()
-        _saveSinglePdf = True
-        Dim pdfExportService = StiOptions.Services.Exports.FirstOrDefault(Function(s) s.ServiceName.ToLower().Contains("pdf"))
-        StiViewerControl1.InvokeProcessExport(pdfExportService)
+    ' Erweiterte SavePdf-Methode, die in einen Stream schreibt
+    Public Sub SavePdf(Optional outputStream As Stream = Nothing)
+        If outputStream Is Nothing Then
+            ' Standardverhalten: PDF auf Festplatte speichern
+            _saveSinglePdf = True
+            Dim pdfExportService = StiOptions.Services.Exports.FirstOrDefault(Function(s) s.ServiceName.ToLower().Contains("pdf"))
+            StiViewerControl1.InvokeProcessExport(pdfExportService)
+        Else
+            ' PDF in den bereitgestellten Stream schreiben
+            Try
+                ' PDF-Export-Service ermitteln
+                Dim pdfExportService = StiOptions.Services.Exports.FirstOrDefault(Function(s) s.ServiceName.ToLower().Contains("pdf"))
+                ' PDF-Export-Einstellungen setzen
+                Dim settings = New StiPdfExportSettings()
+                settings.PageRange = StiPagesRange.All
+                settings.ImageQuality = 75
+                settings.ImageCompressionMethod = StiPdfImageCompressionMethod.Jpeg
+                settings.ImageResolution = 100
+                settings.PdfComplianceMode = Export.StiPdfComplianceMode.A3
+                settings.ImageFormat = StiImageFormat.Color
+                settings.DitheringType = StiMonochromeDitheringType.None
+                settings.AllowEditable = False
+                settings.ImageResolutionMode = StiImageResolutionMode.Auto
+
+                ' Export über StiViewerControl1 in den Stream
+                pdfExportService.ExportTo(StiViewerControl1.Report, outputStream, settings)
+            Catch ex As Exception
+                Throw New Exception("Fehler beim PDF-Export in Stream: " & ex.Message, ex)
+            End Try
+        End If
     End Sub
 
     Private Sub HandleProcesExport(sender As Object, args As EventArgs)
@@ -178,16 +204,6 @@ Public Class ReportForm
                                     settings.AllowEditable = form("AllowEditable")
                                     settings.ImageResolutionMode = form("ImageResolutionMode")
                                     settings.CertificateThumbprint = form("CertificateThumbprint")
-
-                                    For Each rechnungsNummer In _rechnungsNummern
-                                        Using xmlStream = New MemoryStream
-                                            _xmlExporter.CreateBillXml(xmlStream, _billType, rechnungsNummer)
-                                            Dim billdate = _rechnungsNummern(rechnungsNummer)
-                                            Dim formattedBillNumber = _xmlExporter.GetFormattedBillNumber(_billType, rechnungsNummer)
-                                            Dim xmlFileName = $"{formattedBillNumber}_{billdate.ToString("yyyyMMdd_HHmmss")}"
-                                            settings.EmbeddedFiles.Add(New StiPdfEmbeddedFileData(xmlFileName, $"XRechnung Nr. {formattedBillNumber}", xmlStream.GetBuffer(), "application/xml"))
-                                        End Using
-                                    Next
 
                                     service.ExportTo(StiViewerControl1.Report, stream, settings)
 

@@ -6,6 +6,7 @@ Imports System.Windows.Forms
 Imports ehfleet_classlibrary
 Imports log4net
 Imports s2industries.ZUGFeRD
+Imports s2industries.ZUGFeRD.PDF
 Imports Stimulsoft.Database
 
 Public Class XRechnungExporter
@@ -102,8 +103,7 @@ Public Class XRechnungExporter
             ' --- Beleg erzeugen ---
             Dim xRechnung = New InvoiceDescriptor()
 
-            Dim billTypeText As String = ""
-            Dim formattedInvoiceNumber As String = Sale.Invoicing.FormatInvoiceNumber(_dataConnection, billTypeText, rechnungsNummer)
+            Dim formattedInvoiceNumber As String = GetFormattedBillNumber(rechnungsNummer, billType)
             Dim orderNo As String = DetermineOrderNo(billType, items, formattedInvoiceNumber)
 
             FillHeader(xRechnung, items, orderNo, formattedInvoiceNumber)
@@ -1199,40 +1199,6 @@ Public Class XRechnungExporter
     End Function
 
     ''' <summary>
-    ''' Gibt das Feld PDF_Raw aus der Tabelle RechnungBlob für die angegebene Rechnungsnummer als Byte-Array zurück.
-    ''' </summary>
-    Public Function GetPdfRawFromBlob(rechnungsNummer As Integer) As Byte()
-        Try
-            Dim sql = $"SELECT PDF_Raw FROM RechnungBlob WHERE RechnungsNr = {rechnungsNummer}"
-            Dim dt = _dataConnection.FillDataTable(sql)
-            If dt.Rows.Count > 0 AndAlso Not IsDBNull(dt.Rows(0)("PDF_Raw")) Then
-                ' PDF_Raw ist VARBINARY(MAX), daher als Byte-Array zurückgeben
-                Return CType(dt.Rows(0)("PDF_Raw"), Byte())
-            End If
-        Catch ex As Exception
-            _logger.Error($"Fehler beim Auslesen von PDF_Raw für Rechnung {rechnungsNummer}: {ex.Message}")
-        End Try
-        Return Nothing
-    End Function
-
-    ''' <summary>
-    ''' Gibt das Feld XML_Raw aus der Tabelle RechnungBlob für die angegebene Rechnungsnummer als Byte-Array zurück.
-    ''' </summary>
-    Public Function GetXmlRawFromBlob(rechnungsNummer As Integer) As Byte()
-        Try
-            Dim sql = $"SELECT XML_Raw FROM RechnungBlob WHERE RechnungsNr = {rechnungsNummer}"
-            Dim dt = _dataConnection.FillDataTable(sql)
-            If dt.Rows.Count > 0 AndAlso Not IsDBNull(dt.Rows(0)("XML_Raw")) Then
-                ' XML_Raw ist VARBINARY(MAX), daher als Byte-Array zurückgeben
-                Return CType(dt.Rows(0)("XML_Raw"), Byte())
-            End If
-        Catch ex As Exception
-            _logger.Error($"Fehler beim Auslesen von XML_Raw für Rechnung {rechnungsNummer}: {ex.Message}")
-        End Try
-        Return Nothing
-    End Function
-
-    ''' <summary>
     ''' Gibt das Feld XML_Raw aus der passenden Blob-Tabelle für die angegebene Rechnungsnummer und Rechnungsart als Byte-Array zurück.
     ''' </summary>
     Public Function GetXmlRawFromBlob(rechnungsNummer As Integer, billType As RechnungsArt) As Byte()
@@ -1378,7 +1344,7 @@ Public Class XRechnungExporter
 
         Catch ex As Exception
             _logger.Error($"Fehler beim Speichern der XML und Aktualisieren des Status für Rechnung {rechnungsNummer}: {ex.Message}")
-            MessageBox.Show("Fehler beim Speichern der E-Rechnung!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            MessageBox.Show("Fehler beim Speichern der E-Rechnung in Datenbank!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
     End Sub
 
@@ -1418,6 +1384,206 @@ Public Class XRechnungExporter
             End If
             Me.IsSuccess = False
             Throw
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' Gibt das Feld PDF_Raw aus der passenden Blob-Tabelle für die angegebene Rechnungsnummer und Rechnungsart als Byte-Array zurück.
+    ''' </summary>
+    Public Function GetPdfRawFromBlob(rechnungsNummer As Integer, billType As RechnungsArt) As Byte()
+        Try
+            Dim sql As String = ""
+            Select Case billType
+                Case RechnungsArt.Werkstatt
+                    sql = $"SELECT PDF_Raw FROM RechnungBlob WHERE RechnungsNr = {rechnungsNummer}"
+                Case RechnungsArt.Tanken
+                    sql = $"SELECT PDF_Raw FROM TankabrechnungBlob WHERE RechnungsNr = {rechnungsNummer}"
+                Case RechnungsArt.Manuell
+                    sql = $"SELECT PDF_Raw FROM ManuelleRechnungBlob WHERE RechnungsNr = {rechnungsNummer}"
+                Case Else
+                    _logger.Error($"Unbekannte Rechnungsart in GetPdfRawFromBlob: {billType}")
+                    Return Nothing
+            End Select
+
+            Dim dt = _dataConnection.FillDataTable(sql)
+            If dt.Rows.Count > 0 AndAlso Not IsDBNull(dt.Rows(0)("PDF_Raw")) Then
+                ' PDF_Raw ist VARBINARY(MAX), daher als Byte-Array zurückgeben
+                Return CType(dt.Rows(0)("PDF_Raw"), Byte())
+            End If
+        Catch ex As Exception
+            _logger.Error($"Fehler beim Auslesen von PDF_Raw für Rechnung {rechnungsNummer}, Art {billType}: {ex.Message}")
+        End Try
+        Return Nothing
+    End Function
+
+    ''' <summary>
+    ''' Speichert das PDF im Feld PDF_Raw im gleichen Datensatz wie das XML_Raw für die angegebene Rechnungsnummer.
+    ''' </summary>
+    ''' <param name="pdfBytes">PDF-Inhalt als Byte-Array</param>
+    ''' <param name="rechnungsNummer">Rechnungsnummer</param>
+    ''' <param name="billType">Rechnungsart</param>
+    Public Sub StorePdfToBlob(pdfBytes As Byte(), rechnungsNummer As Integer, billType As RechnungsArt)
+        Try
+            Dim sqlUpdate As String = ""
+            Select Case billType
+                Case RechnungsArt.Werkstatt
+                    sqlUpdate = "UPDATE RechnungBlob SET PDF_Raw = ? WHERE RechnungsNr = ?"
+                Case RechnungsArt.Tanken
+                    sqlUpdate = "UPDATE TankabrechnungBlob SET PDF_Raw = ? WHERE RechnungsNr = ?"
+                Case RechnungsArt.Manuell
+                    sqlUpdate = "UPDATE ManuelleRechnungBlob SET PDF_Raw = ? WHERE RechnungsNr = ?"
+                Case Else
+                    _logger.Error($"Unbekannte Rechnungsart in StorePdfToBlob: {billType}")
+                    Exit Sub
+            End Select
+
+            Using cmd As New OleDb.OleDbCommand(sqlUpdate, _dataConnection.cn)
+                cmd.Parameters.AddWithValue("@PDF_Raw", pdfBytes)
+                cmd.Parameters.AddWithValue("@RechnungsNr", rechnungsNummer)
+                Dim rowsAffected = cmd.ExecuteNonQuery()
+                If rowsAffected = 0 Then
+                    _logger.Warn($"Kein Datensatz zum Aktualisieren gefunden für Rechnung {rechnungsNummer}, Art {billType}")
+                Else
+                    _logger.Info($"PDF für Rechnung {rechnungsNummer} in bestehendem Blob-Datensatz gespeichert (Art: {billType})")
+                End If
+            End Using
+        Catch ex As Exception
+            _logger.Error($"Fehler beim Speichern des PDF für Rechnung {rechnungsNummer}, Art {billType}: {ex.Message}")
+            MessageBox.Show("Fehler beim Speichern des PDF!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' Erstellt eine Hybrid-PDF/A-3 Datei (ZUGFeRD/XRechnung) aus PDF und XML.
+    ''' Entweder werden pdfRaw und xmlRaw als MemoryStream übergeben,
+    ''' oder sie werden über die Blob-Funktionen anhand Rechnungsnummer und Rechnungsart geladen.
+    ''' 
+    ''' Ergebnis:
+    ''' - PDF/A-3 mit eingebetteter XRechnung/UBL (ZUGFeRD 2.3, Profil XRechnung)
+    ''' - Optional in outputStream geschrieben
+    ''' - Optional in der passenden Blob-Tabelle als PDF_Raw gespeichert
+    ''' </summary>
+    ''' <param name="pdfRaw">PDF als MemoryStream (optional)</param>
+    ''' <param name="xmlRaw">XML als MemoryStream (optional)</param>
+    ''' <param name="outputStream">Zielstream für die Hybrid-PDF/A (optional)</param>
+    ''' <param name="rechnungsNummer">Rechnungsnummer (optional, falls Streams nicht gesetzt)</param>
+    ''' <param name="billType">Rechnungsart (optional, falls Streams nicht gesetzt)</param>
+    ''' <param name="logEntry">Optionales Log-Objekt für Exportinformationen</param>
+    Public Sub CreateHybridPdfA(
+        Optional pdfRaw As MemoryStream = Nothing,
+        Optional xmlRaw As MemoryStream = Nothing,
+        Optional outputStream As Stream = Nothing,
+        Optional rechnungsNummer As Integer = 0,
+        Optional billType As RechnungsArt = RechnungsArt.Werkstatt,
+        Optional logEntry As ExportLogEntry = Nothing
+    )
+        _logger.Debug($"Entering {NameOf(CreateHybridPdfA)}(rechnungsNummer={rechnungsNummer}, billType={billType})")
+
+        Try
+            ' 1. PDF/XML ggf. aus Blob laden
+            If (pdfRaw Is Nothing OrElse pdfRaw.Length = 0) AndAlso rechnungsNummer > 0 Then
+                Dim pdfBytes = GetPdfRawFromBlob(rechnungsNummer, billType)
+                If pdfBytes Is Nothing OrElse pdfBytes.Length = 0 Then
+                    Throw New Exception("PDF-Raw konnte nicht aus der Datenbank geladen werden.")
+                End If
+                pdfRaw = New MemoryStream(pdfBytes)
+            End If
+
+            If (xmlRaw Is Nothing OrElse xmlRaw.Length = 0) AndAlso rechnungsNummer > 0 Then
+                Dim xmlBytes = GetXmlRawFromBlob(rechnungsNummer, billType)
+                If xmlBytes Is Nothing OrElse xmlBytes.Length = 0 Then
+                    Throw New Exception("XML-Raw konnte nicht aus der Datenbank geladen werden.")
+                End If
+                xmlRaw = New MemoryStream(xmlBytes)
+            End If
+
+            If pdfRaw Is Nothing OrElse pdfRaw.Length = 0 Then
+                Throw New Exception("Kein PDF-Stream vorhanden für CreateHybridPdfA.")
+            End If
+            If xmlRaw Is Nothing OrElse xmlRaw.Length = 0 Then
+                Throw New Exception("Kein XML-Stream vorhanden für CreateHybridPdfA.")
+            End If
+
+            ' Zur Sicherheit auf Anfang setzen
+            If pdfRaw.CanSeek Then pdfRaw.Position = 0
+            If xmlRaw.CanSeek Then xmlRaw.Position = 0
+
+            ' 2. InvoiceDescriptor aus XML laden
+            _logger.Debug("Loading InvoiceDescriptor from XML stream")
+            Dim descriptor As InvoiceDescriptor = InvoiceDescriptor.Load(xmlRaw)
+
+            ' 3. Temporäre Dateien für ZUGFeRD.PDF-csharp
+            '    (InvoicePdfProcessor arbeitet pfad-basiert)
+            Dim tempInputPdf As String = Path.GetTempFileName()
+            Dim tempOutputPdf As String = Path.GetTempFileName()
+
+            _logger.Debug($"Writing source PDF to temp file: {tempInputPdf}")
+            Using fs As New FileStream(tempInputPdf, FileMode.Create, FileAccess.Write, FileShare.None)
+                pdfRaw.CopyTo(fs)
+            End Using
+
+            ' 4. PDF/A-3 Hybrid mit eingebettetem XML erzeugen
+            _logger.Debug("Creating PDF/A-3 hybrid using InvoicePdfProcessor.SaveToPdf")
+
+            ' Hinweis:
+            '   - ZUGFeRDVersion.Version23 -> ZUGFeRD 2.3 / XRechnung 3
+            '   - Profile.XRechnung        -> Profil XRechnung
+            '   - ZUGFeRDFormats.UBL       -> UBL-Serialisierung
+            InvoicePdfProcessor.SaveToPdf(
+                tempOutputPdf,
+                ZUGFeRDVersion.Version23,
+                Profile.XRechnung,
+                ZUGFeRDFormats.UBL,
+                tempInputPdf,
+                descriptor
+            )
+
+            ' Ergebnis einlesen
+            Dim pdfBytesResult As Byte() = File.ReadAllBytes(tempOutputPdf)
+
+            ' 5. Ausgabe in den Zielstream (falls übergeben)
+            If outputStream IsNot Nothing Then
+                _logger.Debug("Writing hybrid PDF/A to provided outputStream")
+                If outputStream.CanSeek Then outputStream.Position = 0
+                outputStream.Write(pdfBytesResult, 0, pdfBytesResult.Length)
+                outputStream.Flush()
+                ' Setze ExportFilePath im LogEntry, falls möglich
+                If logEntry IsNot Nothing Then
+                    Try
+                        If TypeOf outputStream Is FileStream Then
+                            logEntry.ExportFilePath = CType(outputStream, FileStream).Name
+                        End If
+                    Catch
+                        ' Ignorieren, falls kein Pfad ermittelbar
+                    End Try
+                End If
+            End If
+
+            Me.IsSuccess = True
+
+            ' 6. Aufräumen
+            Try
+                If File.Exists(tempInputPdf) Then File.Delete(tempInputPdf)
+            Catch
+                ' Ignorieren
+            End Try
+
+            Try
+                If File.Exists(tempOutputPdf) Then File.Delete(tempOutputPdf)
+            Catch
+                ' Ignorieren
+            End Try
+
+        Catch ex As Exception
+            Me.IsSuccess = False
+            _logger.Error($"Fehler in {NameOf(CreateHybridPdfA)}: {ex.Message}", ex)
+            If logEntry IsNot Nothing Then
+                logEntry.Status = "Fehler beim Hybrid-PDF-Export"
+                logEntry.FehlerInfo = ex.Message
+            End If
+            Throw
+        Finally
+            _logger.Debug($"Leaving {NameOf(CreateHybridPdfA)}")
         End Try
     End Sub
 

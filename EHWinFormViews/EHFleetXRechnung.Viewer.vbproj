@@ -46,6 +46,7 @@
     </PackageReference>
     <PackageReference Include="Telerik.UI.for.WinForms.AllControls" Version="2025.1.211" />
     <PackageReference Include="ZUGFeRD-csharp" Version="17.4.0" />
+    <PackageReference Include="ZUGFeRD.PDF-csharp" Version="17.4.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ehfleet_classlibrary\ehfleet_classlibrary.vbproj" />
