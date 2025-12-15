@@ -269,18 +269,8 @@ Public Class RechnungsUebersicht
                     ' Nutze zentrale Exportfunktion für Einzel-PDF
                     ExportSelectedPdf(New List(Of Integer) From {rechnungsNummer}, dataTable)
                 Case "Validator"
-                    Dim filePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, rechnungsNummer, "xml")
-                    Using fileStream = File.Create(filePath)
-                        Try
-                            _xmlExporter.CreateBillXml(fileStream, RechnungsArt, rechnungsNummer)
-                        Catch ex As Exception
-                            MessageBox.Show("Speichern fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
-                            Return
-                        End Try
-                    End Using
-                    If _xmlExporter.IsSuccess Then
-                        _xmlExporter.Validate(filePath)
-                    End If
+                    ' Neue zentrale Validierungsfunktion
+                    ValidateSelectedBill(rechnungsNummer)
             End Select
         Catch ex As Exception
             MessageBox.Show(ex.Message, "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -749,6 +739,49 @@ Public Class RechnungsUebersicht
 
         Dim logForm As New ExportLogGridForm(exportLog)
         logForm.ShowDialog()
+    End Sub
+
+    ' Validiert eine einzelne Rechnung und zeigt das Ergebnis im ExportLogGridForm an
+    Private Sub ValidateSelectedBill(rechnungsNummer As Integer)
+        Dim exportLog As New List(Of ExportLogEntry)
+        Dim logEntry As New ExportLogEntry With {.RechnungsNummer = rechnungsNummer}
+        Dim tempFile As String = Path.GetTempFileName()
+        Dim isIssued As Boolean = _xmlExporter.IsRechnungIssued(rechnungsNummer)
+        Try
+            If isIssued Then
+                ' Festgeschrieben: XML aus Blob holen und temporär speichern
+                Dim xmlBytes As Byte() = _xmlExporter.GetXmlRawFromBlob(rechnungsNummer, RechnungsArt)
+                If xmlBytes Is Nothing OrElse xmlBytes.Length = 0 Then
+                    logEntry.Status = "Fehler"
+                    logEntry.FehlerInfo = "Kein XML in der Datenbank gefunden."
+                    exportLog.Add(logEntry)
+                    Dim logForm As New ExportLogGridForm(exportLog)
+                    logForm.ShowDialog()
+                    Return
+                End If
+                System.IO.File.WriteAllBytes(tempFile, xmlBytes)
+                _xmlExporter.Validate(tempFile, silent:=True, logEntry:=logEntry)
+                logEntry.FehlerInfo = logEntry.FehlerInfo & vbCrLf & "Hinweis: Rechnung ist festgeschrieben - XML aus Blob-Daten."
+            Else
+                ' Noch nicht festgeschrieben: temporär erzeugen
+                Using fs = New FileStream(tempFile, FileMode.Create, FileAccess.Write)
+                    _xmlExporter.CreateBillXml(fs, RechnungsArt, rechnungsNummer, False, logEntry)
+                End Using
+                _xmlExporter.Validate(tempFile, silent:=True, logEntry:=logEntry)
+                logEntry.FehlerInfo = logEntry.FehlerInfo & vbCrLf & "Hinweis: Rechnung ist nicht festgeschrieben - XML generiert."
+            End If
+        Catch ex As Exception
+            logEntry.Status = "Fehler"
+            logEntry.FehlerInfo = ex.Message
+        Finally
+            Try
+                If System.IO.File.Exists(tempFile) Then System.IO.File.Delete(tempFile)
+            Catch
+            End Try
+        End Try
+        exportLog.Add(logEntry)
+        Dim logForm2 As New ExportLogGridForm(exportLog)
+        logForm2.ShowDialog()
     End Sub
 
 End Class

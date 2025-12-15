@@ -8,6 +8,9 @@ Imports log4net
 Imports s2industries.ZUGFeRD
 Imports s2industries.ZUGFeRD.PDF
 Imports Stimulsoft.Database
+Imports PdfSharp.Pdf
+Imports PdfSharp.Pdf.IO
+Imports PdfSharp.Pdf.Advanced
 
 Public Class XRechnungExporter
     Private ReadOnly _dataConnection As General.Database
@@ -817,7 +820,7 @@ Public Class XRechnungExporter
             Dim configFile = Path.Combine(configurationFolder, "EN16931-UBL-validation.xslt")
             Dim scenarioFile = Path.Combine(configurationFolder, "scenarios.xml")
 
-            If Not IO.File.Exists(validatorFileName) OrElse Not Directory.Exists(configurationFolder) OrElse Not IO.File.Exists(configFile) OrElse Not IO.File.Exists(scenarioFile) Then
+            If Not System.IO.File.Exists(validatorFileName) OrElse Not Directory.Exists(configurationFolder) OrElse Not System.IO.File.Exists(configFile) OrElse Not System.IO.File.Exists(scenarioFile) Then
                 _logger.Error($"Validator or configuration not found.")
                 If logEntry IsNot Nothing Then
                     logEntry.Status = "Validator-Konfiguration fehlt"
@@ -925,7 +928,8 @@ Public Class XRechnungExporter
                 validationSuccess = True
                 htmlReportPath = Directory.EnumerateFiles(reportFolder, "*.html").FirstOrDefault()
                 If logEntry IsNot Nothing Then
-                    logEntry.Status = "Validierung erfolgreich"
+                    logEntry.Status = "Erfolgreich"
+                    logEntry.FehlerInfo = "Validierung erfolgreich"
                     logEntry.HtmlValidatorPath = htmlReportPath
                 End If
                 If Not silent Then
@@ -952,7 +956,7 @@ Public Class XRechnungExporter
             Throw New Exception($"Exportpfad nicht definiert!")
         End If
 
-        Return IO.Path.Combine(path, billType.ToString())
+        Return System.IO.Path.Combine(path, billType.ToString())
     End Function
 
     ' --- Vollständigen Export-Dateipfad holen (inkl. Dateiname) ---
@@ -1469,7 +1473,7 @@ Public Class XRechnungExporter
     ''' <param name="rechnungsNummer">Rechnungsnummer (optional, falls Streams nicht gesetzt)</param>
     ''' <param name="billType">Rechnungsart (optional, falls Streams nicht gesetzt)</param>
     ''' <param name="logEntry">Optionales Log-Objekt für Exportinformationen</param>
-    Public Sub CreateHybridPdfA(
+    Public Sub CreateHybridPdfA_ZUGFeRD(
         Optional pdfRaw As MemoryStream = Nothing,
         Optional xmlRaw As MemoryStream = Nothing,
         Optional outputStream As Stream = Nothing,
@@ -1511,6 +1515,7 @@ Public Class XRechnungExporter
             ' 2. InvoiceDescriptor aus XML laden
             _logger.Debug("Loading InvoiceDescriptor from XML stream")
             Dim descriptor As InvoiceDescriptor = InvoiceDescriptor.Load(xmlRaw)
+            descriptor.SpecifiedProcuringProject = Nothing
 
             ' 3. Temporäre Dateien für ZUGFeRD.PDF-csharp
             '    (InvoicePdfProcessor arbeitet pfad-basiert)
@@ -1585,6 +1590,195 @@ Public Class XRechnungExporter
         Finally
             _logger.Debug($"Leaving {NameOf(CreateHybridPdfA)}")
         End Try
+    End Sub
+
+    Public Sub CreateHybridPdfA(
+    Optional pdfRaw As MemoryStream = Nothing,
+    Optional xmlRaw As MemoryStream = Nothing,
+    Optional outputStream As Stream = Nothing,
+    Optional rechnungsNummer As Integer = 0,
+    Optional billType As RechnungsArt = RechnungsArt.Werkstatt,
+    Optional logEntry As ExportLogEntry = Nothing
+)
+        _logger.Debug($"Entering {NameOf(CreateHybridPdfA)}(rechnungsNummer={rechnungsNummer}, billType={billType})")
+
+        Dim tempInputPdf As String = Nothing
+        Dim tempOutputPdf As String = Nothing
+
+        Try
+            ' 1) PDF/XML ggf. aus Blob laden
+            If (pdfRaw Is Nothing OrElse pdfRaw.Length = 0) AndAlso rechnungsNummer > 0 Then
+                Dim pdfBytes = GetPdfRawFromBlob(rechnungsNummer, billType)
+                If pdfBytes Is Nothing OrElse pdfBytes.Length = 0 Then
+                    Throw New Exception("PDF-Raw konnte nicht aus der Datenbank geladen werden.")
+                End If
+                pdfRaw = New MemoryStream(pdfBytes)
+            End If
+
+            If (xmlRaw Is Nothing OrElse xmlRaw.Length = 0) AndAlso rechnungsNummer > 0 Then
+                Dim xmlBytes = GetXmlRawFromBlob(rechnungsNummer, billType)
+                If xmlBytes Is Nothing OrElse xmlBytes.Length = 0 Then
+                    Throw New Exception("XML-Raw konnte nicht aus der Datenbank geladen werden.")
+                End If
+                xmlRaw = New MemoryStream(xmlBytes)
+            End If
+
+            If pdfRaw Is Nothing OrElse pdfRaw.Length = 0 Then
+                Throw New Exception("Kein PDF-Stream vorhanden für CreateHybridPdfA.")
+            End If
+            If xmlRaw Is Nothing OrElse xmlRaw.Length = 0 Then
+                Throw New Exception("Kein XML-Stream vorhanden für CreateHybridPdfA.")
+            End If
+
+            ' Zur Sicherheit auf Anfang setzen
+            If pdfRaw.CanSeek Then pdfRaw.Position = 0
+            If xmlRaw.CanSeek Then xmlRaw.Position = 0
+
+            ' 2) Bytes aus Streams holen (bytegenau)
+            Dim pdfBytesIn As Byte() = pdfRaw.ToArray()
+            Dim xmlBytesIn As Byte() = xmlRaw.ToArray()
+
+            _logger.Debug($"PDF bytes: {pdfBytesIn.Length}, XML bytes: {xmlBytesIn.Length}")
+
+            ' 3) Temporäre Dateien (PDFsharp arbeitet file-basiert beim Lesen/Speichern am stabilsten)
+            tempInputPdf = Path.GetTempFileName()
+            tempOutputPdf = Path.GetTempFileName()
+
+            _logger.Debug($"Writing source PDF/A-3 to temp file: {tempInputPdf}")
+            File.WriteAllBytes(tempInputPdf, pdfBytesIn)
+
+            ' 4) Bytegenaues XML als Associated File anhängen (PDF/A-3)
+            '    Kein InvoiceDescriptor.Load, keine Re-Serialisierung -> kein <cac:ProjectReference />
+            _logger.Debug("Attaching XML byte-exact as PDF/A-3 Associated File using PDFsharp")
+            AttachXmlPdfA3_ByteExact(
+            inputPdfPath:=tempInputPdf,
+            xmlBytes:=xmlBytesIn,
+            outputPdfPath:=tempOutputPdf,
+            attachmentName:="xrechnung.xml",
+            afRelationship:="Alternative"
+        )
+
+            ' 5) Ergebnis einlesen
+            Dim pdfBytesResult As Byte() = File.ReadAllBytes(tempOutputPdf)
+
+            ' 6) Ausgabe in den Zielstream (falls übergeben)
+            If outputStream IsNot Nothing Then
+                _logger.Debug("Writing hybrid PDF/A-3 to provided outputStream")
+                If outputStream.CanSeek Then outputStream.Position = 0
+                outputStream.Write(pdfBytesResult, 0, pdfBytesResult.Length)
+                outputStream.Flush()
+
+                If logEntry IsNot Nothing Then
+                    Try
+                        If TypeOf outputStream Is FileStream Then
+                            logEntry.ExportFilePath = CType(outputStream, FileStream).Name
+                        End If
+                    Catch
+                        ' Ignorieren, falls kein Pfad ermittelbar
+                    End Try
+                End If
+            End If
+
+            Me.IsSuccess = True
+
+        Catch ex As Exception
+            Me.IsSuccess = False
+            _logger.Error($"Fehler in {NameOf(CreateHybridPdfA)}: {ex.Message}", ex)
+            If logEntry IsNot Nothing Then
+                logEntry.Status = "Fehler beim Hybrid-PDF-Export"
+                logEntry.FehlerInfo = ex.Message
+            End If
+            Throw
+
+        Finally
+            ' 7) Aufräumen
+            Try
+                If Not String.IsNullOrWhiteSpace(tempInputPdf) AndAlso File.Exists(tempInputPdf) Then File.Delete(tempInputPdf)
+            Catch
+            End Try
+            Try
+                If Not String.IsNullOrWhiteSpace(tempOutputPdf) AndAlso File.Exists(tempOutputPdf) Then File.Delete(tempOutputPdf)
+            Catch
+            End Try
+
+            _logger.Debug($"Leaving {NameOf(CreateHybridPdfA)}")
+        End Try
+    End Sub
+
+    Private Sub AttachXmlPdfA3_ByteExact(
+    inputPdfPath As String,
+    xmlBytes As Byte(),
+    outputPdfPath As String,
+    Optional attachmentName As String = "xrechnung.xml",
+    Optional afRelationship As String = "Alternative" ' Alternative|Data|Source|Supplement|Unspecified
+)
+        Dim doc As PdfDocument = PdfReader.Open(inputPdfPath, PdfDocumentOpenMode.Modify)
+
+        ' --- 1) EmbeddedFile als indirektes Objekt ---
+        Dim embeddedFile As New PdfDictionary(doc)
+        embeddedFile.Elements("/Type") = New PdfName("/EmbeddedFile")
+        embeddedFile.Elements("/Subtype") = New PdfName("/text#2Fxml") ' text/xml
+        embeddedFile.CreateStream(xmlBytes)
+        doc.Internals.AddObject(embeddedFile) ' <-- wichtig (indirekt)
+
+        ' --- 2) FileSpec als indirektes Objekt ---
+        Dim fileSpec As New PdfDictionary(doc)
+        fileSpec.Elements("/Type") = New PdfName("/Filespec")
+        fileSpec.Elements("/F") = New PdfString(attachmentName)
+        fileSpec.Elements("/UF") = New PdfString(attachmentName, PdfStringEncoding.Unicode)
+
+        Dim efDict As New PdfDictionary(doc)
+        efDict.Elements("/F") = embeddedFile.Reference
+        efDict.Elements("/UF") = embeddedFile.Reference
+        fileSpec.Elements("/EF") = efDict
+
+        fileSpec.Elements("/AFRelationship") = New PdfName("/" & afRelationship)
+
+        doc.Internals.AddObject(fileSpec) ' <-- wichtig (indirekt)
+
+        Dim catalog As PdfDictionary = doc.Internals.Catalog
+
+        ' --- 3) /Names im Catalog sicherstellen ---
+        Dim namesRoot As PdfDictionary = TryCast(catalog.Elements.GetDictionary("/Names"), PdfDictionary)
+        If namesRoot Is Nothing Then
+            namesRoot = New PdfDictionary(doc)
+            catalog.Elements("/Names") = namesRoot
+        End If
+
+        ' --- 4) /EmbeddedFiles NameTree sicherstellen ---
+        Dim embeddedFilesTree As PdfDictionary = TryCast(namesRoot.Elements.GetDictionary("/EmbeddedFiles"), PdfDictionary)
+        If embeddedFilesTree Is Nothing Then
+            embeddedFilesTree = New PdfDictionary(doc)
+            namesRoot.Elements("/EmbeddedFiles") = embeddedFilesTree
+        End If
+
+        Dim namesArr As PdfArray = TryCast(embeddedFilesTree.Elements.GetArray("/Names"), PdfArray)
+        If namesArr Is Nothing Then
+            namesArr = New PdfArray(doc)
+            embeddedFilesTree.Elements("/Names") = namesArr
+        End If
+
+        ' Falls gleicher Name existiert -> ersetzen (NameTree /Names ist key,value,key,value,...)
+        For i As Integer = namesArr.Elements.Count - 2 To 0 Step -2
+            Dim key = TryCast(namesArr.Elements(i), PdfString)
+            If key IsNot Nothing AndAlso String.Equals(key.Value, attachmentName, StringComparison.OrdinalIgnoreCase) Then
+                namesArr.Elements.RemoveAt(i + 1)
+                namesArr.Elements.RemoveAt(i)
+            End If
+        Next
+
+        namesArr.Elements.Add(New PdfString(attachmentName))
+        namesArr.Elements.Add(fileSpec.Reference) ' <-- Referenz, nicht Dictionary!
+
+        ' --- 5) /AF Array im Catalog ergänzen ---
+        Dim afArr As PdfArray = TryCast(catalog.Elements.GetArray("/AF"), PdfArray)
+        If afArr Is Nothing Then
+            afArr = New PdfArray(doc)
+            catalog.Elements("/AF") = afArr
+        End If
+        afArr.Elements.Add(fileSpec.Reference) ' <-- Referenz
+
+        doc.Save(outputPdfPath)
     End Sub
 
 End Class

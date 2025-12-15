@@ -42,6 +42,7 @@
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient" Version="19.90.0" />
     <PackageReference Include="Microsoft.Identity.Client" Version="4.69.1" />
     <PackageReference Include="Microsoft.VisualBasic" Version="10.3.0" />
+    <PackageReference Include="PDFsharp" Version="6.2.3" />
     <PackageReference Include="Stimulsoft.Reports.Net" Version="2025.1.6">
     </PackageReference>
     <PackageReference Include="Telerik.UI.for.WinForms.AllControls" Version="2025.1.211" />
