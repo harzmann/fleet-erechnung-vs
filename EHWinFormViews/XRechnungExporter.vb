@@ -907,7 +907,8 @@ Public Class XRechnungExporter
 
             If p.ExitCode <> 0 Then
                 validationSuccess = False
-                htmlReportPath = Directory.EnumerateFiles(reportFolder, "*.html").FirstOrDefault()
+                Dim htmlReportFileName = Path.GetFileNameWithoutExtension(file) & "-report.html"
+                htmlReportPath = Path.Combine(reportFolder, htmlReportFileName)
                 If logEntry IsNot Nothing Then
                     logEntry.Status = "Validator-Fehler"
                     logEntry.HtmlValidatorPath = htmlReportPath

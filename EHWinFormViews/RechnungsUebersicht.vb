@@ -403,61 +403,13 @@ Public Class RechnungsUebersicht
     Private Sub AllPdfExportButton_Clicked(sender As Object, args As EventArgs) Handles AllPdfExportButton.Click
         Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
         Dim dataTable = CType(dataSource.DataSource, DataTable)
-
-        Dim rechnungsNummern = DataGridView1.Rows.Where(Function(r) r.GetType() = GetType(GridViewDataRowInfo)).Select(
-            Function(rowInfo)
-                Dim dataRow = dataTable.Rows(rowInfo.Index)
-                Return Convert.ToInt32(dataRow.Item(0))
-            End Function).ToList
-
-        Try
-            Dim reportForm = New ReportForm(_dbConnection, RechnungsArt, rechnungsNummern)
-            reportForm.SavePdf()
-        Catch ex As Exception
-            _logger.Error($"Failed to create {NameOf(ReportForm)}")
-            MessageBox.Show("Unbekannter Fehler beim Anzeigen der Rechnung!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
-        End Try
+        ExportAllPDF(dataTable)
     End Sub
 
     Private Sub AllXmlExportButton_Clicked(sender As Object, args As EventArgs) Handles AllXmlExportButton.Click
         Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
         Dim dataTable = CType(dataSource.DataSource, DataTable)
-
-        Try
-            Dim bills = DataGridView1.Rows.ToDictionary(
-                Function(rowInfo)
-                    Dim dataRow = dataTable.Rows(rowInfo.Index)
-                    Return Convert.ToInt32(dataRow.Item(0))
-                End Function,
-                Function(rowInfo)
-                    Dim dataRow = dataTable.Rows(rowInfo.Index)
-                    Return Convert.ToDateTime(dataRow.Item(1))
-                End Function)
-
-            For Each bill In bills.Keys
-                Dim filePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, bill, "xml")
-                Try
-                    Using fileStream = File.Create(filePath)
-                        _xmlExporter.CreateBillXml(fileStream, RechnungsArt, bill)
-                        If _xmlExporter.IsSuccess = False Then
-                            Dim Result As DialogResult
-                            Result = MessageBox.Show("XML Export fehlgeschlagen!" & vbCrLf & "Soll Vorgang abgebrochen werden?", "Fleet Fuhrpark IM System", MessageBoxButtons.YesNo, MessageBoxIcon.Error)
-                            If Result = System.Windows.Forms.DialogResult.Yes Then
-                                Exit For
-                            End If
-                        End If
-                    End Using
-                Catch ex As Exception
-                    _logger.Error($"Error saving bill xml file to {filePath}", ex)
-                End Try
-            Next
-
-            MessageBox.Show("XML Export abgeschlossen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
-        Catch ex As Exception
-            _logger.Error("Exception while saving bill xml files", ex)
-            MessageBox.Show("XML Export fehlgeschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
-            Return
-        End Try
+        ExportAllXml(dataTable)
     End Sub
 
     Private Sub SelectedXmlEmailButton_Click(sender As Object, args As EventArgs) Handles SelectedXmlEmailButton.Click
@@ -782,6 +734,348 @@ Public Class RechnungsUebersicht
         exportLog.Add(logEntry)
         Dim logForm2 As New ExportLogGridForm(exportLog)
         logForm2.ShowDialog()
+    End Sub
+
+    ' Exportiert alle Rechnungen aus dem Grid als XML, mit Fortschrittsanzeige und Abbruchmöglichkeit
+    Private Sub ExportAllXml(Optional dataTable As DataTable = Nothing)
+        Dim exportLog As New List(Of ExportLogEntry)
+        Dim exportHelper = New XRechnungExporter(_dbConnection)
+
+        If dataTable Is Nothing Then
+            Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
+            dataTable = CType(dataSource.DataSource, DataTable)
+        End If
+
+        ' Alle Rechnungsnummern aus dem Grid sammeln
+        Dim rechnungsNummern = DataGridView1.Rows.
+            Where(Function(r) r.GetType() = GetType(GridViewDataRowInfo)).
+            Select(Function(rowInfo)
+                       Dim dataRow = dataTable.Rows(rowInfo.Index)
+                       Return Convert.ToInt32(dataRow.Item(0))
+                   End Function).ToList
+
+        If rechnungsNummern.Count = 0 Then
+            MessageBox.Show("Keine Rechnungen zum Exportieren gefunden.", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Return
+        End If
+
+        ' Einmalige Abfrage, ob alle Rechnungen festgeschrieben werden sollen
+        Dim finalizeAll As Boolean = False
+        If rechnungsNummern.Any(Function(bill) Not exportHelper.IsRechnungIssued(bill)) Then
+            Dim finalizeResult As MsgBoxResult = MsgBox("Sollen alle nicht festgeschriebenen Rechnungen als XRechnung XML festgeschrieben werden?", MsgBoxStyle.YesNo, "Fleet Fuhrpark IM System")
+            finalizeAll = (finalizeResult = MsgBoxResult.Yes)
+        End If
+
+        ' Fortschrittsdialog anzeigen
+        Dim progressForm As New ExportProgressForm(rechnungsNummern.Count)
+        progressForm.Show()
+        progressForm.Refresh()
+
+        Dim cancelledByUser As Boolean = False
+
+        For i = 0 To rechnungsNummern.Count - 1
+            Dim bill = rechnungsNummern(i)
+            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill}
+            Dim filePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, bill, "xml")
+
+            ' Fortschritt aktualisieren
+            progressForm.UpdateProgress(i + 1, rechnungsNummern.Count, bill)
+            Application.DoEvents()
+
+            ' Abbruch prüfen
+            If progressForm.CancelRequested Then
+                cancelledByUser = True
+                Exit For
+            End If
+
+            Try
+                If Not exportHelper.IsRechnungIssued(bill) Then
+                    Using fileStream = File.Create(filePath)
+                        _xmlExporter.CreateBillXml(fileStream, RechnungsArt, bill, finalizeAll, logEntry)
+                    End Using
+                    If _xmlExporter.IsSuccess = False Then
+                        File.Delete(filePath)
+                    Else
+                        logEntry.ExportFilePath = filePath
+                    End If
+                Else
+                    ' Hinweis und Abfrage für Duplikat-Export
+                    Dim msgText = "Rechnung " & bill & " bereits festgeschrieben. Soll ein Duplikat exportiert werden?"
+                    Dim dupeResult = MessageBox.Show(msgText, "Fleet Fuhrpark IM System", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                    If dupeResult = DialogResult.Yes Then
+                        Using fileStream = File.Create(filePath)
+                            _xmlExporter.ExportFinalizedXmlDuplicate(fileStream, RechnungsArt, bill, logEntry)
+                        End Using
+                    Else
+                        logEntry.Status = "Duplikat-Export abgebrochen"
+                    End If
+                End If
+            Catch ex As Exception
+                logEntry.Status = "Fehler"
+                logEntry.FehlerInfo = ex.Message
+                _logger.Error($"Fehler beim Export der Rechnung {bill} nach {filePath}", ex)
+            End Try
+            exportLog.Add(logEntry)
+        Next
+
+        progressForm.Close()
+
+        If cancelledByUser Then
+            ' Hinweis im Log ergänzen
+            Dim cancelEntry As New ExportLogEntry With {
+                .RechnungsNummer = 0,
+                .Status = "Abgebrochen",
+                .FehlerInfo = "Der Export wurde vom Benutzer abgebrochen.",
+                .ExportFilePath = ""
+            }
+            exportLog.Add(cancelEntry)
+        End If
+
+        ' Zeige die Log-Ausgabe im Grid-Form
+        Dim logForm As New ExportLogGridForm(exportLog)
+        logForm.ShowDialog()
+    End Sub
+
+    ' Exportiert alle Rechnungen aus dem Grid als Hybrid-PDF, mit Fortschrittsanzeige und Abbruchmöglichkeit
+    Private Sub ExportAllPDF(Optional dataTable As DataTable = Nothing)
+        Dim exportLog As New List(Of ExportLogEntry)
+        Dim exportHelper = New XRechnungExporter(_dbConnection)
+
+        If dataTable Is Nothing Then
+            Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
+            dataTable = CType(dataSource.DataSource, DataTable)
+        End If
+
+        ' Alle Rechnungsnummern aus dem Grid sammeln
+        Dim rechnungsNummern = DataGridView1.Rows.
+            Where(Function(r) r.GetType() = GetType(GridViewDataRowInfo)).
+            Select(Function(rowInfo)
+                       Dim dataRow = dataTable.Rows(rowInfo.Index)
+                       Return Convert.ToInt32(dataRow.Item(0))
+                   End Function).ToList
+
+        If rechnungsNummern.Count = 0 Then
+            MessageBox.Show("Keine Rechnungen zum Exportieren gefunden.", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Return
+        End If
+
+        ' Einmalige Abfrage, ob alle Rechnungen festgeschrieben werden sollen
+        Dim storeXmlAndUpdateAll As Boolean = False
+        If rechnungsNummern.Any(Function(bill) Not exportHelper.IsRechnungIssued(bill)) Then
+            Dim finalizeResult As MsgBoxResult = MsgBox("Sollen alle nicht festgeschriebenen Rechnungen als XRechnung XML festgeschrieben werden?", MsgBoxStyle.YesNo, "Fleet Fuhrpark IM System")
+            storeXmlAndUpdateAll = (finalizeResult = MsgBoxResult.Yes)
+        End If
+
+        ' Fortschrittsdialog anzeigen
+        Dim progressForm As New ExportProgressForm(rechnungsNummern.Count)
+        progressForm.Show()
+        progressForm.Refresh()
+
+        Dim cancelledByUser As Boolean = False
+
+        For i = 0 To rechnungsNummern.Count - 1
+            Dim rechnungsNummer = rechnungsNummern(i)
+            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = rechnungsNummer}
+            Dim xmlFilePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, rechnungsNummer, "xml")
+            Dim pdfFilePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, rechnungsNummer, "pdf")
+            Dim hybridPdfPath As String = _xmlExporter.GetExportFilePath(RechnungsArt, rechnungsNummer, "hybrid.pdf")
+
+            ' Fortschritt aktualisieren
+            progressForm.UpdateProgress(i + 1, rechnungsNummern.Count, rechnungsNummer)
+            Application.DoEvents()
+
+            ' Abbruch prüfen
+            If progressForm.CancelRequested Then
+                cancelledByUser = True
+                Exit For
+            End If
+
+            If exportHelper.IsRechnungIssued(rechnungsNummer) Then
+                ' Duplikat-Export analog zu XML
+                Dim dupeMsg As String = $"Rechnung {rechnungsNummer} bereits festgeschrieben. Soll ein Duplikat-Hybrid-PDF exportiert werden?"
+                Dim dupeResult = MessageBox.Show(dupeMsg, "Fleet Fuhrpark IM System", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                If dupeResult = DialogResult.Yes Then
+                    Try
+                        ' Versuche PDF aus Blob zu holen
+                        Dim pdfRawBlob As Byte() = _xmlExporter.GetPdfRawFromBlob(rechnungsNummer, RechnungsArt)
+                        If pdfRawBlob IsNot Nothing Then
+                            Using hybridPdfStream As New FileStream(hybridPdfPath, FileMode.Create)
+                                Using pdfRawStream As New MemoryStream(pdfRawBlob)
+                                    _xmlExporter.CreateHybridPdfA(
+                                        pdfRaw:=pdfRawStream,
+                                        xmlRaw:=Nothing,
+                                        outputStream:=hybridPdfStream,
+                                        rechnungsNummer:=rechnungsNummer,
+                                        billType:=RechnungsArt,
+                                        logEntry:=logEntry
+                                    )
+                                End Using
+                            End Using
+                            logEntry.Status = "Erfolgreich"
+                            logEntry.FehlerInfo = "Hybrid-PDF generiert und in DB gespeichert."
+                            logEntry.ExportFilePath = hybridPdfPath
+                        Else
+                            ' Kein PDF im Blob, generiere neu und speichere im Blob
+                            Dim reportForm = New ReportForm(_dbConnection, RechnungsArt, New List(Of Integer) From {rechnungsNummer})
+                            Using pdfMemStream As New MemoryStream()
+                                reportForm.SavePdf(pdfMemStream)
+                                _xmlExporter.StorePdfToBlob(pdfMemStream.ToArray(), rechnungsNummer, RechnungsArt)
+                                Using hybridPdfStream As New FileStream(hybridPdfPath, FileMode.Create)
+                                    _xmlExporter.CreateHybridPdfA(
+                                        pdfRaw:=pdfMemStream,
+                                        xmlRaw:=Nothing,
+                                        outputStream:=hybridPdfStream,
+                                        rechnungsNummer:=rechnungsNummer,
+                                        billType:=RechnungsArt,
+                                        logEntry:=logEntry
+                                    )
+                                End Using
+                            End Using
+                            logEntry.Status = "Erfolgreich"
+                            logEntry.FehlerInfo = "Duplikat-PDF aus Blob generiert und gespeichert."
+                            logEntry.ExportFilePath = hybridPdfPath
+                        End If
+                    Catch ex As Exception
+                        logEntry.Status = "Fehler"
+                        logEntry.FehlerInfo = "Fehler beim Duplikat-Hybrid-PDF: " & ex.Message
+                        _logger.Error($"Fehler beim Duplikat-Hybrid-PDF für Rechnung {rechnungsNummer}", ex)
+                    End Try
+                Else
+                    logEntry.Status = "Duplikat-Export abgebrochen"
+                End If
+                exportLog.Add(logEntry)
+                Continue For
+            End If
+
+            ' Rechnung nicht festgeschrieben, normale Verarbeitung
+            Dim storeXmlAndUpdate As Boolean = storeXmlAndUpdateAll
+
+            Dim xmlRaw As MemoryStream = Nothing
+            Dim pdfRaw As MemoryStream = Nothing
+
+            If storeXmlAndUpdate Then
+                Try
+                    Using xmlFileStream = File.Create(xmlFilePath)
+                        _xmlExporter.CreateBillXml(xmlFileStream, RechnungsArt, rechnungsNummer, True, logEntry)
+                    End Using
+                Catch ex As Exception
+                    logEntry.Status = "Fehler"
+                    logEntry.FehlerInfo = "Fehler beim Erstellen der XML: " & ex.Message
+                    _logger.Error($"Fehler beim Erstellen der XML für Rechnung {rechnungsNummer} nach {xmlFilePath}", ex)
+                    exportLog.Add(logEntry)
+                    Continue For
+                End Try
+
+                If _xmlExporter.IsSuccess = False Then
+                    File.Delete(xmlFilePath)
+                    exportLog.Add(logEntry)
+                    Continue For
+                End If
+
+                Try
+                    Dim reportForm = New ReportForm(_dbConnection, RechnungsArt, New List(Of Integer) From {rechnungsNummer})
+                    Using pdfMemStream As New MemoryStream()
+                        reportForm.SavePdf(pdfMemStream)
+                        _xmlExporter.StorePdfToBlob(pdfMemStream.ToArray(), rechnungsNummer, RechnungsArt)
+                    End Using
+                Catch ex As Exception
+                    logEntry.Status = "Fehler"
+                    logEntry.FehlerInfo = "Fehler beim Erstellen des PDF: " & ex.Message
+                    _logger.Error($"Fehler beim Erstellen des PDF für Rechnung {rechnungsNummer}", ex)
+                    exportLog.Add(logEntry)
+                    Continue For
+                End Try
+
+                Try
+                    Using hybridPdfStream As New FileStream(hybridPdfPath, FileMode.Create)
+                        _xmlExporter.CreateHybridPdfA(
+                            pdfRaw:=Nothing,
+                            xmlRaw:=Nothing,
+                            outputStream:=hybridPdfStream,
+                            rechnungsNummer:=rechnungsNummer,
+                            billType:=RechnungsArt,
+                            logEntry:=logEntry
+                        )
+                    End Using
+                    logEntry.Status = "Erfolgreich"
+                    logEntry.ExportFilePath = hybridPdfPath
+                Catch ex As Exception
+                    logEntry.Status = "Fehler"
+                    logEntry.FehlerInfo = "Fehler beim Erstellen des Hybrid-PDF: " & ex.Message
+                    _logger.Error($"Fehler beim Erstellen des Hybrid-PDF für Rechnung {rechnungsNummer}", ex)
+                End Try
+
+            Else
+                Try
+                    Using xmlMemStream As New MemoryStream()
+                        _xmlExporter.CreateBillXml(xmlMemStream, RechnungsArt, rechnungsNummer, False, logEntry)
+                        xmlRaw = New MemoryStream(xmlMemStream.ToArray())
+                    End Using
+                Catch ex As Exception
+                    logEntry.Status = "Fehler"
+                    logEntry.FehlerInfo = "Fehler beim Erstellen der XML: " & ex.Message
+                    _logger.Error($"Fehler beim Erstellen der XML für Rechnung {rechnungsNummer}", ex)
+                    exportLog.Add(logEntry)
+                    Continue For
+                End Try
+
+                If _xmlExporter.IsSuccess = False Then
+                    exportLog.Add(logEntry)
+                    Continue For
+                End If
+
+                Try
+                    Dim reportForm = New ReportForm(_dbConnection, RechnungsArt, New List(Of Integer) From {rechnungsNummer})
+                    Using pdfMemStream As New MemoryStream()
+                        reportForm.SavePdf(pdfMemStream)
+                        pdfRaw = New MemoryStream(pdfMemStream.ToArray())
+                    End Using
+                Catch ex As Exception
+                    logEntry.Status = "Fehler"
+                    logEntry.FehlerInfo = "Fehler beim Erstellen des PDF: " & ex.Message
+                    _logger.Error($"Fehler beim Erstellen des PDF für Rechnung {rechnungsNummer}", ex)
+                    exportLog.Add(logEntry)
+                    Continue For
+                End Try
+
+                Try
+                    Using hybridPdfStream As New FileStream(hybridPdfPath, FileMode.Create)
+                        _xmlExporter.CreateHybridPdfA(
+                            pdfRaw:=pdfRaw,
+                            xmlRaw:=xmlRaw,
+                            outputStream:=hybridPdfStream,
+                            logEntry:=logEntry
+                        )
+                    End Using
+                    logEntry.Status = "Erfolgreich"
+                    logEntry.ExportFilePath = hybridPdfPath
+                Catch ex As Exception
+                    logEntry.Status = "Fehler"
+                    logEntry.FehlerInfo = "Fehler beim Erstellen des Hybrid-PDF: " & ex.Message
+                    _logger.Error($"Fehler beim Erstellen des Hybrid-PDF für Rechnung {rechnungsNummer}", ex)
+                End Try
+
+            End If
+
+            exportLog.Add(logEntry)
+        Next
+
+        progressForm.Close()
+
+        If cancelledByUser Then
+            ' Hinweis im Log ergänzen
+            Dim cancelEntry As New ExportLogEntry With {
+                .RechnungsNummer = 0,
+                .Status = "Abgebrochen",
+                .FehlerInfo = "Der Export wurde vom Benutzer abgebrochen.",
+                .ExportFilePath = ""
+            }
+            exportLog.Add(cancelEntry)
+        End If
+
+        ' Zeige die Log-Ausgabe im Grid-Form
+        Dim logForm As New ExportLogGridForm(exportLog)
+        logForm.ShowDialog()
     End Sub
 
 End Class

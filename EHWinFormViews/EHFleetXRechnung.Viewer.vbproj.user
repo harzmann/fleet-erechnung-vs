@@ -7,6 +7,9 @@
     <Compile Update="ExportLogGridForm.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="ExportProgressForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="MengeneinheitenGridForm.vb">
       <SubType>Form</SubType>
     </Compile>
