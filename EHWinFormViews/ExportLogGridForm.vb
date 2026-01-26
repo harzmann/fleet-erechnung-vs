@@ -45,6 +45,26 @@ Public Class ExportLogGridForm
             .Name = "colValidatorBericht",
             .Width = 350
         })
+        ' Neue Spalten für E-Mail-Versand
+        ExportLogGrid.Columns.Add(New DataGridViewTextBoxColumn With {
+            .DataPropertyName = "EmailEmpfaenger",
+            .HeaderText = "E-Mail-Empfänger",
+            .Name = "colEmailEmpfaenger",
+            .Width = 180
+        })
+        ExportLogGrid.Columns.Add(New DataGridViewTextBoxColumn With {
+            .DataPropertyName = "EmailStatus",
+            .HeaderText = "E-Mail-Status",
+            .Name = "colEmailStatus",
+            .Width = 120
+        })
+        ExportLogGrid.Columns.Add(New DataGridViewTextBoxColumn With {
+            .DataPropertyName = "EmailFehlerInfo",
+            .HeaderText = "E-Mail-Fehlerinfo",
+            .Name = "colEmailFehlerInfo",
+            .Width = 250,
+            .DefaultCellStyle = New DataGridViewCellStyle With {.WrapMode = DataGridViewTriState.True}
+        })
 
         ' Set monospaced font for "Ausgabe" column (for code/indentation)
         ExportLogGrid.Columns("colFehlerInfo").DefaultCellStyle.Font = New Font("Courier New", 9, FontStyle.Regular)

@@ -415,23 +415,12 @@ Public Class RechnungsUebersicht
     Private Sub SelectedXmlEmailButton_Click(sender As Object, args As EventArgs) Handles SelectedXmlEmailButton.Click
         Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
         Dim dataTable = CType(dataSource.DataSource, DataTable)
-
-        Try
-            For Each rowInfo In DataGridView1.SelectedRows
+        Dim selectedNumbers = DataGridView1.SelectedRows.Select(
+            Function(rowInfo)
                 Dim dataRow = dataTable.Rows(rowInfo.Index)
-                Dim rechnungsNummer = Convert.ToInt32(dataRow.Item(0))
-                Dim empfaengerEmail = Convert.ToString(dataRow.Item("EmailRechnung"))
-                Dim emailSender = New XRechnungEmail(_dbConnection)
-                Dim success = emailSender.SendXRechnungXml(RechnungsArt, rechnungsNummer, empfaengerEmail)
-                If success Then
-                    MessageBox.Show($"E-Mail für Rechnung {rechnungsNummer} erfolgreich versendet!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                Else
-                    MessageBox.Show($"E-Mail für Rechnung {rechnungsNummer} konnte nicht versendet werden!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
-                End If
-            Next
-        Catch ex As Exception
-            MessageBox.Show("Fehler beim Versand der E-Mail: " & ex.Message, "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
-        End Try
+                Return Convert.ToInt32(dataRow.Item(0))
+            End Function).ToList
+        EmailSelectedXml(selectedNumbers, dataTable)
     End Sub
 
     Private Sub SteuersaetzeButton_Click(sender As Object, e As EventArgs) Handles SteuersaetzeButton.Click
@@ -1078,6 +1067,54 @@ Public Class RechnungsUebersicht
         logForm.ShowDialog()
     End Sub
 
+    ' Versendet die angegebenen Rechnungsnummern als XRechnung-XML per E-Mail
+    Private Sub EmailSelectedXml(rechnungsNummern As IEnumerable(Of Integer), Optional dataTable As DataTable = Nothing)
+        Dim exportLog As New List(Of ExportLogEntry)
+        Dim emailHelper = New XRechnungEmail(_dbConnection)
+
+        If dataTable Is Nothing Then
+            Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
+            dataTable = CType(dataSource.DataSource, DataTable)
+        End If
+
+        For Each bill In rechnungsNummern
+            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill}
+            Dim empfaengerEmail As String = ""
+            Try
+                ' Empfänger-E-Mail aus DataTable holen (Spalte "EmailRechnung")
+                Dim row = dataTable.Rows.Cast(Of DataRow)().FirstOrDefault(Function(r) Convert.ToInt32(r.Item(0)) = bill)
+                If row IsNot Nothing AndAlso row.Table.Columns.Contains("EmailRechnung") Then
+                    empfaengerEmail = Convert.ToString(row("EmailRechnung"))
+                End If
+
+                If String.IsNullOrWhiteSpace(empfaengerEmail) Then
+                    logEntry.Status = "Fehler"
+                    logEntry.FehlerInfo = "Keine E-Mail-Adresse im Datensatz gefunden."
+                Else
+                    logEntry.EmailEmpfaenger = empfaengerEmail
+                    Dim ok = emailHelper.SendXRechnungXml(RechnungsArt, bill, empfaengerEmail, logEntry)
+                    If ok Then
+                        logEntry.Status = "Erfolgreich"
+                        logEntry.EmailStatus = "E-Mail gesendet"
+                    Else
+                        If String.IsNullOrWhiteSpace(logEntry.Status) Then logEntry.Status = "Fehler"
+                        If String.IsNullOrWhiteSpace(logEntry.EmailStatus) Then logEntry.EmailStatus = "Fehler"
+                        If String.IsNullOrWhiteSpace(logEntry.FehlerInfo) Then logEntry.FehlerInfo = "E-Mail-Versand fehlgeschlagen."
+                    End If
+                End If
+            Catch ex As Exception
+                logEntry.Status = "Fehler"
+                logEntry.FehlerInfo = ex.Message
+                _logger.Error($"Fehler beim E-Mail-Versand für Rechnung {bill}", ex)
+            End Try
+            exportLog.Add(logEntry)
+        Next
+
+        ' Zeige die Log-Ausgabe im Grid-Form
+        Dim logForm As New ExportLogGridForm(exportLog)
+        logForm.ShowDialog()
+    End Sub
+
 End Class
 
 Public Class ExportLogEntry
@@ -1085,5 +1122,8 @@ Public Class ExportLogEntry
     Public Property Status As String
     Public Property FehlerInfo As String
     Public Property HtmlValidatorPath As String
-    Public Property ExportFilePath As String ' <--- NEU: Exportdateipfad
+    Public Property ExportFilePath As String
+    Public Property EmailEmpfaenger As String
+    Public Property EmailStatus As String
+    Public Property EmailFehlerInfo As String
 End Class
