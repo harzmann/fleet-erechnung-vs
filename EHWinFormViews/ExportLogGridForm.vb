@@ -50,7 +50,7 @@ Public Class ExportLogGridForm
             .DataPropertyName = "EmailEmpfaenger",
             .HeaderText = "E-Mail-Empfänger",
             .Name = "colEmailEmpfaenger",
-            .Width = 180
+            .Width = 250
         })
         ExportLogGrid.Columns.Add(New DataGridViewTextBoxColumn With {
             .DataPropertyName = "EmailStatus",
@@ -62,17 +62,21 @@ Public Class ExportLogGridForm
             .DataPropertyName = "EmailFehlerInfo",
             .HeaderText = "E-Mail-Fehlerinfo",
             .Name = "colEmailFehlerInfo",
-            .Width = 250,
+            .Width = 400,
             .DefaultCellStyle = New DataGridViewCellStyle With {.WrapMode = DataGridViewTriState.True}
         })
 
         ' Set monospaced font for "Ausgabe" column (for code/indentation)
         ExportLogGrid.Columns("colFehlerInfo").DefaultCellStyle.Font = New Font("Courier New", 9, FontStyle.Regular)
+        ExportLogGrid.Columns("colEmailFehlerInfo").DefaultCellStyle.Font = New Font("Courier New", 9, FontStyle.Regular)
 
         ExportLogGrid.DataSource = _logEntries
 
         ' Zeilenfarben je Status
         AddHandler ExportLogGrid.RowPrePaint, AddressOf ExportLogGrid_RowPrePaint
+
+        ' Inhalt von E-Mail-Empfänger trimmen und Leerzeilen entfernen
+        AddHandler ExportLogGrid.CellFormatting, AddressOf ExportLogGrid_CellFormatting
 
     End Sub
 
@@ -93,6 +97,15 @@ Public Class ExportLogGridForm
             If Not String.IsNullOrEmpty(htmlPath) AndAlso IO.File.Exists(htmlPath) Then
                 Process.Start("explorer.exe", htmlPath)
             End If
+        End If
+    End Sub
+
+    ' Trimmt und bereinigt den Inhalt der Spalte "E-Mail-Empfänger"
+    Private Sub ExportLogGrid_CellFormatting(sender As Object, e As DataGridViewCellFormattingEventArgs)
+        If ExportLogGrid.Columns(e.ColumnIndex).Name = "colEmailEmpfaenger" AndAlso e.Value IsNot Nothing Then
+            Dim lines = e.Value.ToString().Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+            Dim trimmed = String.Join(Environment.NewLine, lines.Select(Function(l) l.Trim()).Where(Function(l) Not String.IsNullOrWhiteSpace(l)))
+            e.Value = trimmed
         End If
     End Sub
 

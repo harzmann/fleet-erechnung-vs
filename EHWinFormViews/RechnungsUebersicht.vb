@@ -1115,6 +1115,64 @@ Public Class RechnungsUebersicht
         logForm.ShowDialog()
     End Sub
 
+    ' Versendet die angegebenen Rechnungsnummern als Hybrid-PDF per E-Mail
+    Private Sub EmailSelectedPdf(rechnungsNummern As IEnumerable(Of Integer), Optional dataTable As DataTable = Nothing)
+        Dim exportLog As New List(Of ExportLogEntry)
+        Dim emailHelper = New XRechnungEmail(_dbConnection)
+
+        If dataTable Is Nothing Then
+            Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
+            dataTable = CType(dataSource.DataSource, DataTable)
+        End If
+
+        For Each bill In rechnungsNummern
+            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill}
+            Dim empfaengerEmail As String = ""
+            Try
+                ' Empfänger-E-Mail aus DataTable holen (Spalte "EmailRechnung")
+                Dim row = dataTable.Rows.Cast(Of DataRow)().FirstOrDefault(Function(r) Convert.ToInt32(r.Item(0)) = bill)
+                If row IsNot Nothing AndAlso row.Table.Columns.Contains("EmailRechnung") Then
+                    empfaengerEmail = Convert.ToString(row("EmailRechnung"))
+                End If
+
+                If String.IsNullOrWhiteSpace(empfaengerEmail) Then
+                    logEntry.Status = "Fehler"
+                    logEntry.FehlerInfo = "Keine E-Mail-Adresse im Datensatz gefunden."
+                Else
+                    logEntry.EmailEmpfaenger = empfaengerEmail
+                    Dim ok = emailHelper.SendXRechnungPdf(RechnungsArt, bill, empfaengerEmail, logEntry)
+                    If ok Then
+                        logEntry.Status = "Erfolgreich"
+                        logEntry.EmailStatus = "E-Mail gesendet"
+                    Else
+                        If String.IsNullOrWhiteSpace(logEntry.Status) Then logEntry.Status = "Fehler"
+                        If String.IsNullOrWhiteSpace(logEntry.EmailStatus) Then logEntry.EmailStatus = "Fehler"
+                        If String.IsNullOrWhiteSpace(logEntry.FehlerInfo) Then logEntry.FehlerInfo = "E-Mail-Versand fehlgeschlagen."
+                    End If
+                End If
+            Catch ex As Exception
+                logEntry.Status = "Fehler"
+                logEntry.FehlerInfo = ex.Message
+                _logger.Error($"Fehler beim E-Mail-Versand für Hybrid-PDF Rechnung {bill}", ex)
+            End Try
+            exportLog.Add(logEntry)
+        Next
+
+        ' Zeige die Log-Ausgabe im Grid-Form
+        Dim logForm As New ExportLogGridForm(exportLog)
+        logForm.ShowDialog()
+    End Sub
+
+    Private Sub SelectedPdfEmailButton_Click(sender As Object, e As EventArgs) Handles SelectedPdfEmailButton.Click
+        Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
+        Dim dataTable = CType(dataSource.DataSource, DataTable)
+        Dim selectedNumbers = DataGridView1.SelectedRows.Select(
+            Function(rowInfo)
+                Dim dataRow = dataTable.Rows(rowInfo.Index)
+                Return Convert.ToInt32(dataRow.Item(0))
+            End Function).ToList
+        EmailSelectedPdf(selectedNumbers, dataTable)
+    End Sub
 End Class
 
 Public Class ExportLogEntry
