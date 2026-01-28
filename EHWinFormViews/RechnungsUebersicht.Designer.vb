@@ -25,7 +25,7 @@ Partial Class RechnungsUebersicht
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(RechnungsUebersicht))
-        Dim TableViewDefinition1 As Telerik.WinControls.UI.TableViewDefinition = New Telerik.WinControls.UI.TableViewDefinition()
+        Dim TableViewDefinition4 As Telerik.WinControls.UI.TableViewDefinition = New Telerik.WinControls.UI.TableViewDefinition()
         Me.PanelMenu = New System.Windows.Forms.Panel()
         Me.GroupBox7 = New System.Windows.Forms.GroupBox()
         Me.MengeneinheitenButton = New Telerik.WinControls.UI.RadButton()
@@ -33,8 +33,8 @@ Partial Class RechnungsUebersicht
         Me.SteuersaetzeButton = New Telerik.WinControls.UI.RadButton()
         Me.GroupBox4 = New System.Windows.Forms.GroupBox()
         Me.GroupBox5 = New System.Windows.Forms.GroupBox()
-        Me.RadButton1 = New Telerik.WinControls.UI.RadButton()
-        Me.RadButton2 = New Telerik.WinControls.UI.RadButton()
+        Me.AllXmlEmailButton = New Telerik.WinControls.UI.RadButton()
+        Me.AllPdfEmailButton = New Telerik.WinControls.UI.RadButton()
         Me.GroupBox6 = New System.Windows.Forms.GroupBox()
         Me.SelectedXmlEmailButton = New Telerik.WinControls.UI.RadButton()
         Me.SelectedPdfEmailButton = New Telerik.WinControls.UI.RadButton()
@@ -62,8 +62,8 @@ Partial Class RechnungsUebersicht
         CType(Me.SteuersaetzeButton, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox4.SuspendLayout()
         Me.GroupBox5.SuspendLayout()
-        CType(Me.RadButton1, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.RadButton2, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.AllXmlEmailButton, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.AllPdfEmailButton, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox6.SuspendLayout()
         CType(Me.SelectedXmlEmailButton, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.SelectedPdfEmailButton, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -175,8 +175,8 @@ Partial Class RechnungsUebersicht
         '
         'GroupBox5
         '
-        Me.GroupBox5.Controls.Add(Me.RadButton1)
-        Me.GroupBox5.Controls.Add(Me.RadButton2)
+        Me.GroupBox5.Controls.Add(Me.AllXmlEmailButton)
+        Me.GroupBox5.Controls.Add(Me.AllPdfEmailButton)
         Me.GroupBox5.Dock = System.Windows.Forms.DockStyle.Left
         Me.GroupBox5.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.GroupBox5.Location = New System.Drawing.Point(134, 18)
@@ -188,33 +188,33 @@ Partial Class RechnungsUebersicht
         Me.GroupBox5.TabStop = False
         Me.GroupBox5.Text = "Alle"
         '
-        'RadButton1
+        'AllXmlEmailButton
         '
-        Me.RadButton1.Font = New System.Drawing.Font("Segoe UI", 10.2!)
-        Me.RadButton1.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
-        Me.RadButton1.Location = New System.Drawing.Point(68, 19)
-        Me.RadButton1.Margin = New System.Windows.Forms.Padding(2)
-        Me.RadButton1.Name = "RadButton1"
-        Me.RadButton1.Padding = New System.Windows.Forms.Padding(2)
-        Me.RadButton1.Size = New System.Drawing.Size(60, 50)
-        Me.RadButton1.TabIndex = 13
-        Me.RadButton1.Text = "XML"
-        Me.RadButton1.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
-        Me.RadButton1.ThemeName = "Crystal"
+        Me.AllXmlEmailButton.Font = New System.Drawing.Font("Segoe UI", 10.2!)
+        Me.AllXmlEmailButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
+        Me.AllXmlEmailButton.Location = New System.Drawing.Point(68, 19)
+        Me.AllXmlEmailButton.Margin = New System.Windows.Forms.Padding(2)
+        Me.AllXmlEmailButton.Name = "AllXmlEmailButton"
+        Me.AllXmlEmailButton.Padding = New System.Windows.Forms.Padding(2)
+        Me.AllXmlEmailButton.Size = New System.Drawing.Size(60, 50)
+        Me.AllXmlEmailButton.TabIndex = 13
+        Me.AllXmlEmailButton.Text = "XML"
+        Me.AllXmlEmailButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
+        Me.AllXmlEmailButton.ThemeName = "Crystal"
         '
-        'RadButton2
+        'AllPdfEmailButton
         '
-        Me.RadButton2.Font = New System.Drawing.Font("Segoe UI", 10.2!)
-        Me.RadButton2.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
-        Me.RadButton2.Location = New System.Drawing.Point(4, 19)
-        Me.RadButton2.Margin = New System.Windows.Forms.Padding(2)
-        Me.RadButton2.Name = "RadButton2"
-        Me.RadButton2.Padding = New System.Windows.Forms.Padding(2)
-        Me.RadButton2.Size = New System.Drawing.Size(60, 50)
-        Me.RadButton2.TabIndex = 12
-        Me.RadButton2.Text = "PDF"
-        Me.RadButton2.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
-        Me.RadButton2.ThemeName = "Crystal"
+        Me.AllPdfEmailButton.Font = New System.Drawing.Font("Segoe UI", 10.2!)
+        Me.AllPdfEmailButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
+        Me.AllPdfEmailButton.Location = New System.Drawing.Point(4, 19)
+        Me.AllPdfEmailButton.Margin = New System.Windows.Forms.Padding(2)
+        Me.AllPdfEmailButton.Name = "AllPdfEmailButton"
+        Me.AllPdfEmailButton.Padding = New System.Windows.Forms.Padding(2)
+        Me.AllPdfEmailButton.Size = New System.Drawing.Size(60, 50)
+        Me.AllPdfEmailButton.TabIndex = 12
+        Me.AllPdfEmailButton.Text = "PDF"
+        Me.AllPdfEmailButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
+        Me.AllPdfEmailButton.ThemeName = "Crystal"
         '
         'GroupBox6
         '
@@ -487,7 +487,7 @@ Partial Class RechnungsUebersicht
         Me.DataGridView1.MasterTemplate.ClipboardPasteMode = Telerik.WinControls.UI.GridViewClipboardPasteMode.Disable
         Me.DataGridView1.MasterTemplate.EnableFiltering = True
         Me.DataGridView1.MasterTemplate.ShowGroupedColumns = True
-        Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition1
+        Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition4
         Me.DataGridView1.Name = "DataGridView1"
         Me.DataGridView1.Size = New System.Drawing.Size(1365, 483)
         Me.DataGridView1.TabIndex = 13
@@ -513,8 +513,8 @@ Partial Class RechnungsUebersicht
         CType(Me.SteuersaetzeButton, System.ComponentModel.ISupportInitialize).EndInit()
         Me.GroupBox4.ResumeLayout(False)
         Me.GroupBox5.ResumeLayout(False)
-        CType(Me.RadButton1, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.RadButton2, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.AllXmlEmailButton, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.AllPdfEmailButton, System.ComponentModel.ISupportInitialize).EndInit()
         Me.GroupBox6.ResumeLayout(False)
         CType(Me.SelectedXmlEmailButton, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.SelectedPdfEmailButton, System.ComponentModel.ISupportInitialize).EndInit()
@@ -558,8 +558,8 @@ Partial Class RechnungsUebersicht
     Friend WithEvents SelectedXmlExportButton As RadButton
     Friend WithEvents GroupBox4 As System.Windows.Forms.GroupBox
     Friend WithEvents GroupBox5 As System.Windows.Forms.GroupBox
-    Friend WithEvents RadButton1 As RadButton
-    Friend WithEvents RadButton2 As RadButton
+    Friend WithEvents AllXmlEmailButton As RadButton
+    Friend WithEvents AllPdfEmailButton As RadButton
     Friend WithEvents GroupBox6 As System.Windows.Forms.GroupBox
     Friend WithEvents SelectedXmlEmailButton As RadButton
     Friend WithEvents SelectedPdfEmailButton As RadButton

@@ -295,7 +295,8 @@ Public Class RechnungsUebersicht
                         {"EmailRechnung", "'EmailRechnung'"},
                         {"Summe", "'Summe netto'"},
                         {"Exportiert", "X"},
-                        {"Gebucht", "B"}
+                        {"Gebucht", "B"},
+                        {"ERechnung_Locked", "L"}
                     }
 
                 Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_wavkliste] where Storno=0"
@@ -313,7 +314,8 @@ Public Class RechnungsUebersicht
                         {"EmailRechnung", "'EmailRechnung'"},
                         {"Summe", "'Summe netto'"},
                         {"Exportiert", "X"},
-                        {"Gebucht", "B"}
+                        {"Gebucht", "B"},
+                        {"ERechnung_Locked", "L"}
                     }
 
                 Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_tavkliste] where Storno=0"
@@ -331,7 +333,8 @@ Public Class RechnungsUebersicht
                         {"EmailRechnung", "'EmailRechnung'"},
                         {"Summe", "'Summe netto'"},
                         {"Exportiert", "X"},
-                        {"Gebucht", "B"}
+                        {"Gebucht", "B"},
+                        {"ERechnung_Locked", "L"}
                     }
 
                 Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_mrvkliste] where Storno=0"
@@ -403,13 +406,37 @@ Public Class RechnungsUebersicht
     Private Sub AllPdfExportButton_Clicked(sender As Object, args As EventArgs) Handles AllPdfExportButton.Click
         Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
         Dim dataTable = CType(dataSource.DataSource, DataTable)
-        ExportAllPDF(dataTable)
+        Dim result = MessageBox.Show("Möchten Sie wirklich alle Rechnungen als Hybrid-PDF exportieren?", "Bestätigung Export", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+        If result = DialogResult.Yes Then
+            ExportAllPDF(dataTable)
+        End If
     End Sub
 
     Private Sub AllXmlExportButton_Clicked(sender As Object, args As EventArgs) Handles AllXmlExportButton.Click
         Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
         Dim dataTable = CType(dataSource.DataSource, DataTable)
-        ExportAllXml(dataTable)
+        Dim result = MessageBox.Show("Möchten Sie wirklich alle Rechnungen als XML exportieren?", "Bestätigung Export", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+        If result = DialogResult.Yes Then
+            ExportAllXml(dataTable)
+        End If
+    End Sub
+
+    Private Sub AllPdfEmailButton_Click(sender As Object, e As EventArgs) Handles AllPdfEmailButton.Click
+        Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
+        Dim dataTable = CType(dataSource.DataSource, DataTable)
+        Dim result = MessageBox.Show("Möchten Sie wirklich alle Rechnungen per E-Mail als Hybrid-PDF versenden?", "Bestätigung Versand", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+        If result = DialogResult.Yes Then
+            EmailAllPDF(dataTable)
+        End If
+    End Sub
+
+    Private Sub AllXmlEmailButton_Click(sender As Object, e As EventArgs) Handles AllXmlEmailButton.Click
+        Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
+        Dim dataTable = CType(dataSource.DataSource, DataTable)
+        Dim result = MessageBox.Show("Möchten Sie wirklich alle Rechnungen per E-Mail als XML versenden?", "Bestätigung Versand", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+        If result = DialogResult.Yes Then
+            EmailAllXML(dataTable)
+        End If
     End Sub
 
     Private Sub SelectedXmlEmailButton_Click(sender As Object, args As EventArgs) Handles SelectedXmlEmailButton.Click
@@ -1163,6 +1190,192 @@ Public Class RechnungsUebersicht
         logForm.ShowDialog()
     End Sub
 
+    ' Versendet alle Rechnungen aus dem Grid als Hybrid-PDF per E-Mail
+    Private Sub EmailAllPDF(Optional dataTable As DataTable = Nothing)
+        Dim exportLog As New List(Of ExportLogEntry)
+        Dim emailHelper = New XRechnungEmail(_dbConnection)
+
+        If dataTable Is Nothing Then
+            Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
+            dataTable = CType(dataSource.DataSource, DataTable)
+        End If
+
+        ' Alle Rechnungsnummern aus dem Grid sammeln
+        Dim rechnungsNummern = DataGridView1.Rows.
+            Where(Function(r) r.GetType() = GetType(GridViewDataRowInfo)).
+            Select(Function(rowInfo)
+                       Dim dataRow = dataTable.Rows(rowInfo.Index)
+                       Return Convert.ToInt32(dataRow.Item(0))
+                   End Function).ToList
+
+        If rechnungsNummern.Count = 0 Then
+            MessageBox.Show("Keine Rechnungen zum Versand gefunden.", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Return
+        End If
+
+        ' Fortschrittsdialog anzeigen
+        Dim progressForm As New ExportProgressForm(rechnungsNummern.Count)
+        progressForm.Show()
+        progressForm.Refresh()
+
+        Dim cancelledByUser As Boolean = False
+
+        For i = 0 To rechnungsNummern.Count - 1
+            Dim bill = rechnungsNummern(i)
+            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill}
+            Dim empfaengerEmail As String = ""
+
+            ' Fortschritt aktualisieren
+            progressForm.UpdateProgress(i + 1, rechnungsNummern.Count, bill)
+            Application.DoEvents()
+
+            ' Abbruch prüfen
+            If progressForm.CancelRequested Then
+                cancelledByUser = True
+                Exit For
+            End If
+
+            Try
+                ' Empfänger-E-Mail aus DataTable holen (Spalte "EmailRechnung")
+                Dim row = dataTable.Rows.Cast(Of DataRow)().FirstOrDefault(Function(r) Convert.ToInt32(r.Item(0)) = bill)
+                If row IsNot Nothing AndAlso row.Table.Columns.Contains("EmailRechnung") Then
+                    empfaengerEmail = Convert.ToString(row("EmailRechnung"))
+                End If
+
+                If String.IsNullOrWhiteSpace(empfaengerEmail) Then
+                    logEntry.Status = "Fehler"
+                    logEntry.FehlerInfo = "Keine E-Mail-Adresse im Datensatz gefunden."
+                Else
+                    logEntry.EmailEmpfaenger = empfaengerEmail
+                    Dim ok = emailHelper.SendXRechnungPdf(RechnungsArt, bill, empfaengerEmail, logEntry)
+                    If ok Then
+                        logEntry.Status = "Erfolgreich"
+                        logEntry.EmailStatus = "E-Mail gesendet"
+                    Else
+                        If String.IsNullOrWhiteSpace(logEntry.Status) Then logEntry.Status = "Fehler"
+                        If String.IsNullOrWhiteSpace(logEntry.EmailStatus) Then logEntry.EmailStatus = "Fehler"
+                        If String.IsNullOrWhiteSpace(logEntry.FehlerInfo) Then logEntry.FehlerInfo = "E-Mail-Versand fehlgeschlagen."
+                    End If
+                End If
+            Catch ex As Exception
+                logEntry.Status = "Fehler"
+                logEntry.FehlerInfo = ex.Message
+                _logger.Error($"Fehler beim E-Mail-Versand für Hybrid-PDF Rechnung {bill}", ex)
+            End Try
+            exportLog.Add(logEntry)
+        Next
+
+        progressForm.Close()
+
+        If cancelledByUser Then
+            ' Hinweis im Log ergänzen
+            Dim cancelEntry As New ExportLogEntry With {
+                .RechnungsNummer = 0,
+                .Status = "Abgebrochen",
+                .FehlerInfo = "Der Versand wurde vom Benutzer abgebrochen.",
+                .ExportFilePath = ""
+            }
+            exportLog.Add(cancelEntry)
+        End If
+
+        ' Zeige die Log-Ausgabe im Grid-Form
+        Dim logForm As New ExportLogGridForm(exportLog)
+        logForm.ShowDialog()
+    End Sub
+
+    ' Versendet alle Rechnungen aus dem Grid als XRechnung-XML per E-Mail
+    Private Sub EmailAllXML(Optional dataTable As DataTable = Nothing)
+        Dim exportLog As New List(Of ExportLogEntry)
+        Dim emailHelper = New XRechnungEmail(_dbConnection)
+
+        If dataTable Is Nothing Then
+            Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
+            dataTable = CType(dataSource.DataSource, DataTable)
+        End If
+
+        ' Alle Rechnungsnummern aus dem Grid sammeln
+        Dim rechnungsNummern = DataGridView1.Rows.
+            Where(Function(r) r.GetType() = GetType(GridViewDataRowInfo)).
+            Select(Function(rowInfo)
+                       Dim dataRow = dataTable.Rows(rowInfo.Index)
+                       Return Convert.ToInt32(dataRow.Item(0))
+                   End Function).ToList
+
+        If rechnungsNummern.Count = 0 Then
+            MessageBox.Show("Keine Rechnungen zum Versand gefunden.", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Return
+        End If
+
+        ' Fortschrittsdialog anzeigen
+        Dim progressForm As New ExportProgressForm(rechnungsNummern.Count)
+        progressForm.Show()
+        progressForm.Refresh()
+
+        Dim cancelledByUser As Boolean = False
+
+        For i = 0 To rechnungsNummern.Count - 1
+            Dim bill = rechnungsNummern(i)
+            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill}
+            Dim empfaengerEmail As String = ""
+
+            ' Fortschritt aktualisieren
+            progressForm.UpdateProgress(i + 1, rechnungsNummern.Count, bill)
+            Application.DoEvents()
+
+            ' Abbruch prüfen
+            If progressForm.CancelRequested Then
+                cancelledByUser = True
+                Exit For
+            End If
+
+            Try
+                ' Empfänger-E-Mail aus DataTable holen (Spalte "EmailRechnung")
+                Dim row = dataTable.Rows.Cast(Of DataRow)().FirstOrDefault(Function(r) Convert.ToInt32(r.Item(0)) = bill)
+                If row IsNot Nothing AndAlso row.Table.Columns.Contains("EmailRechnung") Then
+                    empfaengerEmail = Convert.ToString(row("EmailRechnung"))
+                End If
+
+                If String.IsNullOrWhiteSpace(empfaengerEmail) Then
+                    logEntry.Status = "Fehler"
+                    logEntry.FehlerInfo = "Keine E-Mail-Adresse im Datensatz gefunden."
+                Else
+                    logEntry.EmailEmpfaenger = empfaengerEmail
+                    Dim ok = emailHelper.SendXRechnungXml(RechnungsArt, bill, empfaengerEmail, logEntry)
+                    If ok Then
+                        logEntry.Status = "Erfolgreich"
+                        logEntry.EmailStatus = "E-Mail gesendet"
+                    Else
+                        If String.IsNullOrWhiteSpace(logEntry.Status) Then logEntry.Status = "Fehler"
+                        If String.IsNullOrWhiteSpace(logEntry.EmailStatus) Then logEntry.EmailStatus = "Fehler"
+                        If String.IsNullOrWhiteSpace(logEntry.FehlerInfo) Then logEntry.FehlerInfo = "E-Mail-Versand fehlgeschlagen."
+                    End If
+                End If
+            Catch ex As Exception
+                logEntry.Status = "Fehler"
+                logEntry.FehlerInfo = ex.Message
+                _logger.Error($"Fehler beim E-Mail-Versand für Rechnung {bill}", ex)
+            End Try
+            exportLog.Add(logEntry)
+        Next
+
+        progressForm.Close()
+
+        If cancelledByUser Then
+            ' Hinweis im Log ergänzen
+            Dim cancelEntry As New ExportLogEntry With {
+                .RechnungsNummer = 0,
+                .Status = "Abgebrochen",
+                .FehlerInfo = "Der Versand wurde vom Benutzer abgebrochen.",
+                .ExportFilePath = ""
+            }
+            exportLog.Add(cancelEntry)
+        End If
+
+        ' Zeige die Log-Ausgabe im Grid-Form
+        Dim logForm As New ExportLogGridForm(exportLog)
+        logForm.ShowDialog()
+    End Sub
+
     Private Sub SelectedPdfEmailButton_Click(sender As Object, e As EventArgs) Handles SelectedPdfEmailButton.Click
         Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
         Dim dataTable = CType(dataSource.DataSource, DataTable)
@@ -1173,6 +1386,7 @@ Public Class RechnungsUebersicht
             End Function).ToList
         EmailSelectedPdf(selectedNumbers, dataTable)
     End Sub
+
 End Class
 
 Public Class ExportLogEntry
