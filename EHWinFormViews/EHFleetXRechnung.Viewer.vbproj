@@ -14,20 +14,13 @@
     <ImportedNamespaces>Microsoft.VisualBasic=True,System=True,System.Collections=True,System.Collections.Generic=True,System.Data=True,System.Diagnostics=True,System.Linq=True,System.Xml.Linq=True,System.Threading.Tasks=True,EHFleetXRechnung.Viewer=True</ImportedNamespaces>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Icons\approval.svg" />
-    <None Remove="Icons\car-repair.svg" />
-    <None Remove="Icons\file.svg" />
-    <None Remove="Icons\garage.svg" />
-    <None Remove="Icons\gasoline.svg" />
-    <None Remove="Icons\pdf.svg" />
-    <None Remove="Icons\trust.svg" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Icons\approval.svg" />
     <EmbeddedResource Include="Icons\car-repair.svg" />
     <EmbeddedResource Include="Icons\file.svg" />
     <EmbeddedResource Include="Icons\garage.svg" />
     <EmbeddedResource Include="Icons\gasoline.svg" />
+    <EmbeddedResource Include="Icons\mail-all.svg" />
+    <EmbeddedResource Include="Icons\mail-selected.svg" />
     <EmbeddedResource Include="Icons\pdf.svg" />
     <EmbeddedResource Include="Icons\trust.svg" />
   </ItemGroup>
@@ -86,6 +79,9 @@
     <Content Include="validator\**\*.*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Icons\mail-selected.svg" />
   </ItemGroup>
 
 

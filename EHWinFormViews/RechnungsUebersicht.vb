@@ -104,6 +104,10 @@ Public Class RechnungsUebersicht
         AllXmlExportButton.SvgImage = GetSvgImage("xml", New System.Drawing.Size(25, 25))
         SelectedPdfExportButton.SvgImage = GetSvgImage("pdf", New System.Drawing.Size(25, 25))
         AllPdfExportButton.SvgImage = GetSvgImage("pdf", New System.Drawing.Size(25, 25))
+        SelectedPdfEmailButton.SvgImage = GetSvgImage("mail-selected", New System.Drawing.Size(25, 25))
+        SelectedXmlEmailButton.SvgImage = GetSvgImage("mail-selected", New System.Drawing.Size(25, 25))
+        AllXmlEmailButton.SvgImage = GetSvgImage("mail-all", New System.Drawing.Size(25, 25))
+        AllPdfEmailButton.SvgImage = GetSvgImage("mail-all", New System.Drawing.Size(25, 25))
     End Sub
 
     Private Function GetSvgImage(name As String, desiredSize As System.Drawing.Size) As RadSvgImage
@@ -125,6 +129,10 @@ Public Class RechnungsUebersicht
                 name = $"{currentNameSpace}.gasoline.svg"
             Case "manuell"
                 name = $"{currentNameSpace}.car-repair.svg"
+            Case "mail-all"
+                name = $"{currentNameSpace}.mail-all.svg"
+            Case "mail-selected"
+                name = $"{currentNameSpace}.mail-selected.svg"
         End Select
 
         If Not resources.Contains(name) Then Return Nothing

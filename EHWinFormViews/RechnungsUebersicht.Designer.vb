@@ -25,7 +25,7 @@ Partial Class RechnungsUebersicht
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(RechnungsUebersicht))
-        Dim TableViewDefinition4 As Telerik.WinControls.UI.TableViewDefinition = New Telerik.WinControls.UI.TableViewDefinition()
+        Dim TableViewDefinition2 As Telerik.WinControls.UI.TableViewDefinition = New Telerik.WinControls.UI.TableViewDefinition()
         Me.PanelMenu = New System.Windows.Forms.Panel()
         Me.GroupBox7 = New System.Windows.Forms.GroupBox()
         Me.MengeneinheitenButton = New Telerik.WinControls.UI.RadButton()
@@ -240,6 +240,7 @@ Partial Class RechnungsUebersicht
         Me.SelectedXmlEmailButton.Name = "SelectedXmlEmailButton"
         Me.SelectedXmlEmailButton.Padding = New System.Windows.Forms.Padding(2)
         Me.SelectedXmlEmailButton.Size = New System.Drawing.Size(60, 50)
+        Me.SelectedXmlEmailButton.SvgImageXml = resources.GetString("SelectedXmlEmailButton.SvgImageXml")
         Me.SelectedXmlEmailButton.TabIndex = 11
         Me.SelectedXmlEmailButton.Text = "XML"
         Me.SelectedXmlEmailButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
@@ -248,6 +249,7 @@ Partial Class RechnungsUebersicht
         'SelectedPdfEmailButton
         '
         Me.SelectedPdfEmailButton.Font = New System.Drawing.Font("Segoe UI", 10.2!)
+        Me.SelectedPdfEmailButton.Image = Global.EHFleetXRechnung.Viewer.My.Resources.Resources.email_mail_sent_icon__1_
         Me.SelectedPdfEmailButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
         Me.SelectedPdfEmailButton.Location = New System.Drawing.Point(4, 19)
         Me.SelectedPdfEmailButton.Margin = New System.Windows.Forms.Padding(2)
@@ -487,7 +489,7 @@ Partial Class RechnungsUebersicht
         Me.DataGridView1.MasterTemplate.ClipboardPasteMode = Telerik.WinControls.UI.GridViewClipboardPasteMode.Disable
         Me.DataGridView1.MasterTemplate.EnableFiltering = True
         Me.DataGridView1.MasterTemplate.ShowGroupedColumns = True
-        Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition4
+        Me.DataGridView1.MasterTemplate.ViewDefinition = TableViewDefinition2
         Me.DataGridView1.Name = "DataGridView1"
         Me.DataGridView1.Size = New System.Drawing.Size(1365, 483)
         Me.DataGridView1.TabIndex = 13

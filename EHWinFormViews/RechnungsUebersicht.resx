@@ -117,6 +117,18 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="SelectedXmlEmailButton.SvgImageXml" xml:space="preserve">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;svg viewBox="0, 0, 122.88, 93.51" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xml="http://www.w3.org/XML/1998/namespace" version="1.1"&gt;
+  &lt;defs&gt;
+    &lt;style&gt;.cls-1{fill:#2b3344;}.cls-2{fill:#fe0000;fill-rule:evenodd;}.cls-3{fill:#fff;}&lt;/style&gt;
+  &lt;/defs&gt;
+  &lt;title&gt;new-message&lt;/title&gt;
+  &lt;path d="M6 18.25 L64.91 18.25 A33.1 33.1 0 0 0 64.12 23.25 L8.37 23.25 L52.84 58.93 L69.84 44.65 A34.64 34.64 0 0 0 73 48.54 L68.3 52.6 L68.3 52.6 L99.05 85.28 L99.05 58.8 A32.85 32.85 0 0 0 104.05 58.1 L104.05 87.54 A5.92 5.92 0 0 1 103.05 90.88 A2.22 2.22 0 0 1 102.49 91.71999 A2.39 2.39 0 0 1 101.93 92.12 A6 6 0 0 1 98.12001 93.50999 L6 93.50999 A6 6 0 0 1 0 87.50999 L0 24.22 A6 6 0 0 1 6 18.22 z M5 85 L36.87 52.66 L5 26.33 L5 85 z M40.85 56 L8.43 88.06 L95.36 88.06 L64.41 56 L54.35 64.93 L54.35 64.93 A2.29 2.29 0 0 1 51.43 64.93 L40.85 56 z" class="cls-1" style="fill:#2B3344;" /&gt;
+  &lt;path d="M97 0 A25.9 25.9 0 1 1 71.1 25.9 A25.91 25.91 0 0 1 97 0 z" fill-rule="evenodd" class="cls-2" style="fill:#FE0000;" /&gt;
+  &lt;path d="M93.71 31.49 L93.71 20.35 A7.28 7.28 0 0 1 89.09 22.67 L89.09 16.36 C91.2 16.15 93.98 14.87 95.09 12.99 L101.2 12.99 L101.2 31.49 L104.83 31.49 L104.83 37.21 L89.82999 37.21 L89.82999 31.49 z" class="cls-3" style="fill:white;" /&gt;
+&lt;/svg&gt;</value>
+  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="ManuelleRechnungButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
