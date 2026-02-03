@@ -4,6 +4,9 @@
     <_LastSelectedProfileId>C:\Users\harzmann.EH-SYSTEMHAUS\source\repos\ehfleet_vb6guidll\EHWinFormViews\My Project\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Update="ERechnungTaskPlanManagerForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="ExportLogGridForm.vb">
       <SubType>Form</SubType>
     </Compile>

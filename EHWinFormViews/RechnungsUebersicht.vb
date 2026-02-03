@@ -285,72 +285,6 @@ Public Class RechnungsUebersicht
         End Try
     End Sub
 
-    Private Function GetSqlStatement(rechnungsArt As RechnungsArt) As String
-        Select Case rechnungsArt
-            Case RechnungsArt.Werkstatt
-                Dim columnMapping As New Dictionary(Of String, String) From
-                    {
-                        {"RechnungsNr", "'RG-Nr.'"},
-                        {"FORMAT (Rechnungsdatum, 'dd.MM.yyyy')", "'RG-Datum'"},
-                        {"WANr", "'WA-Kurzbezeichnung'"},
-                        {"FORMAT (Datum, 'dd.MM.yyyy')", "'WA-Datum'"},
-                        {"Auftragsart", "'WA-Art'"},
-                        {"Belegart", "Belegart"},
-                        {"KundenNr", "'KD-Nr.'"},
-                        {"DebitorNr", "'Debitor-Nr.'"},
-                        {"Firma", "Firma"},
-                        {"LeitwegeID", "'Leitweg-Id'"},
-                        {"EmailRechnung", "'EmailRechnung'"},
-                        {"Summe", "'Summe netto'"},
-                        {"Exportiert", "X"},
-                        {"Gebucht", "B"},
-                        {"ERechnung_Locked", "L"}
-                    }
-
-                Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_wavkliste] where Storno=0"
-            Case RechnungsArt.Tanken
-                Dim columnMapping As New Dictionary(Of String, String) From
-                    {
-                        {"RechnungsNr", "'RG-Nr.'"},
-                        {"FORMAT (Rechnungsdatum, 'dd.MM.yyyy')", "'RG-Datum'"},
-                        {"Anmerkungen", "Anmerkungen"},
-                        {"Belegart", "Belegart"},
-                        {"KundenNr", "'KD-Nr.'"},
-                        {"DebitorNr", "'Debitor-Nr.'"},
-                        {"Firma", "Firma"},
-                        {"LeitwegeID", "'Leitweg-Id'"},
-                        {"EmailRechnung", "'EmailRechnung'"},
-                        {"Summe", "'Summe netto'"},
-                        {"Exportiert", "X"},
-                        {"Gebucht", "B"},
-                        {"ERechnung_Locked", "L"}
-                    }
-
-                Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_tavkliste] where Storno=0"
-            Case RechnungsArt.Manuell
-                Dim columnMapping As New Dictionary(Of String, String) From
-                    {
-                        {"RechnungsNr", "'RG-Nr.'"},
-                        {"FORMAT (Rechnungsdatum, 'dd.MM.yyyy')", "'RG-Datum'"},
-                        {"Anmerkungen", "Anmerkungen"},
-                        {"Belegart", "Belegart"},
-                        {"KundenNr", "'KD-Nr.'"},
-                        {"DebitorNr", "'Debitor-Nr.'"},
-                        {"Firma", "Firma"},
-                        {"LeitwegeID", "'Leitweg-Id'"},
-                        {"EmailRechnung", "'EmailRechnung'"},
-                        {"Summe", "'Summe netto'"},
-                        {"Exportiert", "X"},
-                        {"Gebucht", "B"},
-                        {"ERechnung_Locked", "L"}
-                    }
-
-                Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_mrvkliste] where Storno=0"
-        End Select
-
-        Return String.Empty
-    End Function
-
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
         Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
         Dim dataTable = CType(dataSource.DataSource, DataTable)
@@ -485,7 +419,7 @@ Public Class RechnungsUebersicht
         Dim exportHelper = New XRechnungExporter(_dbConnection)
 
         For Each bill In rechnungsNummern
-            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill}
+            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill, .Timestamp = DateTime.UtcNow}
             Dim filePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, bill, "xml")
             Try
                 If Not exportHelper.IsRechnungIssued(bill) Then
@@ -533,7 +467,7 @@ Public Class RechnungsUebersicht
         Dim exportHelper = New XRechnungExporter(_dbConnection)
 
         For Each rechnungsNummer In rechnungsNummern
-            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = rechnungsNummer}
+            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = rechnungsNummer, .Timestamp = DateTime.UtcNow}
             Dim xmlFilePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, rechnungsNummer, "xml")
             Dim pdfFilePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, rechnungsNummer, "pdf")
             Dim hybridPdfPath As String = _xmlExporter.GetExportFilePath(RechnungsArt, rechnungsNummer, "hybrid.pdf")
@@ -720,7 +654,7 @@ Public Class RechnungsUebersicht
     ' Validiert eine einzelne Rechnung und zeigt das Ergebnis im ExportLogGridForm an
     Private Sub ValidateSelectedBill(rechnungsNummer As Integer)
         Dim exportLog As New List(Of ExportLogEntry)
-        Dim logEntry As New ExportLogEntry With {.RechnungsNummer = rechnungsNummer}
+        Dim logEntry As New ExportLogEntry With {.RechnungsNummer = rechnungsNummer, .Timestamp = DateTime.UtcNow}
         Dim tempFile As String = Path.GetTempFileName()
         Dim isIssued As Boolean = _xmlExporter.IsRechnungIssued(rechnungsNummer)
         Try
@@ -799,7 +733,7 @@ Public Class RechnungsUebersicht
 
         For i = 0 To rechnungsNummern.Count - 1
             Dim bill = rechnungsNummern(i)
-            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill}
+            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill, .Timestamp = DateTime.UtcNow}
             Dim filePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, bill, "xml")
 
             ' Fortschritt aktualisieren
@@ -850,7 +784,8 @@ Public Class RechnungsUebersicht
                 .RechnungsNummer = 0,
                 .Status = "Abgebrochen",
                 .FehlerInfo = "Der Export wurde vom Benutzer abgebrochen.",
-                .ExportFilePath = ""
+                .ExportFilePath = "",
+                .Timestamp = DateTime.UtcNow
             }
             exportLog.Add(cancelEntry)
         End If
@@ -899,7 +834,7 @@ Public Class RechnungsUebersicht
 
         For i = 0 To rechnungsNummern.Count - 1
             Dim rechnungsNummer = rechnungsNummern(i)
-            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = rechnungsNummer}
+            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = rechnungsNummer, .Timestamp = DateTime.UtcNow}
             Dim xmlFilePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, rechnungsNummer, "xml")
             Dim pdfFilePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, rechnungsNummer, "pdf")
             Dim hybridPdfPath As String = _xmlExporter.GetExportFilePath(RechnungsArt, rechnungsNummer, "hybrid.pdf")
@@ -1092,7 +1027,8 @@ Public Class RechnungsUebersicht
                 .RechnungsNummer = 0,
                 .Status = "Abgebrochen",
                 .FehlerInfo = "Der Export wurde vom Benutzer abgebrochen.",
-                .ExportFilePath = ""
+                .ExportFilePath = "",
+                .Timestamp = DateTime.UtcNow
             }
             exportLog.Add(cancelEntry)
         End If
@@ -1113,7 +1049,7 @@ Public Class RechnungsUebersicht
         End If
 
         For Each bill In rechnungsNummern
-            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill}
+            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill, .Timestamp = DateTime.UtcNow}
             Dim empfaengerEmail As String = ""
             Try
                 ' Empfänger-E-Mail aus DataTable holen (Spalte "EmailRechnung")
@@ -1161,7 +1097,7 @@ Public Class RechnungsUebersicht
         End If
 
         For Each bill In rechnungsNummern
-            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill}
+            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill, .Timestamp = DateTime.UtcNow}
             Dim empfaengerEmail As String = ""
             Try
                 ' Empfänger-E-Mail aus DataTable holen (Spalte "EmailRechnung")
@@ -1230,7 +1166,7 @@ Public Class RechnungsUebersicht
 
         For i = 0 To rechnungsNummern.Count - 1
             Dim bill = rechnungsNummern(i)
-            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill}
+            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill, .Timestamp = DateTime.UtcNow}
             Dim empfaengerEmail As String = ""
 
             ' Fortschritt aktualisieren
@@ -1281,7 +1217,8 @@ Public Class RechnungsUebersicht
                 .RechnungsNummer = 0,
                 .Status = "Abgebrochen",
                 .FehlerInfo = "Der Versand wurde vom Benutzer abgebrochen.",
-                .ExportFilePath = ""
+                .ExportFilePath = "",
+                .Timestamp = DateTime.UtcNow
             }
             exportLog.Add(cancelEntry)
         End If
@@ -1323,7 +1260,7 @@ Public Class RechnungsUebersicht
 
         For i = 0 To rechnungsNummern.Count - 1
             Dim bill = rechnungsNummern(i)
-            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill}
+            Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill, .Timestamp = DateTime.UtcNow}
             Dim empfaengerEmail As String = ""
 
             ' Fortschritt aktualisieren
@@ -1374,7 +1311,8 @@ Public Class RechnungsUebersicht
                 .RechnungsNummer = 0,
                 .Status = "Abgebrochen",
                 .FehlerInfo = "Der Versand wurde vom Benutzer abgebrochen.",
-                .ExportFilePath = ""
+                .ExportFilePath = "",
+                .Timestamp = DateTime.UtcNow
             }
             exportLog.Add(cancelEntry)
         End If
@@ -1395,6 +1333,12 @@ Public Class RechnungsUebersicht
         EmailSelectedPdf(selectedNumbers, dataTable)
     End Sub
 
+    Private Sub AdminTaskButton_Click(sender As Object, e As EventArgs) Handles AdminTaskButton.Click
+        Using f As New ERechnungTaskPlanManagerForm(_dbConnection)
+            f.ShowDialog(Me)
+        End Using
+    End Sub
+
 End Class
 
 Public Class ExportLogEntry
@@ -1406,4 +1350,5 @@ Public Class ExportLogEntry
     Public Property EmailEmpfaenger As String
     Public Property EmailStatus As String
     Public Property EmailFehlerInfo As String
+    Public Property Timestamp As DateTime
 End Class

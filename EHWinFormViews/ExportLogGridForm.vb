@@ -16,6 +16,15 @@ Public Class ExportLogGridForm
         ExportLogGrid.DefaultCellStyle.WrapMode = DataGridViewTriState.True
 
         ExportLogGrid.Columns.Clear()
+
+        ExportLogGrid.Columns.Add(New DataGridViewTextBoxColumn With {
+            .DataPropertyName = "Timestamp",
+            .HeaderText = "Zeit",
+            .Name = "colTimestamp",
+            .Width = 140,
+            .DefaultCellStyle = New DataGridViewCellStyle With {.Format = "yyyy-MM-dd HH:mm:ss"}
+        })
+
         ExportLogGrid.Columns.Add(New DataGridViewTextBoxColumn With {
             .DataPropertyName = "RechnungsNummer",
             .HeaderText = "Rechnungs-Nr.",
