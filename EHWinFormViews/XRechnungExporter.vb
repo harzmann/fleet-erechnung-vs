@@ -907,8 +907,15 @@ Public Class XRechnungExporter
 
             If p.ExitCode <> 0 Then
                 validationSuccess = False
-                Dim htmlReportFileName = Path.GetFileNameWithoutExtension(file) & "-report.html"
-                htmlReportPath = Path.Combine(reportFolder, htmlReportFileName)
+                Dim htmlReportFileName As String = System.IO.Path.GetFileNameWithoutExtension(file) & "-report.html"
+                htmlReportPath = System.IO.Path.Combine(reportFolder, htmlReportFileName)
+                If Not System.IO.File.Exists(htmlReportPath) Then
+                    ' Fallback (falls Validator anders benennt) – Lambda-Parameter umbenannt
+                    htmlReportPath = System.IO.Directory.EnumerateFiles(reportFolder, "*.html") _
+                    .OrderByDescending(Function(fp) System.IO.File.GetLastWriteTimeUtc(fp)) _
+                    .FirstOrDefault()
+                End If
+
                 If logEntry IsNot Nothing Then
                     logEntry.Status = "Validator-Fehler"
                     logEntry.HtmlValidatorPath = htmlReportPath

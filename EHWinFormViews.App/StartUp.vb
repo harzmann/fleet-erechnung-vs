@@ -1,8 +1,11 @@
 ﻿Imports System.IO
+Imports System.Diagnostics
+Imports System.Data.OleDb
 Imports ehfleet_classlibrary
 Imports EHFleetXRechnung.Viewer
 Imports log4net
 Imports log4net.Config
+Imports System.Data
 
 Public Class StartUp
 
@@ -60,6 +63,11 @@ Public Class StartUp
 
     Private Sub StartUp_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
+        ' Headless/CLI Mode (Windows Task Scheduler)
+        If HandleCliMode() Then
+            Return
+        End If
+
         ' Konfiguration aus My.Settings anzeigen
         chkUseRegDbCnStr.Checked = My.Settings.UseRegDbCnStr
         If chkUseRegDbCnStr.Checked = True Then
@@ -103,34 +111,169 @@ Public Class StartUp
 
     End Sub
 
-    Private Sub chkUseRegDbCnStr_ToggleStateChanged(sender As Object, args As Telerik.WinControls.UI.StateChangedEventArgs) Handles chkUseRegDbCnStr.ToggleStateChanged
+    ' =========================================================================================
+    ' CLI / Headless Mode
+    '   EHFleetXRechnung.App.exe --run-task <TaskId>
+    '
+    ' - AppLock (sp_getapplock) verhindert parallele Runs pro TaskId (Server-weit)
+    ' - RunId + EndRun persistieren in dbo.ERechnungTaskRun / dbo.ERechnungTaskRunLog
+    ' - ExitCode:
+    '     0 = OK
+    '     2 = parallel lock (already running)
+    '     3 = exception / crash
+    ' =========================================================================================
+    Private Function HandleCliMode() As Boolean
+        Dim args = Environment.GetCommandLineArgs()
+        Dim idx = Array.FindIndex(args, Function(a) String.Equals(a, "--run-task", StringComparison.OrdinalIgnoreCase))
+        If idx < 0 Then Return False
+        If idx + 1 >= args.Length Then Return False
 
-        ' Eingabe Verbindungszeichenfolge aktivieren/deaktivieren
-        If args.ToggleState = Telerik.WinControls.Enumerations.ToggleState.On Then
-            txtAppDbCnStr.Enabled = False
-            txtAppDbCnStr.Text = My.Computer.Registry.GetValue("HKEY_CURRENT_USER\Software\VB and VBA Program Settings\EHFleet Fuhrpark IM System\Allgemein", "workdbcn", Nothing).ToString
-        Else
-            txtAppDbCnStr.Enabled = True
-            txtAppDbCnStr.Text = My.Settings.AppDbCnStr
+        Dim taskId As Integer
+        If Not Integer.TryParse(args(idx + 1), taskId) Then Return False
+
+        ' Logging muss in CLI zwingend aktiv sein
+        ConfigureLogging()
+        logger.Info($"CLI Mode START --run-task {taskId}")
+        logger.Info("Args=" & String.Join(" ", args))
+
+        Dim db As General.Database = Nothing
+        Dim exitCode As Integer = 0
+        Dim ok As Boolean = False
+        Dim summary As String = ""
+        Dim durationMs As Integer = 0
+        Dim runId As Integer = 0
+
+        Dim sw As Stopwatch = Stopwatch.StartNew()
+
+        Try
+            db = OpenDatabaseFromSettingsOrRegistry()
+            logger.Debug($"Using DB connection string: {db.cn.ConnectionString}")
+
+            ' AppLock (no parallel run per TaskId)
+            Dim lockAcquired As Boolean = AcquireAppLock(db, $"EHFleetXRechnung.Task.{taskId}")
+            If Not lockAcquired Then
+                exitCode = 2
+                summary = "Parallel-Guard: Task läuft bereits (sp_getapplock)."
+                logger.Warn(summary)
+                Return True
+            End If
+
+            ' RunId erzeugen
+            Dim runRepo As New ERechnungTaskRunRepository(db)
+            runId = runRepo.StartRun(taskId, Environment.MachineName, Environment.UserDomainName & "\" & Environment.UserName)
+            logger.Info($"Run START RunId={runId} TaskId={taskId}")
+
+            ' Plan-Status in ERechnungTaskPlan spiegeln
+            UpdateTaskPlanLastFields(db, taskId, lastRunOk:=Nothing, lastResult:="RUNNING", setLastRunUtc:=True)
+
+            ' Task ausführen (Business)
+            Dim runner As New ERechnungTaskRunner(db, logger, runRepo)
+            ok = runner.RunTaskById(taskId, runId)
+
+            ' ExitCode 0/1 nach ok
+            exitCode = If(ok, 0, 1)
+            summary = If(ok, "OK", "FAILED (fachlich): siehe RunLog")
+
+        Catch ex As Exception
+            ok = False
+            exitCode = 3
+            summary = "FAILED: " & ex.Message
+            logger.Error(summary, ex)
+
+        Finally
+            sw.Stop()
+            durationMs = CInt(Math.Min(Integer.MaxValue, sw.ElapsedMilliseconds))
+
+            Try
+                If db IsNot Nothing Then
+                    ' EndRun persistieren
+                    Try
+                        Dim runRepo As New ERechnungTaskRunRepository(db)
+                        If runId > 0 Then
+                            runRepo.EndRun(runId, ok, exitCode, durationMs, summary)
+                            logger.Info($"Run END RunId={runId} ok={ok} exit={exitCode} durMs={durationMs}")
+                        End If
+                    Catch ex2 As Exception
+                        logger.Error("EndRun FAILED", ex2)
+                    End Try
+
+                    ' Plan-Status final spiegeln
+                    UpdateTaskPlanLastFields(db, taskId, ok, $"{summary} | dur={sw.Elapsed.TotalSeconds:0.0}s | exit={exitCode} (0x{exitCode:X})", True)
+                End If
+            Catch ex3 As Exception
+                logger.Error("Finalize CLI state FAILED", ex3)
+            End Try
+
+            ' AppLock freigeben
+            Try
+                If db IsNot Nothing Then
+                    ReleaseAppLock(db, $"EHFleetXRechnung.Task.{taskId}")
+                End If
+            Catch ex4 As Exception
+                logger.Debug("ReleaseAppLock failed", ex4)
+            End Try
+        End Try
+
+        logger.Info($"CLI Mode END --run-task {taskId} ok={ok} exit={exitCode} durMs={durationMs}")
+        Environment.ExitCode = exitCode
+        Environment.Exit(exitCode)
+        Return True
+    End Function
+
+    Private Function OpenDatabaseFromSettingsOrRegistry() As General.Database
+        Dim readValue = My.Computer.Registry.GetValue("HKEY_CURRENT_USER\Software\VB and VBA Program Settings\EHFleet Fuhrpark IM System\Allgemein", "workdbcn", Nothing)
+
+        If My.Settings.UseRegDbCnStr = True Then
+            If readValue Is Nothing Then
+                Throw New Exception("Keine Verbindungszeichenfolge (workdbcn) in der Registry gefunden.")
+            End If
+            Return New General.Database(readValue.ToString())
         End If
 
+        Return New General.Database(My.Settings.AppDbCnStr.ToString())
+    End Function
+
+    Private Sub UpdateTaskPlanLastFields(db As General.Database, taskId As Integer, lastRunOk As Boolean?, lastResult As String, setLastRunUtc As Boolean)
+        Dim safe As String = If(lastResult, "")
+        safe = If(safe.Length > 200, safe.Substring(0, 200), safe)
+
+        Dim sql As String =
+            "UPDATE dbo.ERechnungTaskPlan " &
+            "SET " &
+            If(setLastRunUtc, "LastRunUtc = SYSUTCDATETIME(), ", "") &
+            "LastResult = ?, " &
+            "LastRunOk = ? " &
+            "WHERE TaskId = ?;"
+
+        Using cmd As New OleDb.OleDbCommand(sql, DirectCast(db.cn, OleDb.OleDbConnection))
+            cmd.Parameters.AddWithValue("@p1", safe)
+            If lastRunOk.HasValue Then
+                cmd.Parameters.AddWithValue("@p2", If(lastRunOk.Value, 1, 0))
+            Else
+                cmd.Parameters.AddWithValue("@p2", DBNull.Value)
+            End If
+            cmd.Parameters.AddWithValue("@p3", taskId)
+            cmd.ExecuteNonQuery()
+        End Using
     End Sub
 
-    Private Sub tmrStartUp_Tick(sender As Object, e As EventArgs) Handles tmrStartUp.Tick
+    Private Function AcquireAppLock(db As General.Database, resourceName As String) As Boolean
+        Dim sql As String = "DECLARE @r int; EXEC @r = sp_getapplock @Resource=?, @LockMode='Exclusive', @LockOwner='Session', @LockTimeout=0; SELECT @r;"
+        Using cmd As New OleDb.OleDbCommand(sql, DirectCast(db.cn, OleDb.OleDbConnection))
+            cmd.Parameters.AddWithValue("@p1", resourceName)
+            Dim r As Integer = Convert.ToInt32(cmd.ExecuteScalar())
+            logger.Debug($"sp_getapplock resource={resourceName} result={r}")
+            Return (r >= 0)
+        End Using
+    End Function
 
-        ' Anwendung nach 5s starten
-        butStart.Text = "Start (" + iStartUpCounter.ToString + ")"
-        iStartUpCounter -= 1
-        If iStartUpCounter = 0 Then
-            tmrStartUp.Enabled = False
-            butStart_Click(sender, e)
-        End If
-
+    Private Sub ReleaseAppLock(db As General.Database, resourceName As String)
+        Dim sql As String = "DECLARE @r int; EXEC @r = sp_releaseapplock @Resource=?, @LockOwner='Session'; SELECT @r;"
+        Using cmd As New OleDb.OleDbCommand(sql, DirectCast(db.cn, OleDb.OleDbConnection))
+            cmd.Parameters.AddWithValue("@p1", resourceName)
+            Dim r As Integer = Convert.ToInt32(cmd.ExecuteScalar())
+            logger.Debug($"sp_releaseapplock resource={resourceName} result={r}")
+        End Using
     End Sub
 
-    Private Sub StartUp_Activated(sender As Object, e As EventArgs) Handles Me.Activated
-
-        Me.Size = New Size(375, 225)
-
-    End Sub
 End Class

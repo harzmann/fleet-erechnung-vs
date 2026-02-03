@@ -285,72 +285,6 @@ Public Class RechnungsUebersicht
         End Try
     End Sub
 
-    Private Function GetSqlStatement(rechnungsArt As RechnungsArt) As String
-        Select Case rechnungsArt
-            Case RechnungsArt.Werkstatt
-                Dim columnMapping As New Dictionary(Of String, String) From
-                    {
-                        {"RechnungsNr", "'RG-Nr.'"},
-                        {"FORMAT (Rechnungsdatum, 'dd.MM.yyyy')", "'RG-Datum'"},
-                        {"WANr", "'WA-Kurzbezeichnung'"},
-                        {"FORMAT (Datum, 'dd.MM.yyyy')", "'WA-Datum'"},
-                        {"Auftragsart", "'WA-Art'"},
-                        {"Belegart", "Belegart"},
-                        {"KundenNr", "'KD-Nr.'"},
-                        {"DebitorNr", "'Debitor-Nr.'"},
-                        {"Firma", "Firma"},
-                        {"LeitwegeID", "'Leitweg-Id'"},
-                        {"EmailRechnung", "'EmailRechnung'"},
-                        {"Summe", "'Summe netto'"},
-                        {"Exportiert", "X"},
-                        {"Gebucht", "B"},
-                        {"ERechnung_Locked", "L"}
-                    }
-
-                Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_wavkliste] where Storno=0"
-            Case RechnungsArt.Tanken
-                Dim columnMapping As New Dictionary(Of String, String) From
-                    {
-                        {"RechnungsNr", "'RG-Nr.'"},
-                        {"FORMAT (Rechnungsdatum, 'dd.MM.yyyy')", "'RG-Datum'"},
-                        {"Anmerkungen", "Anmerkungen"},
-                        {"Belegart", "Belegart"},
-                        {"KundenNr", "'KD-Nr.'"},
-                        {"DebitorNr", "'Debitor-Nr.'"},
-                        {"Firma", "Firma"},
-                        {"LeitwegeID", "'Leitweg-Id'"},
-                        {"EmailRechnung", "'EmailRechnung'"},
-                        {"Summe", "'Summe netto'"},
-                        {"Exportiert", "X"},
-                        {"Gebucht", "B"},
-                        {"ERechnung_Locked", "L"}
-                    }
-
-                Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_tavkliste] where Storno=0"
-            Case RechnungsArt.Manuell
-                Dim columnMapping As New Dictionary(Of String, String) From
-                    {
-                        {"RechnungsNr", "'RG-Nr.'"},
-                        {"FORMAT (Rechnungsdatum, 'dd.MM.yyyy')", "'RG-Datum'"},
-                        {"Anmerkungen", "Anmerkungen"},
-                        {"Belegart", "Belegart"},
-                        {"KundenNr", "'KD-Nr.'"},
-                        {"DebitorNr", "'Debitor-Nr.'"},
-                        {"Firma", "Firma"},
-                        {"LeitwegeID", "'Leitweg-Id'"},
-                        {"EmailRechnung", "'EmailRechnung'"},
-                        {"Summe", "'Summe netto'"},
-                        {"Exportiert", "X"},
-                        {"Gebucht", "B"},
-                        {"ERechnung_Locked", "L"}
-                    }
-
-                Return $"select {String.Join(",", columnMapping.Select(Function(map) $"{map.Key} as {map.Value}"))} from [abfr_mrvkliste] where Storno=0"
-        End Select
-
-        Return String.Empty
-    End Function
-
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
         Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
         Dim dataTable = CType(dataSource.DataSource, DataTable)
@@ -1393,6 +1327,12 @@ Public Class RechnungsUebersicht
                 Return Convert.ToInt32(dataRow.Item(0))
             End Function).ToList
         EmailSelectedPdf(selectedNumbers, dataTable)
+    End Sub
+
+    Private Sub AdminTaskButton_Click(sender As Object, e As EventArgs) Handles AdminTaskButton.Click
+        Using f As New ERechnungTaskPlanManagerForm(_dbConnection)
+            f.ShowDialog(Me)
+        End Using
     End Sub
 
 End Class

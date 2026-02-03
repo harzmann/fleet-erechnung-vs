@@ -407,6 +407,7 @@ Public Class XRechnungEmail
                     _smtpLogger.Error($"Festschreibung fehlgeschlagen: RechnungsNr={rechnungsNummer}, Empfaenger={empfaengerEmail}")
                     logEntry.Status = "Fehler"
                     logEntry.EmailStatus = "Festschreibung fehlgeschlagen"
+                    logEntry.EmailFehlerInfo = mailError
                     Return False
                 End If
                 pdfFestgeschrieben = True
@@ -466,6 +467,7 @@ Public Class XRechnungEmail
                 _smtpLogger.Error($"Hybrid-PDF nicht gefunden oder leer: RechnungsNr={rechnungsNummer}, Empfaenger={empfaengerEmail}")
                 logEntry.Status = "Fehler"
                 logEntry.EmailStatus = "Hybrid-PDF nicht gefunden"
+                logEntry.EmailFehlerInfo = mailError
                 Return False
             End If
 
@@ -493,6 +495,7 @@ Public Class XRechnungEmail
                 mailSent = True
                 mailStatus = "Erfolgreich"
                 logEntry.EmailStatus = "Erfolgreich"
+                logEntry.EmailFehlerInfo = mailError
                 _smtpLogger.Info($"E-Mail erfolgreich gesendet: RechnungsNr={rechnungsNummer}, Empfaenger={empfaengerEmail}")
             Catch ex As Exception
                 mailError = ex.Message
@@ -574,6 +577,7 @@ Public Class XRechnungEmail
 
             logEntry.Status = "Erfolgreich"
             logEntry.EmailStatus = mailStatus
+            logEntry.EmailFehlerInfo = mailError
             _smtpLogger.Info($"[END] Sende Hybrid-PDF: RechnungsNr={rechnungsNummer}, Empfaenger={empfaengerEmail}, Status={mailStatus}")
             Return mailSent
 

@@ -55,6 +55,8 @@ Partial Class RechnungsUebersicht
         Me.PanelDatagrid = New System.Windows.Forms.Panel()
         Me.DataGridView1 = New Telerik.WinControls.UI.RadGridView()
         Me.CrystalTheme1 = New Telerik.WinControls.Themes.CrystalTheme()
+        Me.GroupBox8 = New System.Windows.Forms.GroupBox()
+        Me.AdminTaskButton = New Telerik.WinControls.UI.RadButton()
         Me.PanelMenu.SuspendLayout()
         Me.GroupBox7.SuspendLayout()
         CType(Me.MengeneinheitenButton, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -84,10 +86,13 @@ Partial Class RechnungsUebersicht
         Me.PanelDatagrid.SuspendLayout()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.DataGridView1.MasterTemplate, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.GroupBox8.SuspendLayout()
+        CType(Me.AdminTaskButton, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'PanelMenu
         '
+        Me.PanelMenu.Controls.Add(Me.GroupBox8)
         Me.PanelMenu.Controls.Add(Me.GroupBox7)
         Me.PanelMenu.Controls.Add(Me.GroupBox4)
         Me.PanelMenu.Controls.Add(Me.GroupBox1)
@@ -111,7 +116,7 @@ Partial Class RechnungsUebersicht
         Me.GroupBox7.Margin = New System.Windows.Forms.Padding(2)
         Me.GroupBox7.Name = "GroupBox7"
         Me.GroupBox7.Padding = New System.Windows.Forms.Padding(2)
-        Me.GroupBox7.Size = New System.Drawing.Size(268, 94)
+        Me.GroupBox7.Size = New System.Drawing.Size(118, 94)
         Me.GroupBox7.TabIndex = 15
         Me.GroupBox7.TabStop = False
         Me.GroupBox7.Text = "Stammdaten"
@@ -242,6 +247,7 @@ Partial Class RechnungsUebersicht
         Me.SelectedXmlEmailButton.Size = New System.Drawing.Size(60, 50)
         Me.SelectedXmlEmailButton.SvgImageXml = resources.GetString("SelectedXmlEmailButton.SvgImageXml")
         Me.SelectedXmlEmailButton.TabIndex = 11
+        Me.SelectedXmlEmailButton.TabStop = False
         Me.SelectedXmlEmailButton.Text = "XML"
         Me.SelectedXmlEmailButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
         Me.SelectedXmlEmailButton.ThemeName = "Crystal"
@@ -249,7 +255,6 @@ Partial Class RechnungsUebersicht
         'SelectedPdfEmailButton
         '
         Me.SelectedPdfEmailButton.Font = New System.Drawing.Font("Segoe UI", 10.2!)
-        Me.SelectedPdfEmailButton.Image = Global.EHFleetXRechnung.Viewer.My.Resources.Resources.email_mail_sent_icon__1_
         Me.SelectedPdfEmailButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
         Me.SelectedPdfEmailButton.Location = New System.Drawing.Point(4, 19)
         Me.SelectedPdfEmailButton.Margin = New System.Windows.Forms.Padding(2)
@@ -495,6 +500,34 @@ Partial Class RechnungsUebersicht
         Me.DataGridView1.TabIndex = 13
         Me.DataGridView1.ThemeName = "Crystal"
         '
+        'GroupBox8
+        '
+        Me.GroupBox8.Controls.Add(Me.AdminTaskButton)
+        Me.GroupBox8.Dock = System.Windows.Forms.DockStyle.Left
+        Me.GroupBox8.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.GroupBox8.Location = New System.Drawing.Point(1097, 0)
+        Me.GroupBox8.Margin = New System.Windows.Forms.Padding(2)
+        Me.GroupBox8.Name = "GroupBox8"
+        Me.GroupBox8.Padding = New System.Windows.Forms.Padding(2)
+        Me.GroupBox8.Size = New System.Drawing.Size(118, 94)
+        Me.GroupBox8.TabIndex = 16
+        Me.GroupBox8.TabStop = False
+        Me.GroupBox8.Text = "Taskplaner"
+        '
+        'AdminTaskButton
+        '
+        Me.AdminTaskButton.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.AdminTaskButton.ImageAlignment = System.Drawing.ContentAlignment.TopCenter
+        Me.AdminTaskButton.Location = New System.Drawing.Point(4, 17)
+        Me.AdminTaskButton.Margin = New System.Windows.Forms.Padding(2)
+        Me.AdminTaskButton.Name = "AdminTaskButton"
+        Me.AdminTaskButton.Padding = New System.Windows.Forms.Padding(2)
+        Me.AdminTaskButton.Size = New System.Drawing.Size(107, 21)
+        Me.AdminTaskButton.TabIndex = 14
+        Me.AdminTaskButton.Text = "Administration"
+        Me.AdminTaskButton.TextAlignment = System.Drawing.ContentAlignment.BottomCenter
+        Me.AdminTaskButton.ThemeName = "Crystal"
+        '
         'RechnungsUebersicht
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -537,6 +570,8 @@ Partial Class RechnungsUebersicht
         Me.PanelDatagrid.ResumeLayout(False)
         CType(Me.DataGridView1.MasterTemplate, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.GroupBox8.ResumeLayout(False)
+        CType(Me.AdminTaskButton, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -569,4 +604,6 @@ Partial Class RechnungsUebersicht
     Friend WithEvents SteuersaetzeButton As RadButton
     Friend WithEvents VerkaeuferButton As RadButton
     Friend WithEvents MengeneinheitenButton As RadButton
+    Friend WithEvents GroupBox8 As System.Windows.Forms.GroupBox
+    Friend WithEvents AdminTaskButton As RadButton
 End Class
