@@ -167,7 +167,7 @@ Public Class XRechnungEmail
             End If
 
             ' 1. Festschreiben oder Duplikat erzeugen
-            If Not exporter.IsRechnungIssued(rechnungsNummer) Then
+            If Not exporter.IsRechnungIssued(rechnungsNummer, billType) Then
                 Using fs = File.Create(xmlFilePath)
                     exporter.CreateBillXml(fs, billType, rechnungsNummer, True, logEntry)
                 End Using
@@ -287,7 +287,7 @@ Public Class XRechnungEmail
                                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                         sqlMailRaw = "INSERT INTO RechnungVersandMailRaw (VersandId, MimeRaw) VALUES (?, ?)"
                     Case RechnungsArt.Tanken
-                        sqlVersand = "INSERT INTO TankabrechnungVersand (TankabrechnungNr, BlobId, Kanal, Status, EmpfaengerAdresse, Betreff, NachrichtKurz, AttachmentHashes, ProviderMessageId, SentAt, DeliveredAt, LastError, DetailsJson, CreatedAt, CreatedBy) " &
+                        sqlVersand = "INSERT INTO TankabrechnungVersand (RechnungsNr, BlobId, Kanal, Status, EmpfaengerAdresse, Betreff, NachrichtKurz, AttachmentHashes, ProviderMessageId, SentAt, DeliveredAt, LastError, DetailsJson, CreatedAt, CreatedBy) " &
                                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                         sqlMailRaw = "INSERT INTO TankabrechnungVersandMailRaw (VersandId, MimeRaw) VALUES (?, ?)"
                     Case RechnungsArt.Manuell
@@ -302,9 +302,9 @@ Public Class XRechnungEmail
                         Case RechnungsArt.Werkstatt
                             cmd1.Parameters.AddWithValue("@RechnungsNr", rechnungsNummer)
                         Case RechnungsArt.Tanken
-                            cmd1.Parameters.AddWithValue("@TankabrechnungNr", rechnungsNummer)
+                            cmd1.Parameters.AddWithValue("@RechnungsNr", rechnungsNummer)
                         Case RechnungsArt.Manuell
-                            cmd1.Parameters.AddWithValue("@ManuelleRechnungNr", rechnungsNummer)
+                            cmd1.Parameters.AddWithValue("@RechnungsNr", rechnungsNummer)
                     End Select
                     cmd1.Parameters.AddWithValue("@BlobId", blobId.ToString())
                     cmd1.Parameters.AddWithValue("@Kanal", kanal)
@@ -399,7 +399,7 @@ Public Class XRechnungEmail
             End If
 
             ' 1. Festschreiben oder Duplikat erzeugen (wie bei XML)
-            If Not exporter.IsRechnungIssued(rechnungsNummer) Then
+            If Not exporter.IsRechnungIssued(rechnungsNummer, billType) Then
                 Using fs = File.Create(xmlFilePath)
                     exporter.CreateBillXml(fs, billType, rechnungsNummer, True, logEntry)
                 End Using
@@ -532,7 +532,7 @@ Public Class XRechnungEmail
                                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                         sqlMailRaw = "INSERT INTO RechnungVersandMailRaw (VersandId, MimeRaw) VALUES (?, ?)"
                     Case RechnungsArt.Tanken
-                        sqlVersand = "INSERT INTO TankabrechnungVersand (TankabrechnungNr, BlobId, Kanal, Status, EmpfaengerAdresse, Betreff, NachrichtKurz, AttachmentHashes, ProviderMessageId, SentAt, DeliveredAt, LastError, DetailsJson, CreatedAt, CreatedBy) " &
+                        sqlVersand = "INSERT INTO TankabrechnungVersand (RechnungsNr, BlobId, Kanal, Status, EmpfaengerAdresse, Betreff, NachrichtKurz, AttachmentHashes, ProviderMessageId, SentAt, DeliveredAt, LastError, DetailsJson, CreatedAt, CreatedBy) " &
                                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                         sqlMailRaw = "INSERT INTO TankabrechnungVersandMailRaw (VersandId, MimeRaw) VALUES (?, ?)"
                     Case RechnungsArt.Manuell
@@ -546,9 +546,9 @@ Public Class XRechnungEmail
                         Case RechnungsArt.Werkstatt
                             cmd1.Parameters.AddWithValue("@RechnungsNr", rechnungsNummer)
                         Case RechnungsArt.Tanken
-                            cmd1.Parameters.AddWithValue("@TankabrechnungNr", rechnungsNummer)
+                            cmd1.Parameters.AddWithValue("@RechnungsNr", rechnungsNummer)
                         Case RechnungsArt.Manuell
-                            cmd1.Parameters.AddWithValue("@ManuelleRechnungNr", rechnungsNummer)
+                            cmd1.Parameters.AddWithValue("@RechnungsNr", rechnungsNummer)
                     End Select
                     cmd1.Parameters.AddWithValue("@BlobId", blobId.ToString())
                     cmd1.Parameters.AddWithValue("@Kanal", kanal)

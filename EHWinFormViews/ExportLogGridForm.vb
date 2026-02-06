@@ -95,6 +95,8 @@ Public Class ExportLogGridForm
         Dim status = Convert.ToString(row.Cells("colStatus").Value)
         If status IsNot Nothing AndAlso status.ToLowerInvariant() = "erfolgreich" Then
             row.DefaultCellStyle.BackColor = Color.FromArgb(220, 255, 220) ' hellgrün
+        ElseIf status IsNot Nothing AndAlso status.ToLowerInvariant().Contains("übersprungen") Then
+            row.DefaultCellStyle.BackColor = Color.FromArgb(255, 255, 220) ' hellgelb
         Else
             row.DefaultCellStyle.BackColor = Color.FromArgb(255, 220, 220) ' hellrot
         End If

@@ -1,7 +1,6 @@
 ﻿Option Strict On
 Option Infer On
 
-Imports System
 Imports System.Data
 Imports System.Windows.Forms
 Imports ehfleet_classlibrary
@@ -106,6 +105,9 @@ Partial Public Class ERechnungTaskPlanManagerForm
         txtTaskId.Text = r.Field(Of Integer)("TaskId").ToString()
         cmbDomain.Text = r.Field(Of String)("Domain")
         cmbAction.Text = r.Field(Of String)("Action")
+
+        chkIncludeDuplicates.Checked = r.Field(Of Boolean)("IncludeDuplicates")
+        chkOnlyNewSinceLastRun.Checked = r.Field(Of Boolean)("OnlyNewSinceLastRun")
         chkEnabled.Checked = r.Field(Of Boolean)("Enabled")
 
         txtTaskName.Text = If(r.IsNull("TaskName"), "", r.Field(Of String)("TaskName"))
@@ -133,6 +135,8 @@ Partial Public Class ERechnungTaskPlanManagerForm
         txtTaskName.Text = ""
         cmbDomain.SelectedItem = "Rechnung"
         cmbAction.Text = "EMAIL_PDF"
+        chkIncludeDuplicates.Checked = False
+        chkOnlyNewSinceLastRun.Checked = False
         chkEnabled.Checked = True
         cmbScheduleType.SelectedItem = "DAILY"
         numEveryN.Value = 1
@@ -153,6 +157,8 @@ Partial Public Class ERechnungTaskPlanManagerForm
         x.TaskName = If(txtTaskName.Text, "").Trim()
         x.Domain = If(cmbDomain.SelectedItem, "").ToString().Trim()
         x.Action = If(cmbAction.SelectedItem, "").ToString().Trim()
+        x.IncludeDuplicates = chkIncludeDuplicates.Checked
+        x.OnlyNewSinceLastRun = chkOnlyNewSinceLastRun.Checked
         x.Enabled = chkEnabled.Checked
         x.ScheduleType = Convert.ToString(cmbScheduleType.SelectedItem)
         x.EveryN = Convert.ToInt32(numEveryN.Value)

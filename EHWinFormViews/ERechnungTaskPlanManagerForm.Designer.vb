@@ -72,11 +72,11 @@ Partial Class ERechnungTaskPlanManagerForm
         Me.btnNeu = New System.Windows.Forms.Button()
         Me.btnSpeichern = New System.Windows.Forms.Button()
         Me.btnLoeschen = New System.Windows.Forms.Button()
-        Me.btnWindowsTaskAktualisieren = New System.Windows.Forms.Button()
         Me.btnStarten = New System.Windows.Forms.Button()
         Me.btnBeenden = New System.Windows.Forms.Button()
         Me.btnAktualisieren = New System.Windows.Forms.Button()
         Me.btnLogs = New System.Windows.Forms.Button()
+        Me.btnWindowsTaskAktualisieren = New System.Windows.Forms.Button()
         Me.grpStatus = New System.Windows.Forms.GroupBox()
         Me.lblSchedulerRunningTitle = New System.Windows.Forms.Label()
         Me.lblSchedulerRunning = New System.Windows.Forms.Label()
@@ -85,6 +85,7 @@ Partial Class ERechnungTaskPlanManagerForm
         Me.lblLastResultTitle = New System.Windows.Forms.Label()
         Me.lblLastResult = New System.Windows.Forms.Label()
         Me.grpDetails = New System.Windows.Forms.GroupBox()
+        Me.chkIncludeDuplicates = New System.Windows.Forms.CheckBox()
         Me.lblTaskId = New System.Windows.Forms.Label()
         Me.txtTaskId = New System.Windows.Forms.TextBox()
         Me.lblTaskName = New System.Windows.Forms.Label()
@@ -103,6 +104,7 @@ Partial Class ERechnungTaskPlanManagerForm
         Me.lblWeekdays = New System.Windows.Forms.Label()
         Me.clbWeekdays = New System.Windows.Forms.CheckedListBox()
         Me.tmrStatus = New System.Windows.Forms.Timer(Me.components)
+        Me.chkOnlyNewSinceLastRun = New System.Windows.Forms.CheckBox()
         CType(Me.splitMain, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.splitMain.Panel1.SuspendLayout()
         Me.splitMain.Panel2.SuspendLayout()
@@ -187,14 +189,6 @@ Partial Class ERechnungTaskPlanManagerForm
         Me.btnLoeschen.TabIndex = 2
         Me.btnLoeschen.Text = "Löschen"
         '
-        'btnWindowsTaskAktualisieren
-        '
-        Me.btnWindowsTaskAktualisieren.Location = New System.Drawing.Point(215, 32)
-        Me.btnWindowsTaskAktualisieren.Name = "btnWindowsTaskAktualisieren"
-        Me.btnWindowsTaskAktualisieren.Size = New System.Drawing.Size(100, 23)
-        Me.btnWindowsTaskAktualisieren.TabIndex = 3
-        Me.btnWindowsTaskAktualisieren.Text = "Windows-Task aktualisieren"
-        '
         'btnStarten
         '
         Me.btnStarten.Location = New System.Drawing.Point(321, 3)
@@ -227,6 +221,14 @@ Partial Class ERechnungTaskPlanManagerForm
         Me.btnLogs.TabIndex = 7
         Me.btnLogs.Text = "Logs"
         '
+        'btnWindowsTaskAktualisieren
+        '
+        Me.btnWindowsTaskAktualisieren.Location = New System.Drawing.Point(215, 32)
+        Me.btnWindowsTaskAktualisieren.Name = "btnWindowsTaskAktualisieren"
+        Me.btnWindowsTaskAktualisieren.Size = New System.Drawing.Size(100, 23)
+        Me.btnWindowsTaskAktualisieren.TabIndex = 3
+        Me.btnWindowsTaskAktualisieren.Text = "Windows-Task aktualisieren"
+        '
         'grpStatus
         '
         Me.grpStatus.Controls.Add(Me.lblSchedulerRunningTitle)
@@ -236,7 +238,7 @@ Partial Class ERechnungTaskPlanManagerForm
         Me.grpStatus.Controls.Add(Me.lblLastResultTitle)
         Me.grpStatus.Controls.Add(Me.lblLastResult)
         Me.grpStatus.Dock = System.Windows.Forms.DockStyle.Top
-        Me.grpStatus.Location = New System.Drawing.Point(0, 415)
+        Me.grpStatus.Location = New System.Drawing.Point(0, 443)
         Me.grpStatus.Name = "grpStatus"
         Me.grpStatus.Size = New System.Drawing.Size(576, 140)
         Me.grpStatus.TabIndex = 1
@@ -299,6 +301,8 @@ Partial Class ERechnungTaskPlanManagerForm
         '
         'grpDetails
         '
+        Me.grpDetails.Controls.Add(Me.chkOnlyNewSinceLastRun)
+        Me.grpDetails.Controls.Add(Me.chkIncludeDuplicates)
         Me.grpDetails.Controls.Add(Me.lblTaskId)
         Me.grpDetails.Controls.Add(Me.txtTaskId)
         Me.grpDetails.Controls.Add(Me.lblTaskName)
@@ -319,10 +323,19 @@ Partial Class ERechnungTaskPlanManagerForm
         Me.grpDetails.Dock = System.Windows.Forms.DockStyle.Top
         Me.grpDetails.Location = New System.Drawing.Point(0, 0)
         Me.grpDetails.Name = "grpDetails"
-        Me.grpDetails.Size = New System.Drawing.Size(576, 415)
+        Me.grpDetails.Size = New System.Drawing.Size(576, 443)
         Me.grpDetails.TabIndex = 2
         Me.grpDetails.TabStop = False
         Me.grpDetails.Text = "Task-Details"
+        '
+        'chkIncludeDuplicates
+        '
+        Me.chkIncludeDuplicates.AutoSize = True
+        Me.chkIncludeDuplicates.Location = New System.Drawing.Point(170, 153)
+        Me.chkIncludeDuplicates.Name = "chkIncludeDuplicates"
+        Me.chkIncludeDuplicates.Size = New System.Drawing.Size(133, 17)
+        Me.chkIncludeDuplicates.TabIndex = 8
+        Me.chkIncludeDuplicates.Text = "Duplikate einschließen"
         '
         'lblTaskId
         '
@@ -393,83 +406,92 @@ Partial Class ERechnungTaskPlanManagerForm
         'chkEnabled
         '
         Me.chkEnabled.AutoSize = True
-        Me.chkEnabled.Location = New System.Drawing.Point(170, 160)
+        Me.chkEnabled.Location = New System.Drawing.Point(170, 199)
         Me.chkEnabled.Name = "chkEnabled"
         Me.chkEnabled.Size = New System.Drawing.Size(50, 17)
-        Me.chkEnabled.TabIndex = 8
+        Me.chkEnabled.TabIndex = 9
         Me.chkEnabled.Text = "Aktiv"
         '
         'lblScheduleType
         '
         Me.lblScheduleType.AutoSize = True
-        Me.lblScheduleType.Location = New System.Drawing.Point(14, 194)
+        Me.lblScheduleType.Location = New System.Drawing.Point(14, 226)
         Me.lblScheduleType.Name = "lblScheduleType"
         Me.lblScheduleType.Size = New System.Drawing.Size(48, 13)
-        Me.lblScheduleType.TabIndex = 9
+        Me.lblScheduleType.TabIndex = 10
         Me.lblScheduleType.Text = "Zeitplan:"
         '
         'cmbScheduleType
         '
         Me.cmbScheduleType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cmbScheduleType.Location = New System.Drawing.Point(170, 190)
+        Me.cmbScheduleType.Location = New System.Drawing.Point(170, 222)
         Me.cmbScheduleType.Name = "cmbScheduleType"
         Me.cmbScheduleType.Size = New System.Drawing.Size(200, 21)
-        Me.cmbScheduleType.TabIndex = 10
+        Me.cmbScheduleType.TabIndex = 11
         '
         'lblEveryN
         '
         Me.lblEveryN.AutoSize = True
-        Me.lblEveryN.Location = New System.Drawing.Point(14, 228)
+        Me.lblEveryN.Location = New System.Drawing.Point(14, 260)
         Me.lblEveryN.Name = "lblEveryN"
         Me.lblEveryN.Size = New System.Drawing.Size(64, 13)
-        Me.lblEveryN.TabIndex = 11
+        Me.lblEveryN.TabIndex = 12
         Me.lblEveryN.Text = "Intervall (N):"
         '
         'numEveryN
         '
-        Me.numEveryN.Location = New System.Drawing.Point(170, 224)
+        Me.numEveryN.Location = New System.Drawing.Point(170, 256)
         Me.numEveryN.Maximum = New Decimal(New Integer() {999, 0, 0, 0})
         Me.numEveryN.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
         Me.numEveryN.Name = "numEveryN"
         Me.numEveryN.Size = New System.Drawing.Size(80, 20)
-        Me.numEveryN.TabIndex = 12
+        Me.numEveryN.TabIndex = 13
         Me.numEveryN.Value = New Decimal(New Integer() {1, 0, 0, 0})
         '
         'lblStartTime
         '
         Me.lblStartTime.AutoSize = True
-        Me.lblStartTime.Location = New System.Drawing.Point(14, 262)
+        Me.lblStartTime.Location = New System.Drawing.Point(14, 294)
         Me.lblStartTime.Name = "lblStartTime"
         Me.lblStartTime.Size = New System.Drawing.Size(48, 13)
-        Me.lblStartTime.TabIndex = 13
+        Me.lblStartTime.TabIndex = 14
         Me.lblStartTime.Text = "Startzeit:"
         '
         'dtpStartTime
         '
-        Me.dtpStartTime.Location = New System.Drawing.Point(170, 258)
+        Me.dtpStartTime.Location = New System.Drawing.Point(170, 290)
         Me.dtpStartTime.Name = "dtpStartTime"
         Me.dtpStartTime.Size = New System.Drawing.Size(200, 20)
-        Me.dtpStartTime.TabIndex = 14
+        Me.dtpStartTime.TabIndex = 15
         '
         'lblWeekdays
         '
         Me.lblWeekdays.AutoSize = True
-        Me.lblWeekdays.Location = New System.Drawing.Point(14, 292)
+        Me.lblWeekdays.Location = New System.Drawing.Point(14, 324)
         Me.lblWeekdays.Name = "lblWeekdays"
         Me.lblWeekdays.Size = New System.Drawing.Size(72, 13)
-        Me.lblWeekdays.TabIndex = 15
+        Me.lblWeekdays.TabIndex = 16
         Me.lblWeekdays.Text = "Wochentage:"
         '
         'clbWeekdays
         '
-        Me.clbWeekdays.Location = New System.Drawing.Point(170, 292)
+        Me.clbWeekdays.Location = New System.Drawing.Point(170, 324)
         Me.clbWeekdays.Name = "clbWeekdays"
         Me.clbWeekdays.Size = New System.Drawing.Size(200, 109)
-        Me.clbWeekdays.TabIndex = 16
+        Me.clbWeekdays.TabIndex = 17
         '
         'tmrStatus
         '
         Me.tmrStatus.Interval = 2000
+        '
+        'chkOnlyNewSinceLastRun
+        '
+        Me.chkOnlyNewSinceLastRun.AutoSize = True
+        Me.chkOnlyNewSinceLastRun.Location = New System.Drawing.Point(170, 176)
+        Me.chkOnlyNewSinceLastRun.Name = "chkOnlyNewSinceLastRun"
+        Me.chkOnlyNewSinceLastRun.Size = New System.Drawing.Size(239, 17)
+        Me.chkOnlyNewSinceLastRun.TabIndex = 18
+        Me.chkOnlyNewSinceLastRun.Text = "Nur neue Rechnungen seit letzer Ausführung"
         '
         'ERechnungTaskPlanManagerForm
         '
@@ -494,4 +516,6 @@ Partial Class ERechnungTaskPlanManagerForm
 
     End Sub
 
+    Friend WithEvents chkIncludeDuplicates As CheckBox
+    Friend WithEvents chkOnlyNewSinceLastRun As CheckBox
 End Class

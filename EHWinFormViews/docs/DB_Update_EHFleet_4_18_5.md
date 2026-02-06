@@ -177,7 +177,7 @@ Die Struktur entspricht exakt der Rechnung-Domäne, aber mit Tankabrechnung-spez
 | Feld               | Typ                   | Bedeutung |
 | ------------------ | --------------------- | --------- |
 | `BlobId`           | UNIQUEIDENTIFIER (PK) |           |
-| `TankabrechnungNr` | INT (FK)              |           |
+| `RechnungsNr`      | INT (FK)              |           |
 | `Format`           | VARCHAR(30)           |           |
 | `EN16931Profil`    | VARCHAR(50)           |           |
 | `XML_Raw`          | VARBINARY(MAX)        |           |
@@ -198,7 +198,7 @@ Die Struktur entspricht exakt der Rechnung-Domäne, aber mit Tankabrechnung-spez
 | Feld               | Typ              |
 | ------------------ | ---------------- |
 | `SigId`            | BIGINT           |
-| `TankabrechnungNr` | INT              |
+| `RechnungsNr`      | INT              |
 | `BlobId`           | UNIQUEIDENTIFIER |
 | `XML_SHA256`       | CHAR(64)         |
 | `SignatureAlgo`    | VARCHAR(40)      |

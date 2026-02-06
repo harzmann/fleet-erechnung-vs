@@ -184,4 +184,29 @@ ORDER BY CreatedUtc ASC;"
         Return list
     End Function
 
+    ''' <summary>
+    ''' Liefert EndedUtc des letzten erfolgreichen Laufs (RunOk=1) für einen Task.
+    ''' Gibt Nothing zurück, wenn kein erfolgreicher Lauf existiert.
+    ''' </summary>
+    Public Function GetLastSuccessfulEndedUtc(taskId As Integer) As DateTime?
+        Dim sql As String =
+"SELECT TOP 1 EndedUtc
+FROM dbo.ERechnungTaskRun
+WHERE TaskId = ?
+  AND RunOk = 1
+  AND EndedUtc IS NOT NULL
+ORDER BY EndedUtc DESC;"
+
+        Using cmd As New OleDbCommand(sql, Conn())
+            cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.Integer, .Value = taskId})
+            Dim o As Object = cmd.ExecuteScalar()
+            If o Is Nothing OrElse o Is DBNull.Value Then Return Nothing
+            Try
+                Return Convert.ToDateTime(o)
+            Catch
+                Return Nothing
+            End Try
+        End Using
+    End Function
+
 End Class

@@ -486,6 +486,12 @@ Public Class XRechnungExporter
         ' Exemption normalisieren
         Dim exText As String = GetSafe(line, "ERechnung_BT120").Trim()
         Dim exCode As String = GetSafe(line, "ERechnung_BT121").Trim()
+        ' [BR-S-10]-A VAT breakdown (BG-23) with VAT Category code (BT-118) "Standard rate"
+        ' shall not have a VAT exemption reason code (BT-121) or VAT exemption reason text (BT-120).
+        If cat = TaxCategoryCodes.S Then
+            exText = String.Empty
+            exCode = String.Empty
+        End If
         ApplyExemptionDefaults(cat, vatPct, exText, exCode)
 
         ' Positionsrabatt explizit ausweisen, falls Basis > Zeilennetto
@@ -1195,11 +1201,22 @@ Public Class XRechnungExporter
     End Function
 
     ''' <summary>
-    ''' Prüft, ob das Feld Status in der Tabelle RechnungKopf für die angegebene Rechnungsnummer den Wert "Issued" hat.
+    ''' Prüft, ob das Feld Status für die angegebene Rechnungsnummer und Rechnungsart den Wert "Issued" hat.
     ''' </summary>
-    Public Function IsRechnungIssued(rechnungsNummer As Integer) As Boolean
+    Public Function IsRechnungIssued(rechnungsNummer As Integer, billType As RechnungsArt) As Boolean
         Try
-            Dim sql = $"SELECT COUNT(*) FROM RechnungKopf WHERE RechnungsNr = {rechnungsNummer} AND Status = 'Issued'"
+            Dim sql As String = ""
+            Select Case billType
+                Case RechnungsArt.Werkstatt
+                    sql = $"SELECT COUNT(*) FROM RechnungKopf WHERE RechnungsNr = {rechnungsNummer} AND Status = 'Issued'"
+                Case RechnungsArt.Tanken
+                    sql = $"SELECT COUNT(*) FROM TankabrechnungKopf WHERE RechnungsNr = {rechnungsNummer} AND Status = 'Issued'"
+                Case RechnungsArt.Manuell
+                    sql = $"SELECT COUNT(*) FROM ManuelleRechnungKopf WHERE RechnungsNr = {rechnungsNummer} AND Status = 'Issued'"
+                Case Else
+                    _logger.Error($"Unbekannte Rechnungsart in GetXmlRawFromBlob: {billType}")
+                    Return Nothing
+            End Select
             Dim dt = _dataConnection.FillDataTable(sql)
             If dt.Rows.Count > 0 AndAlso Convert.ToInt32(dt.Rows(0).Item(0)) > 0 Then
                 Return True

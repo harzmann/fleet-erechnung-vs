@@ -1,7 +1,6 @@
-﻿Option Strict On
+﻿Option Explicit On
 Option Infer On
 
-Imports System
 Imports System.Data
 Imports System.Data.OleDb
 Imports ehfleet_classlibrary
@@ -22,6 +21,8 @@ Public Class ERechnungTaskPlanRow
     Public Property LastResult As String
     Public Property LastRunOk As Boolean?
     Public Property TaskName As String
+    Public Property IncludeDuplicates As Boolean
+    Public Property OnlyNewSinceLastRun As Boolean
 End Class
 
 ' ==========================================================
@@ -56,6 +57,8 @@ Public Class ERechnungTaskPlanRepository
     EveryN,
     StartTime,
     WeekdaysMask,
+    IncludeDuplicates,
+    OnlyNewSinceLastRun,
     LastRunUtc,
     LastResult,
     LastRunOk
@@ -85,6 +88,8 @@ ORDER BY TaskId DESC;"
     EveryN,
     StartTime,
     WeekdaysMask,
+    IncludeDuplicates,
+    OnlyNewSinceLastRun,
     LastRunUtc,
     LastResult,
     LastRunOk,
@@ -94,7 +99,6 @@ WHERE TaskId = ?;"
 
         Using cmd As New OleDbCommand(sql, Conn())
             cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.Integer, .Value = taskId})
-
             Using da As New OleDbDataAdapter(cmd)
                 Dim dt As New DataTable()
                 da.Fill(dt)
@@ -108,8 +112,6 @@ WHERE TaskId = ?;"
     ' Insert
     ' ----------------------------------------------------------
     Public Function Insert(row As ERechnungTaskPlanRow) As Integer
-        ' OleDb: OUTPUT INSERTED.* ist über Provider oft unzuverlässig.
-        ' Daher Insert + SELECT SCOPE_IDENTITY()
         Dim sql As String =
 "INSERT INTO dbo.ERechnungTaskPlan
 (
@@ -120,16 +122,17 @@ WHERE TaskId = ?;"
     EveryN,
     StartTime,
     WeekdaysMask,
-    TaskName
+    TaskName,
+    IncludeDuplicates,
+    OnlyNewSinceLastRun
 )
 VALUES
 (
-    ?, ?, ?, ?, ?, ?, ?, ?
+    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 );
 SELECT CAST(SCOPE_IDENTITY() AS int);"
 
         Using cmd As New OleDbCommand(sql, Conn())
-            ' Reihenfolge exakt wie im VALUES(...)
             cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.VarWChar, .Value = row.Domain})
             cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.VarWChar, .Value = row.Action})
             cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.Boolean, .Value = row.Enabled})
@@ -137,7 +140,6 @@ SELECT CAST(SCOPE_IDENTITY() AS int);"
             cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.Integer, .Value = row.EveryN})
 
             If row.StartTime.HasValue Then
-                ' DBTime ist ok; je nach Provider kommt es beim Lesen aber als String/DateTime zurück
                 cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.DBTime, .Value = row.StartTime.Value})
             Else
                 cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.DBTime, .Value = DBNull.Value})
@@ -151,8 +153,10 @@ SELECT CAST(SCOPE_IDENTITY() AS int);"
                 cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.VarWChar, .Value = row.TaskName})
             End If
 
-            Dim newIdObj = cmd.ExecuteScalar()
-            Return Convert.ToInt32(newIdObj)
+            cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.Boolean, .Value = row.IncludeDuplicates})
+            cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.Boolean, .Value = row.OnlyNewSinceLastRun})
+
+            Return Convert.ToInt32(cmd.ExecuteScalar())
         End Using
     End Function
 
@@ -170,11 +174,12 @@ SET
     EveryN        = ?,
     StartTime     = ?,
     WeekdaysMask  = ?,
-    TaskName      = ?
+    TaskName      = ?,
+    IncludeDuplicates = ?,
+    OnlyNewSinceLastRun = ?
 WHERE TaskId     = ?;"
 
         Using cmd As New OleDbCommand(sql, Conn())
-            ' Reihenfolge exakt wie im SQL
             cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.VarWChar, .Value = row.Domain})
             cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.VarWChar, .Value = row.Action})
             cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.Boolean, .Value = row.Enabled})
@@ -195,6 +200,8 @@ WHERE TaskId     = ?;"
                 cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.VarWChar, .Value = row.TaskName})
             End If
 
+            cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.Boolean, .Value = row.IncludeDuplicates})
+            cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.Boolean, .Value = row.OnlyNewSinceLastRun})
             cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.Integer, .Value = row.TaskId})
 
             cmd.ExecuteNonQuery()
@@ -214,32 +221,6 @@ WHERE TaskId     = ?;"
     End Sub
 
     ' ----------------------------------------------------------
-    ' LastRun-Status aktualisieren
-    ' ----------------------------------------------------------
-    Public Sub UpdateLastRun(taskId As Integer, ok As Boolean?, resultText As String)
-        Dim sql As String =
-"UPDATE dbo.ERechnungTaskPlan
-SET
-    LastRunUtc = SYSUTCDATETIME(),
-    LastRunOk  = ?,
-    LastResult = ?
-WHERE TaskId = ?;"
-
-        Using cmd As New OleDbCommand(sql, Conn())
-            If ok.HasValue Then
-                cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.Boolean, .Value = ok.Value})
-            Else
-                cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.Boolean, .Value = DBNull.Value})
-            End If
-
-            cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.VarWChar, .Value = If(resultText, "")})
-            cmd.Parameters.Add(New OleDbParameter With {.OleDbType = OleDbType.Integer, .Value = taskId})
-
-            cmd.ExecuteNonQuery()
-        End Using
-    End Sub
-
-    ' ----------------------------------------------------------
     ' Mapping DataRow → Objekt (robust für OleDb)
     ' ----------------------------------------------------------
     Private Function MapRow(r As DataRow) As ERechnungTaskPlanRow
@@ -253,36 +234,16 @@ WHERE TaskId = ?;"
         x.EveryN = Convert.ToInt32(r("EveryN"))
         x.WeekdaysMask = Convert.ToInt32(r("WeekdaysMask"))
 
-        ' --- StartTime robust: OleDb liefert Time häufig als String oder DateTime ---
         If r.IsNull("StartTime") Then
             x.StartTime = Nothing
         Else
-            Dim v As Object = r("StartTime")
-
-            If TypeOf v Is TimeSpan Then
-                x.StartTime = DirectCast(v, TimeSpan)
-
-            ElseIf TypeOf v Is DateTime Then
-                x.StartTime = DirectCast(v, DateTime).TimeOfDay
-
-            Else
-                Dim s As String = Convert.ToString(v).Trim()
-                Dim ts As TimeSpan
-
-                If TimeSpan.TryParse(s, ts) Then
-                    x.StartTime = ts
-                Else
-                    Dim dt As DateTime
-                    If DateTime.TryParse(s, dt) Then
-                        x.StartTime = dt.TimeOfDay
-                    Else
-                        x.StartTime = Nothing
-                    End If
-                End If
-            End If
+            Try
+                x.StartTime = TimeSpan.Parse(Convert.ToString(r("StartTime")))
+            Catch
+                x.StartTime = Nothing
+            End Try
         End If
 
-        ' --- LastRunUtc robust: kann DateTime oder String sein ---
         If r.IsNull("LastRunUtc") Then
             x.LastRunUtc = Nothing
         Else
@@ -313,6 +274,18 @@ WHERE TaskId = ?;"
         End If
 
         x.TaskName = If(r.IsNull("TaskName"), Nothing, Convert.ToString(r("TaskName")))
+
+        If r.Table.Columns.Contains("IncludeDuplicates") AndAlso Not r.IsNull("IncludeDuplicates") Then
+            x.IncludeDuplicates = Convert.ToBoolean(r("IncludeDuplicates"))
+        Else
+            x.IncludeDuplicates = False
+        End If
+
+        If r.Table.Columns.Contains("OnlyNewSinceLastRun") AndAlso Not r.IsNull("OnlyNewSinceLastRun") Then
+            x.OnlyNewSinceLastRun = Convert.ToBoolean(r("OnlyNewSinceLastRun"))
+        Else
+            x.OnlyNewSinceLastRun = False
+        End If
 
         Return x
     End Function

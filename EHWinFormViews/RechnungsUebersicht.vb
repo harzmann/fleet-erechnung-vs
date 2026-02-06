@@ -422,7 +422,7 @@ Public Class RechnungsUebersicht
             Dim logEntry As New ExportLogEntry With {.RechnungsNummer = bill, .Timestamp = DateTime.UtcNow}
             Dim filePath As String = _xmlExporter.GetExportFilePath(RechnungsArt, bill, "xml")
             Try
-                If Not exportHelper.IsRechnungIssued(bill) Then
+                If Not exportHelper.IsRechnungIssued(bill, RechnungsArt) Then
                     Using fileStream = File.Create(filePath)
                         Dim x = MsgBox("Soll die Rechnung " & bill & " als XRechnung XML festgeschrieben werden?", MsgBoxStyle.YesNo, "Fleet Fuhrpark IM System")
                         If x = MsgBoxResult.No Then
@@ -474,7 +474,7 @@ Public Class RechnungsUebersicht
             Dim storeXmlAndUpdate As Boolean = False
 
             ' Rechnung bereits festgeschrieben?
-            If exportHelper.IsRechnungIssued(rechnungsNummer) Then
+            If exportHelper.IsRechnungIssued(rechnungsNummer, RechnungsArt) Then
                 ' Duplikat-Export analog zu XML
                 Dim dupeMsg As String = $"Rechnung {rechnungsNummer} bereits festgeschrieben. Soll ein Duplikat-Hybrid-PDF exportiert werden?"
                 Dim dupeResult = MessageBox.Show(dupeMsg, "Fleet Fuhrpark IM System", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
@@ -656,7 +656,7 @@ Public Class RechnungsUebersicht
         Dim exportLog As New List(Of ExportLogEntry)
         Dim logEntry As New ExportLogEntry With {.RechnungsNummer = rechnungsNummer, .Timestamp = DateTime.UtcNow}
         Dim tempFile As String = Path.GetTempFileName()
-        Dim isIssued As Boolean = _xmlExporter.IsRechnungIssued(rechnungsNummer)
+        Dim isIssued As Boolean = _xmlExporter.IsRechnungIssued(rechnungsNummer, RechnungsArt)
         Try
             If isIssued Then
                 ' Festgeschrieben: XML aus Blob holen und temporär speichern
@@ -719,7 +719,7 @@ Public Class RechnungsUebersicht
 
         ' Einmalige Abfrage, ob alle Rechnungen festgeschrieben werden sollen
         Dim finalizeAll As Boolean = False
-        If rechnungsNummern.Any(Function(bill) Not exportHelper.IsRechnungIssued(bill)) Then
+        If rechnungsNummern.Any(Function(bill) Not exportHelper.IsRechnungIssued(bill, RechnungsArt)) Then
             Dim finalizeResult As MsgBoxResult = MsgBox("Sollen alle nicht festgeschriebenen Rechnungen als XRechnung XML festgeschrieben werden?", MsgBoxStyle.YesNo, "Fleet Fuhrpark IM System")
             finalizeAll = (finalizeResult = MsgBoxResult.Yes)
         End If
@@ -747,7 +747,7 @@ Public Class RechnungsUebersicht
             End If
 
             Try
-                If Not exportHelper.IsRechnungIssued(bill) Then
+                If Not exportHelper.IsRechnungIssued(bill, RechnungsArt) Then
                     Using fileStream = File.Create(filePath)
                         _xmlExporter.CreateBillXml(fileStream, RechnungsArt, bill, finalizeAll, logEntry)
                     End Using
@@ -820,7 +820,7 @@ Public Class RechnungsUebersicht
 
         ' Einmalige Abfrage, ob alle Rechnungen festgeschrieben werden sollen
         Dim storeXmlAndUpdateAll As Boolean = False
-        If rechnungsNummern.Any(Function(bill) Not exportHelper.IsRechnungIssued(bill)) Then
+        If rechnungsNummern.Any(Function(bill) Not exportHelper.IsRechnungIssued(bill, RechnungsArt)) Then
             Dim finalizeResult As MsgBoxResult = MsgBox("Sollen alle nicht festgeschriebenen Rechnungen als XRechnung XML festgeschrieben werden?", MsgBoxStyle.YesNo, "Fleet Fuhrpark IM System")
             storeXmlAndUpdateAll = (finalizeResult = MsgBoxResult.Yes)
         End If
@@ -849,7 +849,7 @@ Public Class RechnungsUebersicht
                 Exit For
             End If
 
-            If exportHelper.IsRechnungIssued(rechnungsNummer) Then
+            If exportHelper.IsRechnungIssued(rechnungsNummer, RechnungsArt) Then
                 ' Duplikat-Export analog zu XML
                 Dim dupeMsg As String = $"Rechnung {rechnungsNummer} bereits festgeschrieben. Soll ein Duplikat-Hybrid-PDF exportiert werden?"
                 Dim dupeResult = MessageBox.Show(dupeMsg, "Fleet Fuhrpark IM System", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
