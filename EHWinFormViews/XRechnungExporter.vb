@@ -1555,6 +1555,15 @@ Public Class XRechnungExporter
             ' 4. PDF/A-3 Hybrid mit eingebettetem XML erzeugen
             _logger.Debug("Creating PDF/A-3 hybrid using InvoicePdfProcessor.SaveToPdf")
 
+            ' Debug: Versuche, die geladene PdfSharp-Assembly zu loggen, um mögliche Ladeprobleme zu identifizieren
+            Try
+                Dim asm = GetType(PdfSharp.Pdf.PdfDocument).Assembly
+                _logger.Info("Loaded PdfSharp: " & asm.FullName)
+                _logger.Info("Loaded PdfSharp from: " & asm.Location)
+            Catch ex As Exception
+                _logger.Warn("Could not resolve PdfSharp assembly: " & ex.Message)
+            End Try
+
             ' Hinweis:
             '   - ZUGFeRDVersion.Version23 -> ZUGFeRD 2.3 / XRechnung 3
             '   - Profile.XRechnung        -> Profil XRechnung

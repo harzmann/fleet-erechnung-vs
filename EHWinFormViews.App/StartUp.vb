@@ -6,6 +6,8 @@ Imports EHFleetXRechnung.Viewer
 Imports log4net
 Imports log4net.Config
 Imports System.Data
+Imports System.Text.Json
+Imports System.Threading.Tasks
 
 Public Class StartUp
 
@@ -61,7 +63,12 @@ Public Class StartUp
 
     End Sub
 
-    Private Sub StartUp_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+    Private Async Function StartUp_LoadAsync(sender As Object, e As EventArgs) As Task Handles MyBase.Load
+
+        ' VB6/Request-File Mode (NEU)
+        If Await HandleRequestModeAsync() Then
+            Return
+        End If
 
         ' Headless/CLI Mode (Windows Task Scheduler)
         If HandleCliMode() Then
@@ -82,7 +89,7 @@ Public Class StartUp
         ' Status
         Dim FilePath As String = Application.StartupPath & "\EHFleetXRechnung.Viewer.dll"
         lblStatus.Text = "Version: App (" & My.Application.Info.Version.ToString & ") - Viewer (" & System.Diagnostics.FileVersionInfo.GetVersionInfo(FilePath).FileVersion & ")"
-    End Sub
+    End Function
 
     Private Sub RadButton1_Click(sender As Object, e As EventArgs) Handles butConfig.Click
 
@@ -220,7 +227,7 @@ Public Class StartUp
         Return True
     End Function
 
-    Private Function OpenDatabaseFromSettingsOrRegistry() As General.Database
+    Public Function OpenDatabaseFromSettingsOrRegistry() As General.Database
         Dim readValue = My.Computer.Registry.GetValue("HKEY_CURRENT_USER\Software\VB and VBA Program Settings\EHFleet Fuhrpark IM System\Allgemein", "workdbcn", Nothing)
 
         If My.Settings.UseRegDbCnStr = True Then
@@ -285,4 +292,111 @@ Public Class StartUp
             butStart_Click(sender, e)
         End If
     End Sub
+
+    Private Async Function HandleRequestModeAsync() As Task(Of Boolean)
+        Dim args = Environment.GetCommandLineArgs()
+        Dim requestPath As String = CliArgParser.ParseRequestPath(args)
+
+        If String.IsNullOrWhiteSpace(requestPath) Then
+            Return False ' kein --request => normaler Startup
+        End If
+
+        ' Logging aktivieren (log4net ist bei dir bereits Standard)
+        ConfigureLogging()
+        logger.Info($"CLI Mode START --request {requestPath}")
+        logger.Info("Args=" & String.Join(" ", args))
+
+        Dim exitCode As Integer = 0
+        Dim activePath As String = requestPath
+        Dim db As General.Database = Nothing
+
+        Try
+
+            db = OpenDatabaseFromSettingsOrRegistry()
+            logger.Debug($"Using DB connection string: {db.cn.ConnectionString}")
+
+            If Not File.Exists(requestPath) Then
+                logger.Error("Request file not found: " & requestPath)
+                CliRequestFileLifecycle.WriteErrorFile(requestPath, "Request file not found.")
+                Environment.ExitCode = 3
+                Me.Close()
+                Return True
+            End If
+
+            ' JSON einlesen
+            Dim json As String = File.ReadAllText(requestPath)
+            Dim opts As New JsonSerializerOptions With {.PropertyNameCaseInsensitive = True}
+            Dim req As CliFileRequest = JsonSerializer.Deserialize(Of CliFileRequest)(json, opts)
+
+            If req Is Nothing Then
+                logger.Error("Request parse failed: deserialized request is Nothing.")
+                CliRequestFileLifecycle.WriteErrorFile(requestPath, "Request parse failed.")
+                Environment.ExitCode = 3
+                Me.Close()
+                Return True
+            End If
+
+            logger.Info($"RequestId={req.RequestId} User={req.User} Cmd={req.Cmd}")
+
+            ' Lifecycle: request.json -> request.processing (und aktiven Pfad merken)
+            Dim processingPath = Path.Combine(Path.GetDirectoryName(requestPath),
+                                              Path.GetFileNameWithoutExtension(requestPath) & ".processing")
+            Try
+                CliRequestFileLifecycle.MarkProcessing(requestPath)
+                activePath = processingPath
+            Catch
+                ' Wenn Move fehlschlägt, arbeiten wir mit originaler Datei weiter
+                activePath = requestPath
+            End Try
+
+            ' Payload validieren (liefert auch InvoicePayload)
+            Dim payload As InvoicePayload = Nothing
+            Dim validationCode = CliFileRequestValidator.Validate(req, payload)
+            If validationCode <> 0 Then
+                logger.Error($"Validation failed. ExitCode={validationCode}")
+                CliRequestFileLifecycle.WriteErrorFile(activePath, $"Validation failed. ExitCode={validationCode}")
+                Environment.ExitCode = validationCode
+                Me.Close()
+                Return True
+            End If
+
+            ' PRINTPREVIEW: UI starten (MainForm)
+            If String.Equals(req.Cmd, "invoice.printpreview", StringComparison.OrdinalIgnoreCase) Then
+                logger.Info($"Opening MainForm PrintPreview: {payload.InvoiceType} {payload.InvoiceNo}")
+                Me.Hide()
+                InvoiceActions.ShowPrintPreview(payload.InvoiceType, payload.InvoiceNo, db)
+                exitCode = 0
+                Environment.ExitCode = exitCode
+                ' Nach erfolgreichem PrintPreview: request.processing löschen
+                CliRequestFileLifecycle.DeleteRequestFile(activePath)
+                Me.Close()
+                Return True
+            End If
+
+            ' ANDERE COMMANDS: headless über Router ausführen (später Business implementieren)
+            ' (Wenn deine InvoiceActions noch NotImplemented wirft, bekommst du ExitCode=10 und err.json)
+            Me.Hide()
+            exitCode = Await CliCommandRouter.DispatchAsync(req, db)
+            Environment.ExitCode = exitCode
+
+            If exitCode = 0 Then
+                CliRequestFileLifecycle.DeleteRequestFile(activePath)
+            Else
+                CliRequestFileLifecycle.WriteErrorFile(activePath, $"Command failed. ExitCode={exitCode}")
+            End If
+
+            Me.Close()
+            Return True
+
+        Catch ex As Exception
+            CliLogger.LogException(ex)
+            If logger IsNot Nothing Then logger.Error("Request mode exception", ex)
+
+            CliRequestFileLifecycle.WriteErrorFile(activePath, ex.Message)
+            Environment.ExitCode = 10
+            Me.Close()
+            Return True
+        End Try
+    End Function
+
 End Class
