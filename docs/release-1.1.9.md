@@ -10,6 +10,9 @@ Der Fix wird mit Klassenbibliothek 1.3.11.1 ausgeliefert.
 
 Der Validator erhält nach fehlgeschlagener XML-Erzeugung keine leere Datei mehr.
 Die ursprüngliche Fehlermeldung erscheint im Exportprotokoll.
+Der Java-Aufruf erhält außerdem einen gültigen, sofort geschlossenen STDIN-Kanal
+und einen expliziten Berichtspfad. Damit scheitert die KoSIT-Eingabeerkennung in
+GUI-/Task-Prozessen ohne gültige geerbte Konsole nicht mehr mit einem IOException.
 
 ## Logdateien und Schreibrechte
 
@@ -90,6 +93,11 @@ den Fehler bei vollständig gesperrten Pfaden sowie tatsächliches Schreiben bei
 Log-Appender und eines HTML-Berichts. `tools/Test-Logging.ps1` prüft außerdem die
 ausgelieferte log4net-DLL. Die Rechnungsnummern-Prüfung deckt fehlende, deaktivierte,
 aktive Zahlen- und Datumsformate der drei Rechnungsarten ab.
+`tools/Test-ValidatorLogging.ps1` verwendet die tatsächlich extrahierte Viewer-DLL
+und den Java-Validator. Bei verweigerten Schreibrechten am Programm-Logverzeichnis
+muss für eine absichtlich unvollständige XML-Testrechnung ein Ablehnungsbericht
+unter dem Ausweichpfad entstehen. Der Test lädt keine Datenbank und löscht keine
+vorhandenen Kundenberichte.
 
 Der Dateipatch wird gegen eine administrative Extraktion des ursprünglichen MSI
 1.1.8 geprüft. Eine administrative Extraktion installiert oder registriert kein
