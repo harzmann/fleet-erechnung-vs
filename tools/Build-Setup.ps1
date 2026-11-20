@@ -36,6 +36,12 @@ try {
     }
     New-Item -ItemType Directory -Path (Join-Path $setup 'staging') -Force | Out-Null
     Copy-Item -LiteralPath $HybridViewerPath -Destination (Join-Path $setup 'staging\FleetXRechnungHybridViewer.exe') -Force
+    # devenv /Rebuild does not reliably restore every independent SDK project
+    # in a clean checkout (in particular the CLI tester).
+    foreach ($project in @('EHWinFormViews.App\EHFleetXRechnung.App.vbproj', 'EHFleetXRechnung.CliTester\EHFleetXRechnung.CliTester.vbproj')) {
+        & dotnet restore (Join-Path $repo $project) -r win-x86 -p:Platform=x86 --verbosity minimal
+        if ($LASTEXITCODE -ne 0) { throw "NuGet-Wiederherstellung fehlgeschlagen: $project" }
+    }
     Push-Location $vs
     try {
         & $disableOutOfProc
