@@ -9,6 +9,7 @@ if ([Diagnostics.FileVersionInfo]::GetVersionInfo($app).FileVersion -ne ($manife
     throw "Dieser Patch erfordert App-Version $($manifest.FromVersion). Für andere Versionen bitte das vollständige Setup verwenden."
 }
 function Resolve-Child([string]$root, [string]$relative) {
+    $root = [IO.Path]::GetFullPath($root)
     if ([IO.Path]::IsPathRooted($relative)) { throw "Absoluter Paketpfad: $relative" }
     $path = [IO.Path]::GetFullPath((Join-Path $root $relative))
     if (-not $path.StartsWith($root.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) { throw "Ungültiger Paketpfad: $relative" }

@@ -23,7 +23,7 @@ $entries = foreach ($entry in $current.Files) {
     [pscustomobject]@{ Path=$entry.Path; SHA256=$entry.SHA256; PreviousSHA256=if ($old) { $old.SHA256 } else { $null } }
 }
 if (@($entries).Count -eq 0) { throw 'Keine geänderten Dateien für den Patch.' }
-@{ FromVersion=$baseline.Version; ToVersion=$current.Version; Files=@($entries) } |
+@{ FromVersion=$baseline.Version; ToVersion=$current.Version; SourceCommit=(& git -C $repo rev-parse HEAD); Files=@($entries) } |
     ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $package 'patch-manifest.json') -Encoding UTF8
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Apply-CustomerPatch.ps1') -Destination $package
 Copy-Item -LiteralPath (Join-Path $repo ('docs\release-' + $current.Version + '.md')) -Destination (Join-Path $package 'README.md')
