@@ -30,7 +30,12 @@ Namespace My
         Protected Overrides Function OnStartup(eventArgs As StartupEventArgs) As Boolean
 
             ' Log4Net Logdatei
-            'ConfigureLogging()
+            ConfigureLogging()
+            If My.Settings.SettingsUpgradeRequired Then
+                My.Settings.Upgrade()
+                My.Settings.SettingsUpgradeRequired = False
+                My.Settings.Save()
+            End If
 
             ' Startobjekt auf StartUp-Form setzen
             MainForm = New StartUp
@@ -59,13 +64,7 @@ Namespace My
         Private Sub ConfigureLogging()
 
             ' Log4Net Logger konfigurieren
-            Dim libraryConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logger.config")
-            Dim logConfigFile = New FileInfo(libraryConfigPath)
-
-            If logConfigFile.Exists Then
-                log4net.GlobalContext.Properties("log4net:HostName") = Environment.MachineName
-                XmlConfigurator.Configure(logConfigFile)
-            End If
+            EHFleetXRechnung.Viewer.LoggingConfiguration.Configure()
         End Sub
     End Class
 End Namespace

@@ -54,6 +54,18 @@ Namespace My
             End Get
         End Property
         
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True")>
+        Public Property SettingsUpgradeRequired() As Boolean
+            Get
+                Return CType(Me("SettingsUpgradeRequired"), Boolean)
+            End Get
+            Set
+                Me("SettingsUpgradeRequired") = value
+            End Set
+        End Property
+
         <Global.System.Configuration.UserScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("False")>  _

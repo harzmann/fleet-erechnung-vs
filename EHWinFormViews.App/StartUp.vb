@@ -16,13 +16,8 @@ Public Class StartUp
     Private logger As ILog
 
     Private Sub ConfigureLogging()
-        Dim libraryConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logger.config")
-        Dim logConfigFile = New FileInfo(libraryConfigPath)
+        LoggingConfiguration.Configure()
         logger = LogManager.GetLogger(GetType(StartUp))
-        If logConfigFile.Exists Then
-            log4net.GlobalContext.Properties("log4net:HostName") = Environment.MachineName
-            XmlConfigurator.Configure(logConfigFile)
-        End If
     End Sub
 
     Private Sub butStart_Click(sender As Object, e As EventArgs) Handles butStart.Click
@@ -97,11 +92,11 @@ Public Class StartUp
         bConfig = Not bConfig
         chkUseRegDbCnStr.Enabled = bConfig
         chkUseRegDbCnStr.Visible = bConfig
-        If chkUseRegDbCnStr.Checked = False Then
-            txtAppDbCnStr.Enabled = bConfig
-            txtAppDbCnStr.Visible = bConfig
-            lblAppDbCnStr.Visible = bConfig
-        End If
+        'If chkUseRegDbCnStr.Checked = False Then
+        txtAppDbCnStr.Enabled = bConfig
+        txtAppDbCnStr.Visible = bConfig
+        lblAppDbCnStr.Visible = bConfig
+        'End If
         If bConfig = True Then
             Me.Size = New Size(375, 300)
             tmrStartUp.Enabled = False

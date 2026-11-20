@@ -200,7 +200,11 @@ Public Class XRechnungExporter
 
         Catch ex As Exception
             _logger.Error($"Exception during {NameOf(CreateBillXml)}", ex)
-            MessageBox.Show("Speichern fehlgschlagen!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            If logEntry IsNot Nothing Then
+                logEntry.Status = "Fehler"
+                logEntry.FehlerInfo = "XML-Erzeugung fehlgeschlagen: " & ex.Message
+            End If
+            MessageBox.Show("XML-Erzeugung fehlgeschlagen: " & ex.Message, "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Return False
         Finally
             _logger.Debug($"Leaving {NameOf(CreateBillXml)}")
@@ -813,7 +817,7 @@ Public Class XRechnungExporter
         Try
             Dim currentFolder = Path.GetDirectoryName(Me.GetType().Assembly.Location)
             Dim validatorFolder = Path.Combine(currentFolder, "validator")
-            Dim reportFolder = Path.Combine(currentFolder, "logs", "html")
+            Dim reportFolder = Path.Combine(LoggingConfiguration.LogDirectory, "html")
             Directory.CreateDirectory(reportFolder)
             ' Only clean the reports folder on the first validation
             If Not _reportsFolderCleaned Then
@@ -838,15 +842,36 @@ Public Class XRechnungExporter
                 Return False
             End If
 
-            Dim javaFolder = Environment.ExpandEnvironmentVariables("JRE_HOME")
-            If String.IsNullOrWhiteSpace(javaFolder) Then
+            ' Use the detected executable, including installations outside PATH.
+            Dim javaExecutable As String = Nothing
+            For Each variableName In {"JRE_HOME", "JAVA_HOME"}
+                Dim javaHome = Environment.GetEnvironmentVariable(variableName)
+                If Not String.IsNullOrWhiteSpace(javaHome) Then
+                    Dim candidate = Path.Combine(javaHome.Trim().Trim(""""c), "bin", "java.exe")
+                    If System.IO.File.Exists(candidate) Then
+                        javaExecutable = candidate
+                        Exit For
+                    End If
+                End If
+            Next
+            If javaExecutable Is Nothing Then
+                For Each folder In If(Environment.GetEnvironmentVariable("PATH"), "").Split(Path.PathSeparator)
+                    If String.IsNullOrWhiteSpace(folder) Then Continue For
+                    Dim candidate = Path.Combine(Environment.ExpandEnvironmentVariables(folder.Trim().Trim(""""c)), "java.exe")
+                    If System.IO.File.Exists(candidate) Then
+                        javaExecutable = candidate
+                        Exit For
+                    End If
+                Next
+            End If
+            If javaExecutable Is Nothing Then
                 _logger.Error("Java JRE not installed")
                 If logEntry IsNot Nothing Then
                     logEntry.Status = "Java fehlt"
                     logEntry.FehlerInfo = "Java JRE nicht installiert."
                 End If
                 If Not silent Then
-                    MessageBox.Show("Jave JRE nicht installiert!", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                    MessageBox.Show("Java 8 oder höher wird für die Rechnungsvalidierung benötigt. Bitte JRE_HOME, JAVA_HOME oder PATH konfigurieren.", "Fleet Fuhrpark IM System", MessageBoxButtons.OK, MessageBoxIcon.Error)
                 End If
                 Return False
             End If
@@ -854,9 +879,9 @@ Public Class XRechnungExporter
             Dim arguments = $"-jar ""{validatorFileName}"" -s ""{scenarioFile}"" -r ""{configurationFolder}"" -d ""{file}"" -h"
             Dim pInfo = New ProcessStartInfo()
             pInfo.UseShellExecute = False
-            pInfo.FileName = "java"
+            pInfo.FileName = javaExecutable
             pInfo.Arguments = arguments
-            pInfo.WorkingDirectory = Path.Combine(currentFolder, "logs", "html")
+            pInfo.WorkingDirectory = Path.Combine(LoggingConfiguration.LogDirectory, "html")
             pInfo.CreateNoWindow = True
 
             ' Redirect output and error streams

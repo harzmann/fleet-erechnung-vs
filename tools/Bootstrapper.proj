@@ -1,0 +1,14 @@
+<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <BootstrapperFile Include="Microsoft.NetCore.DesktopRuntime.8.0.x86">
+      <ProductName>.NET 8 Desktop Runtime x86</ProductName>
+    </BootstrapperFile>
+  </ItemGroup>
+  <Target Name="Build">
+    <GenerateBootstrapper ApplicationFile="EHFleetXRechnung.Setup.msi"
+      ApplicationName="FLEET - XRechnung" ApplicationRequiresElevation="true"
+      BootstrapperItems="@(BootstrapperFile)" ComponentsLocation="Relative"
+      CopyComponents="true" Culture="de" FallbackCulture="en"
+      OutputPath="$(ReleaseDirectory)" Path="$(BootstrapperDirectory)" Validate="true" />
+  </Target>
+</Project>

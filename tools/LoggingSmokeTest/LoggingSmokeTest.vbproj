@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>EHFleetXRechnung.Viewer</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="3.5.0" />
+    <Compile Include="../../EHWinFormViews/LoggingConfiguration.vb" Link="LoggingConfiguration.vb" />
+    <None Include="../../EHWinFormViews/logger.config" Link="logger.config" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><RootNamespace></RootNamespace>
+  </PropertyGroup>
+  <ItemGroup><Compile Include="../../../ehfleet_classlibrary/Sale.vb" Link="Sale.vb" /></ItemGroup>
+</Project>

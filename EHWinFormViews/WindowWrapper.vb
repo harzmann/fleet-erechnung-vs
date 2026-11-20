@@ -23,14 +23,7 @@ Public Class WindowWrapper
     End Sub
 
     Private Sub ConfigureLogging(login As String)
-        Dim libraryConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logger.config")
-        Dim logConfigFile = New FileInfo(libraryConfigPath)
-
-        If logConfigFile.Exists Then
-            log4net.GlobalContext.Properties("log4net:HostName") = Environment.MachineName
-            log4net.GlobalContext.Properties("log4net:Login") = login
-            XmlConfigurator.Configure(logConfigFile)
-        End If
+        LoggingConfiguration.Configure(login)
     End Sub
 
 End Class

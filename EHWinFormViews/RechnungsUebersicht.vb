@@ -262,8 +262,10 @@ Public Class RechnungsUebersicht
 
         Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
         Dim dataTable = CType(dataSource.DataSource, DataTable)
-        Dim row = dataTable.Rows(e.RowIndex)
-        Dim rechnungsNummer = Convert.ToInt32(row.Item(0))
+        Dim clickedRow = DataGridView1.Rows(e.RowIndex)
+        Dim dataRowView = TryCast(clickedRow.DataBoundItem, DataRowView)
+        If dataRowView Is Nothing Then Return
+        Dim rechnungsNummer = Convert.ToInt32(dataRowView.Row.Item(0))
         Try
             Select Case e.Column.Name
                 Case "Bericht"
@@ -289,11 +291,15 @@ Public Class RechnungsUebersicht
         Dim dataSource = CType(DataGridView1.DataSource, BindingSource)
         Dim dataTable = CType(dataSource.DataSource, DataTable)
 
-        Dim rechnungsNummern = DataGridView1.Rows.Where(Function(r) r.GetType() = GetType(GridDataRowElement)).Select(
+        Dim rechnungsNummern = DataGridView1.Rows.Where(Function(r) r.GetType() = GetType(GridViewDataRowInfo)).Select(
             Function(rowInfo)
-                Dim dataRow = dataTable.Rows(rowInfo.Index)
-                Return Convert.ToInt32(dataRow.Item(0))
-            End Function).ToList
+                Dim dataRowView = TryCast(rowInfo.DataBoundItem, DataRowView)
+                If dataRowView IsNot Nothing Then
+                    Return Convert.ToInt32(dataRowView.Row.Item(0))
+                Else
+                    Return 0
+                End If
+            End Function).Where(Function(n) n > 0).ToList
 
         Try
             Dim reportForm = New ReportForm(_dbConnection, RechnungsArt, rechnungsNummern)
@@ -311,9 +317,13 @@ Public Class RechnungsUebersicht
         Try
             Dim reportForm = New ReportForm(_dbConnection, RechnungsArt, DataGridView1.SelectedRows.Select(
                 Function(rowInfo)
-                    Dim dataRow = dataTable.Rows(rowInfo.Index)
-                    Return Convert.ToInt32(dataRow.Item(0))
-                End Function).ToList)
+                    Dim dataRowView = TryCast(rowInfo.DataBoundItem, DataRowView)
+                    If dataRowView IsNot Nothing Then
+                        Return Convert.ToInt32(dataRowView.Row.Item(0))
+                    Else
+                        Return 0
+                    End If
+                End Function).Where(Function(n) n > 0).ToList)
 
             reportForm.ShowDialog()
         Catch ex As Exception
@@ -328,9 +338,13 @@ Public Class RechnungsUebersicht
         Dim dataTable = CType(dataSource.DataSource, DataTable)
         Dim selectedNumbers = DataGridView1.SelectedRows.Select(
             Function(rowInfo)
-                Dim dataRow = dataTable.Rows(rowInfo.Index)
-                Return Convert.ToInt32(dataRow.Item(0))
-            End Function).ToList
+                Dim dataRowView = TryCast(rowInfo.DataBoundItem, DataRowView)
+                If dataRowView IsNot Nothing Then
+                    Return Convert.ToInt32(dataRowView.Row.Item(0))
+                Else
+                    Return 0
+                End If
+            End Function).Where(Function(n) n > 0).ToList
         ExportSelectedPdf(selectedNumbers, dataTable)
     End Sub
 
@@ -339,9 +353,13 @@ Public Class RechnungsUebersicht
         Dim dataTable = CType(dataSource.DataSource, DataTable)
         Dim selectedNumbers = DataGridView1.SelectedRows.Select(
             Function(rowInfo)
-                Dim dataRow = dataTable.Rows(rowInfo.Index)
-                Return Convert.ToInt32(dataRow.Item(0))
-            End Function).ToList
+                Dim dataRowView = TryCast(rowInfo.DataBoundItem, DataRowView)
+                If dataRowView IsNot Nothing Then
+                    Return Convert.ToInt32(dataRowView.Row.Item(0))
+                Else
+                    Return 0
+                End If
+            End Function).Where(Function(n) n > 0).ToList
         ExportSelectedXml(selectedNumbers, dataTable)
     End Sub
 
@@ -386,9 +404,13 @@ Public Class RechnungsUebersicht
         Dim dataTable = CType(dataSource.DataSource, DataTable)
         Dim selectedNumbers = DataGridView1.SelectedRows.Select(
             Function(rowInfo)
-                Dim dataRow = dataTable.Rows(rowInfo.Index)
-                Return Convert.ToInt32(dataRow.Item(0))
-            End Function).ToList
+                Dim dataRowView = TryCast(rowInfo.DataBoundItem, DataRowView)
+                If dataRowView IsNot Nothing Then
+                    Return Convert.ToInt32(dataRowView.Row.Item(0))
+                Else
+                    Return 0
+                End If
+            End Function).Where(Function(n) n > 0).ToList
         EmailSelectedXml(selectedNumbers, dataTable)
     End Sub
 
@@ -674,11 +696,19 @@ Public Class RechnungsUebersicht
                 logEntry.FehlerInfo = logEntry.FehlerInfo & vbCrLf & "Hinweis: Rechnung ist festgeschrieben - XML aus Blob-Daten."
             Else
                 ' Noch nicht festgeschrieben: temporär erzeugen
+                Dim xmlCreated As Boolean
                 Using fs = New FileStream(tempFile, FileMode.Create, FileAccess.Write)
-                    _xmlExporter.CreateBillXml(fs, RechnungsArt, rechnungsNummer, False, logEntry)
+                    xmlCreated = _xmlExporter.CreateBillXml(fs, RechnungsArt, rechnungsNummer, False, logEntry)
                 End Using
-                _xmlExporter.Validate(tempFile, silent:=True, logEntry:=logEntry)
-                logEntry.FehlerInfo = logEntry.FehlerInfo & vbCrLf & "Hinweis: Rechnung ist nicht festgeschrieben - XML generiert."
+                If xmlCreated Then
+                    _xmlExporter.Validate(tempFile, silent:=True, logEntry:=logEntry)
+                    logEntry.FehlerInfo = logEntry.FehlerInfo & vbCrLf & "Hinweis: Rechnung ist nicht festgeschrieben - XML generiert."
+                Else
+                    logEntry.Status = "Fehler"
+                    If String.IsNullOrWhiteSpace(logEntry.FehlerInfo) Then
+                        logEntry.FehlerInfo = "XML-Erzeugung fehlgeschlagen. Validierung wurde nicht gestartet."
+                    End If
+                End If
             End If
         Catch ex As Exception
             logEntry.Status = "Fehler"
@@ -1327,9 +1357,13 @@ Public Class RechnungsUebersicht
         Dim dataTable = CType(dataSource.DataSource, DataTable)
         Dim selectedNumbers = DataGridView1.SelectedRows.Select(
             Function(rowInfo)
-                Dim dataRow = dataTable.Rows(rowInfo.Index)
-                Return Convert.ToInt32(dataRow.Item(0))
-            End Function).ToList
+                Dim dataRowView = TryCast(rowInfo.DataBoundItem, DataRowView)
+                If dataRowView IsNot Nothing Then
+                    Return Convert.ToInt32(dataRowView.Row.Item(0))
+                Else
+                    Return 0
+                End If
+            End Function).Where(Function(n) n > 0).ToList
         EmailSelectedPdf(selectedNumbers, dataTable)
     End Sub
 

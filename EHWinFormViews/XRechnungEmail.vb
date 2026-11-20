@@ -20,7 +20,8 @@ Public Class XRechnungEmail
         ' Konfiguration analog zu logger.config, aber mit anderem Dateinamen
         Dim repository As ILoggerRepository = LogManager.GetRepository()
         Dim smtpAppenderName As String = "EHFleetXRechnungSmtpAppender"
-        Dim logFilePath As String = "logs/EHFleetXRechnungSmtp.log"
+        LoggingConfiguration.Configure()
+        Dim logFilePath As String = Path.Combine(LoggingConfiguration.LogDirectory, "EHFleetXRechnungSmtp.log")
 
         ' Prüfe, ob Appender bereits existiert
         Dim existing = repository.GetAppenders().FirstOrDefault(Function(a) a.Name = smtpAppenderName)

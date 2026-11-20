@@ -9,7 +9,8 @@
 **/Debug
 /EHWinFormViews/EHWinFormViews.vbproj.user
 /EHWinFormViews.App/EHWinFormViews.App.vbproj.user
-/EHWinFormViews/EHFleetXRechnung.Viewer.vbproj
-/EHFleetXRechnung.Setup/
+/EHFleetXRechnung.Setup/*
+!/EHFleetXRechnung.Setup/EHFleetXRechnung.Setup.vdproj
+!/EHFleetXRechnung.Setup/README.md
 /EHFleetXRechnung.Setup48/
 

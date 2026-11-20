@@ -1,0 +1,8 @@
+{
+  "version": "8.0.33",
+  "architecture": "x86",
+  "folder": "net8desktopruntime_x86",
+  "file": "windowsdesktop-runtime-8.0.33-win-x86.exe",
+  "url": "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/8.0.33/windowsdesktop-runtime-8.0.33-win-x86.exe",
+  "sha512": "8cc0f4b0a4d24107a4b4a2e16f6edd613e313fcb22163d102ed7cdbdb1adcfd6fc2abe6c946e4bbd2c4adddac00e47ffec8716fcbf3035bdba3574873b8e2c6d"
+}
