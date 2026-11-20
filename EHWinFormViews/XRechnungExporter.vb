@@ -876,7 +876,7 @@ Public Class XRechnungExporter
                 Return False
             End If
 
-            Dim arguments = $"-jar ""{validatorFileName}"" -s ""{scenarioFile}"" -r ""{configurationFolder}"" -d ""{file}"" -h"
+            Dim arguments = $"-jar ""{validatorFileName}"" -s ""{scenarioFile}"" -r ""{configurationFolder}"" -o ""{reportFolder}"" -d ""{file}"" -h"
             Dim pInfo = New ProcessStartInfo()
             pInfo.UseShellExecute = False
             pInfo.FileName = javaExecutable
@@ -887,6 +887,9 @@ Public Class XRechnungExporter
             ' Redirect output and error streams
             pInfo.RedirectStandardOutput = True
             pInfo.RedirectStandardError = True
+            ' GUI-/Task-Prozesse haben nicht immer ein gültiges geerbtes STDIN-Handle.
+            ' KoSIT prüft STDIN auch bei explizit übergebener Eingabedatei.
+            pInfo.RedirectStandardInput = True
 
             Dim p = New Process()
             p.StartInfo = pInfo
@@ -913,6 +916,7 @@ Public Class XRechnungExporter
 
             Cursor.Current = Cursors.WaitCursor
             p.Start()
+            p.StandardInput.Close()
             p.BeginOutputReadLine()
             p.BeginErrorReadLine()
             p.WaitForExit()

@@ -7,6 +7,7 @@
 - Einheitliche Logging-Konfiguration für Desktop-App, CLI-/Request-Modus und COM-Aufruf. Keine Abhängigkeit vom aktuellen Arbeitsverzeichnis.
 - Fehlende Rechnungsnummern-Formatparameter 156/1156/2156 verhindern den XML-Export nicht mehr (Klassenbibliothek 1.3.11.1). Bestehende aktive Formate bleiben erhalten.
 - Die Einzelvalidierung startet nur nach erfolgreicher XML-Erzeugung; Exportfehler bleiben in der Ergebnisliste sichtbar.
+- Der Java-Validator erhält einen gültigen geschlossenen STDIN-Kanal und einen expliziten Berichtspfad; er funktioniert damit auch ohne geerbte Konsole.
 - Benutzereinstellungen werden beim ersten Start einer neuen App-Version aus dem vorherigen Versionsverzeichnis übernommen.
 - Neues MSI mit neuer Product-/Package-ID und unveränderter Upgrade-ID für Neuinstallation und Upgrade. Zusätzlich ein geprüfter Dateipatch von 1.1.8 auf 1.1.9 mit Vorprüfung, Sicherung und Rücknahme bei Kopierfehlern.
 - Reproduzierbare Release-Skripte, Prüfsummenmanifest sowie Tests mit tatsächlich verweigerten Windows-Schreibrechten.
