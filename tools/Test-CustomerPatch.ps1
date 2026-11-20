@@ -40,7 +40,7 @@ try {
 } finally { $lock.Dispose() }
 
 # Inject a copy failure after a successful replacement and verify rollback.
-$global:ehFleetPatchFailureTarget = Join-Path $target $manifest.Files[1].Path
+$global:ehFleetPatchFailureTarget = [IO.Path]::GetFullPath((Join-Path $target $manifest.Files[1].Path))
 $global:ehFleetPatchFailureTriggered = $false
 function global:Copy-Item {
     param([string]$LiteralPath, [string]$Destination, [switch]$Force)
